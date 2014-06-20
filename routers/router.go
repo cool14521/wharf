@@ -21,10 +21,8 @@ func init() {
 
     beego.NSNamespace("/repositories",
       beego.NSRouter("/:namespace/:repo_name/tags/:tag", &controllers.RepositoryController{}, "put:PutTag"),
-      beego.NSRouter("/:namespace/:repo_name/tags/:tag", &controllers.RepositoryController{}, "put:PutTag"),
-      beego.NSRouter(":namespace/:repo_name/images", &controllers.RepositoryController{}, "put:PutRepositoryImages"),
+      beego.NSRouter("/:namespace/:repo_name/images", &controllers.RepositoryController{}, "put:PutRepositoryImages"),
       beego.NSRouter("/:namespace/:repo_name/images", &controllers.RepositoryController{}, "get:GetRepositoryImages"),
-      beego.NSRouter("/:namespace/:repo_name/tags", &controllers.RepositoryController{}, "get:GetRepositoryTags"),
       beego.NSRouter("/:namespace/:repo_name/tags", &controllers.RepositoryController{}, "get:GetRepositoryTags"),
       beego.NSRouter("/:namespace/:repo_name", &controllers.RepositoryController{}, "put:PutRepository"),
     ),
