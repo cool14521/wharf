@@ -3,7 +3,6 @@ package models
 import (
   "fmt"
   "github.com/astaxie/beego"
-  "github.com/dockboard/docker-registry/utils"
   _ "github.com/go-sql-driver/mysql"
   "github.com/go-xorm/xorm"
   "log"
@@ -12,10 +11,10 @@ import (
 var Engine *xorm.Engine
 
 func setEngine() {
-  host := utils.Cfg.MustValue("mysql", "Host")
-  name := utils.Cfg.MustValue("mysql", "Name")
-  user := utils.Cfg.MustValue("mysql", "User")
-  passwd := utils.Cfg.MustValue("mysql", "Passwd")
+  host := beego.AppConfig.String("mysql::Host")
+  name := beego.AppConfig.String("mysql::Name")
+  user := beego.AppConfig.String("mysql::User")
+  passwd := beego.AppConfig.String("mysql::Passwd")
 
   var err error
   conn := fmt.Sprintf("%v:%v@tcp(%v)/%v?charset=utf8", user, passwd, host, name)

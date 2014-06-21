@@ -3,6 +3,5 @@ path=github.com/dockboard/docker-registry
 
 [deps]
 github.com/astaxie/beego = 
-github.com/Unknwon/goconfig =
 github.com/go-xorm/xorm =
 github.com/nu7hatch/gouuid =

@@ -2,7 +2,6 @@ package controllers
 
 import (
   "github.com/astaxie/beego"
-  "github.com/dockboard/docker-registry/utils"
 )
 
 type PingController struct {
@@ -14,9 +13,9 @@ type PingResult struct {
 }
 
 func (this *PingController) Prepare() {
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", utils.Cfg.MustValue("docker", "Version"))
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", utils.Cfg.MustValue("docker", "Config"))
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", utils.Cfg.MustValue("docker", "Standalone"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", beego.AppConfig.String("docker::Standalone"))
 }
 
 func (this *PingController) GetPing() {

@@ -51,8 +51,8 @@ func (r *RepositoryController) URLMapping() {
 }
 
 func (this *RepositoryController) Prepare() {
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", utils.Cfg.MustValue("docker", "Version"))
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", utils.Cfg.MustValue("docker", "Config"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 
   beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
 
@@ -191,7 +191,7 @@ func (this *RepositoryController) PutRepository() {
   this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
   this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
   this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", utils.Cfg.MustValue("docker", "Endpoints"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 
   this.Ctx.Output.Context.Output.SetStatus(200)
   this.Ctx.Output.Context.Output.Body([]byte("\"\""))
@@ -440,7 +440,7 @@ func (this *RepositoryController) GetRepositoryImages() {
 
     //操作正常的输出
     this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-    this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", utils.Cfg.MustValue("docker", "Endpoints"))
+    this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 
     this.Ctx.Output.Context.Output.SetStatus(200)
     this.Ctx.Output.Context.Output.Body(imageIds)
@@ -503,7 +503,7 @@ func (this *RepositoryController) GetRepositoryTags() {
 
     //操作正常的输出
     this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-    this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", utils.Cfg.MustValue("docker", "Endpoints"))
+    this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 
     this.Ctx.Output.Context.Output.SetStatus(200)
     this.Ctx.Output.Context.Output.Body(result)

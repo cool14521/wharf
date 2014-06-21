@@ -28,8 +28,8 @@ func (i *ImageController) URLMapping() {
 
 func (this *ImageController) Prepare() {
 
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", utils.Cfg.MustValue("docker", "Version"))
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", utils.Cfg.MustValue("docker", "Config"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 
   beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
 
@@ -174,7 +174,7 @@ func (this *ImageController) PutImageLayer() {
   }
 
   //处理 Layer 文件保存的目录
-  basePath := utils.Cfg.MustValue("docker", "BasePath")
+  basePath := beego.AppConfig.String("docker::BasePath")
   repositoryPath := fmt.Sprintf("%v/images/%v", basePath, imageId)
   layerfile := fmt.Sprintf("%v/images/%v/layer", basePath, imageId)
 
@@ -338,7 +338,7 @@ func (this *ImageController) GetImageLayer() {
     this.Ctx.Output.Context.Output.Body([]byte("\"Could not find image record.\""))
   } else {
     //处理 Layer 文件保存的目录
-    basePath := utils.Cfg.MustValue("docker", "BasePath")
+    basePath := beego.AppConfig.String("docker::BasePath")
     layerfile := fmt.Sprintf("%v/images/%v/layer", basePath, imageId)
 
     if _, err := os.Stat(layerfile); err != nil {

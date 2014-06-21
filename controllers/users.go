@@ -29,14 +29,13 @@ type UsersController struct {
 }
 
 func (this *UsersController) Prepare() {
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", utils.Cfg.MustValue("docker", "Version"))
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", utils.Cfg.MustValue("docker", "Config"))
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", utils.Cfg.MustValue("docker", "Standalone"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
+  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", beego.AppConfig.String("docker::Standalone"))
 }
 
 func (this *UsersController) PostUsers() {
 
-  beego.Trace(this.Ctx.Request.Method + " -> " + this.Ctx.Request.URL.String())
   beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
 
   this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
@@ -46,7 +45,6 @@ func (this *UsersController) PostUsers() {
 
 func (this *UsersController) GetUsers() {
 
-  beego.Trace(this.Ctx.Request.Method + " -> " + this.Ctx.Request.URL.String())
   beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
 
   username, password, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
