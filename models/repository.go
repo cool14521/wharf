@@ -17,7 +17,7 @@ type Repository struct {
   Uploaded    bool      `xorm:"default 0 'uploaded'"`
   CheckSumed  bool      `xorm:"default 0 'checksumed'"`
   Star        int64     `xorm:"default 0"`
-  Tags        string    `xorm:"test"`
+  Tags        string    `xorm:"text"`
   Trusted     bool      `xorm:"default 0"`
   Privated    bool      `xorm:"default 0"`
   Created     time.Time `xorm:"created"`
