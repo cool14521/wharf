@@ -95,7 +95,7 @@ func (this *ImageController) Prepare() {
 func (this *ImageController) GetImageJSON() {
 
   imageId := string(this.Ctx.Input.Param(":image_id"))
-  image := &models.Image{ImageId: imageId, Uploaded: true, CheckSumed: true}
+  image := &models.Image{ImageId: imageId}
   has, err := models.Engine.Get(image)
   if err != nil {
     this.Ctx.Output.Context.Output.SetStatus(400)
@@ -104,9 +104,10 @@ func (this *ImageController) GetImageJSON() {
   }
 
   beego.Trace("[Image Has] " + strconv.FormatBool(has))
+  beego.Trace("[Image Uploaded] " + strconv.FormatBool(image.Uploaded))
+  beego.Trace("[Image CheckSumed] " + strconv.FormatBool(image.CheckSumed))
 
-  if has {
-    beego.Trace("[Image JSON] " + string(image.JSON))
+  if has && image.Uploaded && image.CheckSumed {
     this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
     this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Checksum", image.Checksum)
     this.Ctx.Output.Context.Output.SetStatus(200)
@@ -135,7 +136,6 @@ func (this *ImageController) PutImageJson() {
   }
 
   beego.Trace("[Has JSON] " + strconv.FormatBool(has))
-  beego.Trace("[JSON] " + string(this.Ctx.Input.CopyBody()))
   image.JSON = string(this.Ctx.Input.CopyBody())
 
   if has == true {
@@ -145,19 +145,18 @@ func (this *ImageController) PutImageJson() {
       this.Ctx.Output.Context.Output.Body([]byte("\"Update the image JSON data error.\""))
       this.StopRun()
     }
-  }
-
-  _, err = models.Engine.Insert(image)
-  if err != nil {
-    this.Ctx.Output.Context.Output.SetStatus(400)
-    this.Ctx.Output.Context.Output.Body([]byte("\"Create the image record error.\""))
-    this.StopRun()
+  } else {
+    _, err = models.Engine.Insert(image)
+    if err != nil {
+      this.Ctx.Output.Context.Output.SetStatus(400)
+      this.Ctx.Output.Context.Output.Body([]byte("\"Create the image record error.\""))
+      this.StopRun()
+    }
   }
 
   this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
   this.Ctx.Output.Context.Output.SetStatus(200)
   this.Ctx.Output.Context.Output.Body([]byte(""))
-
 }
 
 //向本地硬盘写入 Layer 的文件
@@ -235,9 +234,15 @@ func (this *ImageController) PutChecksum() {
   imageId := string(this.Ctx.Input.Param(":image_id"))
   image := &models.Image{ImageId: imageId}
   has, err := models.Engine.Get(image)
-  if has == false || err != nil {
-    this.Ctx.Output.Context.Output.Body([]byte("\"Image not found\""))
+  if err != nil {
     this.Ctx.Output.Context.Output.SetStatus(404)
+    this.Ctx.Output.Context.Output.Body([]byte("{\"Image search error.\"}"))
+    this.StopRun()
+  }
+
+  if has == false {
+    this.Ctx.Output.Context.Output.SetStatus(404)
+    this.Ctx.Output.Context.Output.Body([]byte("{\"Image not found\"}"))
     this.StopRun()
   }
 
@@ -246,15 +251,17 @@ func (this *ImageController) PutChecksum() {
   _, err = models.Engine.Id(image.Id).Cols("CheckSumed").Update(image)
   if err != nil {
     this.Ctx.Output.Context.Output.SetStatus(400)
-    this.Ctx.Output.Context.Output.Body([]byte("\"Update the image checksum error.\""))
+    this.Ctx.Output.Context.Output.Body([]byte("{\"Update the image checksum error.\"}"))
     this.StopRun()
   }
+
+  beego.Trace("[Get ParentJSON]")
 
   //计算这个Layer的父子结构
   var imageJSON map[string]interface{}
   if err := json.Unmarshal([]byte(image.JSON), &imageJSON); err != nil {
     this.Ctx.Output.Context.Output.SetStatus(400)
-    this.Ctx.Output.Context.Output.Body([]byte("\"Decode the image json data encouter error.\""))
+    this.Ctx.Output.Context.Output.Body([]byte("{\"Decode the image json data encouter error.\"}"))
     this.StopRun()
   }
 
@@ -284,15 +291,17 @@ func (this *ImageController) PutChecksum() {
   parents = append(images, parents...)
 
   parentJSON, _ := json.Marshal(parents)
+  beego.Trace("[ParentJSON] " + string(parentJSON))
+
   image.ParentJSON = string(parentJSON)
 
   image.Checksum = this.Ctx.Input.Header("X-Docker-Checksum")
   image.Payload = this.Ctx.Input.Header("X-Docker-Checksum-Payload")
 
-  _, err = models.Engine.Update(image)
+  _, err = models.Engine.Id(image.Id).Update(image)
   if err != nil {
     this.Ctx.Output.Context.Output.SetStatus(400)
-    this.Ctx.Output.Context.Output.Body([]byte("\"Update the image checksum error.\""))
+    this.Ctx.Output.Context.Output.Body([]byte("{ error: \"Update the image checksum error.\"}"))
     this.StopRun()
   }
 
