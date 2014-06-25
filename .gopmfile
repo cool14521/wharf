@@ -2,6 +2,9 @@
 path=github.com/dockboard/docker-registry
 
 [deps]
-github.com/astaxie/beego = 
+github.com/astaxie/beego =
+github.com/go-sql-driver/mysql = 
 github.com/go-xorm/xorm =
 github.com/nu7hatch/gouuid =
+github.com/qiniu/api =
+github.com/qiniu/log =
