@@ -9,6 +9,7 @@ import (
   "strconv"
 
   "github.com/astaxie/beego"
+  "github.com/dockboard/docker-registry/backup"
   "github.com/dockboard/docker-registry/models"
   "github.com/dockboard/docker-registry/utils"
 )
@@ -303,6 +304,11 @@ func (this *ImageController) PutChecksum() {
     this.Ctx.Output.Context.Output.SetStatus(400)
     this.Ctx.Output.Context.Output.Body([]byte("{ error: \"Update the image checksum error.\"}"))
     this.StopRun()
+  }
+
+  //判断是否进行备份
+  if backup.Backup == true {
+    backup.UploadChan <- image.ImageId
   }
 
   this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")

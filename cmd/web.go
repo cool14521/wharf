@@ -6,8 +6,10 @@ import (
 
   "github.com/astaxie/beego"
   "github.com/codegangsta/cli"
+  "github.com/dockboard/docker-registry/backup"
   "github.com/dockboard/docker-registry/models"
   _ "github.com/dockboard/docker-registry/routers"
+  . "github.com/qiniu/api/conf"
 )
 
 var CmdWeb = cli.Command{
@@ -36,6 +38,21 @@ func runRegistry(c *cli.Context) {
 
   if len(c.String("port")) > 0 {
     port = strconv.Itoa(c.Int("port"))
+  }
+
+  if len(c.String("qiniu_access")) > 0 {
+    ACCESS_KEY = c.String("qiniu_access")
+  }
+
+  if len(c.String("qiniu_secret")) > 0 {
+    SECRET_KEY = c.String("qiniu_secret")
+  }
+
+  if len(c.String("qiniu_access")) > 0 && len(c.String("qiniu_secret")) > 0 {
+    backup.Backup = true
+
+    go backup.QiniuBackup(backup.UploadChan, backup.ResultChan)
+    go backup.QiniuResult(backup.ResultChan)
   }
 
   models.InitDb()

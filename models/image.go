@@ -11,7 +11,8 @@ type Image struct {
   ParentJSON string    `xorm:"text 'parent_json'"`
   Checksum   string    `xorm:"text"`
   Payload    string    `xorm:"text"`
-  URLs       string    `xorm:"text 'urls'"`
+  URL        string    `xorm:"text 'url'"`
+  Backup     string    `xorm:"text 'backup'"`
   Size       int64     `xorm:"default 0"`
   Uploaded   bool      `xorm:"default 0 'uploaded'"`
   CheckSumed bool      `xorm:"default 0 'checksumed'"`
