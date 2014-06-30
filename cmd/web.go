@@ -5,6 +5,7 @@ import (
   "strconv"
 
   "github.com/astaxie/beego"
+  _ "github.com/astaxie/beego/session/redis"
   "github.com/codegangsta/cli"
   "github.com/dockboard/docker-registry/backup"
   "github.com/dockboard/docker-registry/models"
@@ -54,6 +55,9 @@ func runRegistry(c *cli.Context) {
     go backup.QiniuBackup(backup.UploadChan, backup.ResultChan)
     go backup.QiniuResult(backup.ResultChan)
   }
+
+  beego.SessionProvider = "redis"
+  beego.SessionSavePath = "127.0.0.1:6379"
 
   models.InitDb()
   beego.Run(fmt.Sprintf("%v:%v", address, port))
