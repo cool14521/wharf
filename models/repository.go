@@ -18,6 +18,7 @@ type Repository struct {
   CheckSumed  bool      `xorm:"default 0 'checksumed'"`
   Star        int64     `xorm:"default 0"`
   Tags        string    `xorm:"text"`
+  Icon        string    `xorm:"text"`
   Official    bool      `xorm:"default 0"`
   Trusted     bool      `xorm:"default 0"`
   Privated    bool      `xorm:"default 0"`
