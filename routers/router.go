@@ -11,7 +11,11 @@ func init() {
 
 	beego.Router("/_ping", &controllers.PingController{}, "get:GetPing")
 
+	//Static File
+	beego.Router("/favicon.ico", &controllers.StaticController{}, "get:GetFavicon")
+
 	ns := beego.NewNamespace("/v1",
+
 		beego.NSRouter("/_ping", &controllers.PingController{}, "get:GetPing"),
 
 		beego.NSRouter("/_status", &controllers.StatusController{}),
