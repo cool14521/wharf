@@ -19,66 +19,66 @@ Docker Registry & Login
 package controllers
 
 import (
-  "github.com/astaxie/beego"
-  "github.com/dockboard/docker-registry/models"
-  "github.com/dockboard/docker-registry/utils"
+	"github.com/astaxie/beego"
+	"github.com/dockboard/docker-registry/models"
+	"github.com/dockboard/docker-registry/utils"
 )
 
 type UsersController struct {
-  beego.Controller
+	beego.Controller
 }
 
 func (this *UsersController) Prepare() {
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", beego.AppConfig.String("docker::Standalone"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", beego.AppConfig.String("docker::Standalone"))
 }
 
 func (this *UsersController) PostUsers() {
 
-  beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
+	beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
 
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-  this.Ctx.Output.Context.Output.SetStatus(401)
-  this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are limited beta testing now. Please contact Meaglith Ma <genedna@gmail.com> for beta account.\"}"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.Output.SetStatus(401)
+	this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are limited beta testing now. Please contact Meaglith Ma <genedna@gmail.com> for beta account.\"}"))
 }
 
 func (this *UsersController) GetUsers() {
 
-  beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
+	beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
 
-  username, password, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-  if err != nil {
-    this.Ctx.Output.Context.Output.SetStatus(401) //根据 Specification ，解码 Basic Authorization 数据失败也认为是 401 错误。
-    this.Ctx.Output.Body([]byte("\"Unauthorized\""))
-    this.StopRun()
-  }
+	username, password, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
+	if err != nil {
+		this.Ctx.Output.Context.Output.SetStatus(401) //根据 Specification ，解码 Basic Authorization 数据失败也认为是 401 错误。
+		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+		this.StopRun()
+	}
 
-  beego.Trace("[Username & Password] " + username + " -> " + password)
+	beego.Trace("[Username & Password] " + username + " -> " + password)
 
-  var has bool
-  user := &models.User{Username: username, Password: password}
-  has, err = models.Engine.Get(user)
+	var has bool
+	user := &models.User{Username: username, Password: password}
+	has, err = models.Engine.Get(user)
 
-  if err != nil {
-    this.Ctx.Output.Context.Output.SetStatus(401)
-    this.Ctx.Output.Body([]byte("\"Unauthorized\""))
-    this.StopRun()
-  }
+	if err != nil {
+		this.Ctx.Output.Context.Output.SetStatus(401)
+		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+		this.StopRun()
+	}
 
-  if has == false {
-    this.Ctx.Output.Context.Output.SetStatus(404)
-    this.Ctx.Output.Body([]byte("\"No User\""))
-    this.StopRun()
-  }
+	if has == false {
+		this.Ctx.Output.Context.Output.SetStatus(404)
+		this.Ctx.Output.Body([]byte("{\"error\":\"No User\"}"))
+		this.StopRun()
+	}
 
-  if user.Actived == false {
-    this.Ctx.Output.Context.Output.SetStatus(401)
-    this.Ctx.Output.Body([]byte("\"Actived First!\""))
-    this.StopRun()
-  }
+	if user.Actived == false {
+		this.Ctx.Output.Context.Output.SetStatus(401)
+		this.Ctx.Output.Body([]byte("{\"error\":\"Actived First!\"}"))
+		this.StopRun()
+	}
 
-  this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-  this.Ctx.Output.Context.Output.SetStatus(200)
-  this.Ctx.Output.Context.Output.Body([]byte("{\"OK\"}"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.Output.SetStatus(200)
+	this.Ctx.Output.Context.Output.Body([]byte("{\"OK\"}"))
 }

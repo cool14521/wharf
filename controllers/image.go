@@ -57,7 +57,7 @@ func (this *ImageController) Prepare() {
 
 		if has == false || user.Actived == false {
 			this.Ctx.Output.Context.Output.SetStatus(403)
-			this.Ctx.Output.Context.Output.Body([]byte("User is not exist or not actived."))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
 			this.StopRun()
 		}
 
@@ -82,13 +82,13 @@ func (this *ImageController) Prepare() {
 
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(401)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Unauthorized\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
 			this.StopRun()
 		}
 
 		if has == false || user.Actived == false {
 			this.Ctx.Output.Context.Output.SetStatus(403)
-			this.Ctx.Output.Context.Output.Body([]byte("User is not exist or not actived."))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
 			this.StopRun()
 		}
 
@@ -106,7 +106,7 @@ func (this *ImageController) GetImageJSON() {
 	has, err := models.Engine.Get(image)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Check the image error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Check the image error.\"}"))
 		this.StopRun()
 	}
 
@@ -122,7 +122,7 @@ func (this *ImageController) GetImageJSON() {
 		this.StopRun()
 	} else {
 		this.Ctx.Output.Context.Output.SetStatus(404)
-		this.Ctx.Output.Context.Output.Body([]byte("\"No image json.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"No image json.\"}"))
 		this.StopRun()
 	}
 }
@@ -138,7 +138,7 @@ func (this *ImageController) PutImageJson() {
 	has, err := models.Engine.Get(image)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"Select image record error.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Select image record error.\"}"))
 		this.StopRun()
 	}
 
@@ -149,14 +149,14 @@ func (this *ImageController) PutImageJson() {
 		_, err = models.Engine.Id(image.Id).Cols("JSON").Update(image)
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Update the image JSON data error.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the image JSON data error.\"}"))
 			this.StopRun()
 		}
 	} else {
 		_, err = models.Engine.Insert(image)
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Create the image record error.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Create the image record error.\"}"))
 			this.StopRun()
 		}
 	}
@@ -174,8 +174,8 @@ func (this *ImageController) PutImageLayer() {
 	image := &models.Image{ImageId: imageId}
 	has, err := models.Engine.Get(image)
 	if has == false || err != nil {
-		this.Ctx.Output.Context.Output.Body([]byte("\"Image not found\""))
 		this.Ctx.Output.Context.Output.SetStatus(404)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Image not found.\"}"))
 		this.StopRun()
 	}
 
@@ -201,7 +201,7 @@ func (this *ImageController) PutImageLayer() {
 	err = ioutil.WriteFile(layerfile, data, 0777)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Write image error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Write image error.\"}"))
 		this.StopRun()
 	}
 
@@ -243,13 +243,13 @@ func (this *ImageController) PutChecksum() {
 	has, err := models.Engine.Get(image)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(404)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"Image search error.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Image search error.\"}"))
 		this.StopRun()
 	}
 
 	if has == false {
 		this.Ctx.Output.Context.Output.SetStatus(404)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"Image not found\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Image not found.\"}"))
 		this.StopRun()
 	}
 
@@ -258,7 +258,7 @@ func (this *ImageController) PutChecksum() {
 	_, err = models.Engine.Id(image.Id).Cols("CheckSumed").Update(image)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"Update the image checksum error.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the image checksum error.\"}"))
 		this.StopRun()
 	}
 
@@ -268,7 +268,7 @@ func (this *ImageController) PutChecksum() {
 	var imageJSON map[string]interface{}
 	if err := json.Unmarshal([]byte(image.JSON), &imageJSON); err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"Decode the image json data encouter error.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Decode the image json data encouter error.\"}"))
 		this.StopRun()
 	}
 
@@ -280,14 +280,14 @@ func (this *ImageController) PutChecksum() {
 		has, err := models.Engine.Get(parentImage)
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Check the parent image error.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Check the parent image error.\"}"))
 			this.StopRun()
 		}
 
 		if has {
 			if err := json.Unmarshal([]byte(parentImage.ParentJSON), &parents); err != nil {
 				this.Ctx.Output.Context.Output.SetStatus(400)
-				this.Ctx.Output.Context.Output.Body([]byte("\"Decode the parent image json data encouter error.\""))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Decode the parent image json data encouter error.\"}"))
 				this.StopRun()
 			}
 		}
@@ -308,7 +308,7 @@ func (this *ImageController) PutChecksum() {
 	_, err = models.Engine.Id(image.Id).Update(image)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("{ error: \"Update the image checksum error.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the image checksum error.\"}"))
 		this.StopRun()
 	}
 
@@ -330,7 +330,7 @@ func (this *ImageController) GetImageAncestry() {
 	has, err := models.Engine.Get(image)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Check the image error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Check the image error.\"}"))
 		this.StopRun()
 	}
 
@@ -350,13 +350,14 @@ func (this *ImageController) GetImageLayer() {
 	has, err := models.Engine.Get(image)
 	if has == false || err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Check the image error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Check the image error.\"}"))
 		this.StopRun()
 	}
 
 	if has == false {
 		this.Ctx.Output.Context.Output.SetStatus(404)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Could not find image record.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Could not find image record.\"}"))
+		this.StopRun()
 	} else {
 		//处理 Layer 文件保存的目录
 		basePath := beego.AppConfig.String("docker::BasePath")
@@ -364,13 +365,15 @@ func (this *ImageController) GetImageLayer() {
 
 		if _, err := os.Stat(layerfile); err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(404)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Could not find image file.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Could not find image file.\"}"))
+			this.StopRun()
 		}
 
 		file, err := ioutil.ReadFile(layerfile)
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Load layer file error.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Load layer file error.\"}"))
+			this.StopRun()
 		}
 
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/octet-stream")

@@ -73,13 +73,13 @@ func (this *RepositoryController) Prepare() {
 
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(401)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"Unauthorized\"}"))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
 			this.StopRun()
 		}
 
 		if has == false || user.Actived == false {
 			this.Ctx.Output.Context.Output.SetStatus(403)
-			this.Ctx.Output.Context.Output.Body([]byte("User is not exist or not actived."))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
 			this.StopRun()
 		}
 
@@ -101,13 +101,13 @@ func (this *RepositoryController) Prepare() {
 
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(401)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Unauthorized\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
 			this.StopRun()
 		}
 
 		if has == false || user.Actived == false {
 			this.Ctx.Output.Context.Output.SetStatus(403)
-			this.Ctx.Output.Context.Output.Body([]byte("User is not exist or not actived."))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
 			this.StopRun()
 		}
 
@@ -128,7 +128,7 @@ func (this *RepositoryController) PutRepository() {
 	//判断用户的username和namespace是否相同
 	if user.Username != namespace {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"username != namespace\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"username != namespace.\"}"))
 		this.StopRun()
 	}
 
@@ -149,7 +149,7 @@ func (this *RepositoryController) PutRepository() {
 	if err != nil {
 		beego.Trace(err)
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Update token error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update token error.\"}"))
 		this.StopRun()
 	}
 
@@ -161,7 +161,7 @@ func (this *RepositoryController) PutRepository() {
 	has, err := models.Engine.Get(repo)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Search repository error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search repository error.\"}"))
 		this.StopRun()
 	}
 
@@ -175,7 +175,7 @@ func (this *RepositoryController) PutRepository() {
 			beego.Trace("[Update Repository Error] " + namespace + "/" + repository)
 
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Update the repository JSON data error.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the repository JSON data error.\"}"))
 			this.StopRun()
 		}
 
@@ -185,7 +185,7 @@ func (this *RepositoryController) PutRepository() {
 		_, err := models.Engine.Insert(repo)
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Create the repository record error: \"" + err.Error()))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Create the repository record error: \" + err.Error()}"))
 			this.StopRun()
 		}
 		beego.Trace("[Insert Repository] " + namespace + "/" + repository)
@@ -215,7 +215,7 @@ func (this *RepositoryController) PutTag() {
 
 	if has == false || err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Unknow namespace and repository.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unknow namespace and repository.\"}"))
 		this.StopRun()
 	}
 
@@ -223,7 +223,7 @@ func (this *RepositoryController) PutTag() {
 	has, err = models.Engine.Get(tag)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Search tag encounter error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search tag encounter error.\"}"))
 		this.StopRun()
 	}
 
@@ -238,14 +238,14 @@ func (this *RepositoryController) PutTag() {
 		_, err := models.Engine.Id(tag.Id).Update(tag)
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Update the tag data error.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the tag data error.\"}"))
 			this.StopRun()
 		}
 	} else {
 		_, err := models.Engine.Insert(tag)
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Create the tag record error.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Create the tag record error.\"}"))
 			this.StopRun()
 		}
 	}
@@ -271,7 +271,7 @@ func (this *RepositoryController) PutRepositoryImages() {
 	has, err := models.Engine.Get(repo)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Search repository error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search repository error.\"}"))
 		this.StopRun()
 	}
 
@@ -279,7 +279,7 @@ func (this *RepositoryController) PutRepositoryImages() {
 
 	if has == false {
 		this.Ctx.Output.Context.Output.SetStatus(404)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Cloud not found repository.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Cloud not found repository.\"}"))
 		this.StopRun()
 	} else {
 		//检查 Repository 的所有 Image Layer 是否都上传完成。
@@ -294,13 +294,13 @@ func (this *RepositoryController) PutRepositoryImages() {
 			has, err := models.Engine.Get(image)
 			if err != nil {
 				this.Ctx.Output.Context.Output.SetStatus(400)
-				this.Ctx.Output.Context.Output.Body([]byte("\"Search image error.\""))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search image error.\"}"))
 				this.StopRun()
 			}
 
 			if has == false {
 				this.Ctx.Output.Context.Output.SetStatus(404)
-				this.Ctx.Output.Context.Output.Body([]byte("\"Cloud not found image.\""))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Cloud not found image.\"}"))
 				this.StopRun()
 			} else {
 
@@ -320,13 +320,13 @@ func (this *RepositoryController) PutRepositoryImages() {
 
 		if uploaded == false {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"The image layer upload not complete, please try again.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"The image layer upload not complete, please try again.\"}"))
 			this.StopRun()
 		}
 
 		if checksumed == false {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"The image layer upload checksumed error, please try again.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"The image layer upload checksumed error, please try again.\"}"))
 			this.StopRun()
 		}
 	}
@@ -335,7 +335,7 @@ func (this *RepositoryController) PutRepositoryImages() {
 	_, err = models.Engine.Id(repo.Id).Cols("Uploaded").Update(repo)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Update the repository uploaded flag error, please try again.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the repository uploaded flag error, please try again.\"}"))
 		this.StopRun()
 	}
 
@@ -343,7 +343,7 @@ func (this *RepositoryController) PutRepositoryImages() {
 	_, err = models.Engine.Id(repo.Id).Cols("CheckSumed").Update(repo)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Update the repository checksumed flag error, please try again.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the repository checksumed flag error, please try again.\"}"))
 		this.StopRun()
 	}
 
@@ -351,7 +351,7 @@ func (this *RepositoryController) PutRepositoryImages() {
 	_, err = models.Engine.Id(repo.Id).Cols("Size").Update(repo)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Update the repository size error, please try again.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the repository size error, please try again.\"}"))
 		this.StopRun()
 	}
 
@@ -376,13 +376,13 @@ func (this *RepositoryController) GetRepositoryImages() {
 	has, err := models.Engine.Get(repo)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Search repository error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search repository error.\"}"))
 		this.StopRun()
 	}
 
 	if has == false {
 		this.Ctx.Output.Context.Output.SetStatus(404)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Cloud not found repository.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Cloud not found repository.\"}"))
 		this.StopRun()
 	} else {
 
@@ -394,13 +394,13 @@ func (this *RepositoryController) GetRepositoryImages() {
 
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Search repository tag error.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search repository tag error.\"}"))
 			this.StopRun()
 		}
 
 		if len(tags) == 0 {
 			this.Ctx.Output.Context.Output.SetStatus(404)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Cloud not found any tag.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Cloud not found any tag.\"}"))
 			this.StopRun()
 		}
 
@@ -412,7 +412,7 @@ func (this *RepositoryController) GetRepositoryImages() {
 
 			if has == false || err != nil {
 				this.Ctx.Output.Context.Output.SetStatus(400)
-				this.Ctx.Output.Context.Output.Body([]byte("\"Search image error.\""))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search image error.\"}"))
 				this.StopRun()
 			}
 
@@ -423,7 +423,7 @@ func (this *RepositoryController) GetRepositoryImages() {
 
 				if err := json.Unmarshal([]byte(image.ParentJSON), &parents); err != nil {
 					this.Ctx.Output.Context.Output.SetStatus(400)
-					this.Ctx.Output.Context.Output.Body([]byte("\"Decode the parent image json data encouter error.\""))
+					this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Decode the parent image json data encouter error.\"}"))
 					this.StopRun()
 				}
 				images = append(parents, images...)
@@ -468,14 +468,14 @@ func (this *RepositoryController) GetRepositoryTags() {
 	has, err := models.Engine.Get(repo)
 	if err != nil {
 		this.Ctx.Output.Context.Output.SetStatus(400)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Search repository error.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search repository error.\"}"))
 		this.StopRun()
 	}
 
 	if has == false {
 
 		this.Ctx.Output.Context.Output.SetStatus(404)
-		this.Ctx.Output.Context.Output.Body([]byte("\"Cloud not found repository.\""))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Cloud not found repository.\"}"))
 		this.StopRun()
 
 	} else {
@@ -488,13 +488,13 @@ func (this *RepositoryController) GetRepositoryTags() {
 
 		if err != nil {
 			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Search repository tag error.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search repository tag error.\"}"))
 			this.StopRun()
 		}
 
 		if len(tags) == 0 {
 			this.Ctx.Output.Context.Output.SetStatus(404)
-			this.Ctx.Output.Context.Output.Body([]byte("\"Cloud not found any tag.\""))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Cloud not found any tag.\"}"))
 			this.StopRun()
 		}
 
