@@ -12,5 +12,12 @@ func (this *MainController) Prepare() {
 }
 
 func (this *MainController) Get() {
-	this.Ctx.Output.Body([]byte("Docker Registry"))
+	this.Layout = "default.html"
+	this.TplNames = "index.html"
+	this.LayoutSections = make(map[string]string)
+	this.LayoutSections["Head"] = "index/head.html"
+	this.LayoutSections["Header"] = "header.html"
+	this.LayoutSections["Footer"] = "footer.html"
+	this.Data["Title"] = "Hub"
+	this.Render()
 }
