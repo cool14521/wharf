@@ -1,13 +1,13 @@
-docker-registry
+docker-hub
 ===============
 
-The dockboard's [docker-registry](https://github.com/dockboard/docker-registry) is a [Golang](http://golang.org) version what clone offical [docker-registry](https://github.com/dotcloud/docker-registry), and we add user manage, UI and more features. We will add more backend storage services support like [Qiniu](http://qiniu.com), [Aliyun OSS](http://www.aliyun.com/product/oss), [Baidu Storage](http://developer.baidu.com/cloud/stor), [Tencent COS](http://www.qcloud.com/product/product.php?item=cos) and [OpenStack Swift](http://docs.openstack.org/developer/swift).
+The dockercn's [docker-hub](https://github.com/dockercn/docker-hub) is a [Golang](http://golang.org) version what clone offical [docker-registry](https://github.com/docker/docker-registry), and we add user manage, UI and more features. We will add more backend storage services support like [Qiniu](http://qiniu.com), [Aliyun OSS](http://www.aliyun.com/product/oss), [Baidu Storage](http://developer.baidu.com/cloud/stor), [Tencent COS](http://www.qcloud.com/product/product.php?item=cos) and [OpenStack Swift](http://docs.openstack.org/developer/swift).
 
 
-What's Registry?
+What's hub?
 ================
 
-A Registry is a hosted service containing [repositories](http://docs.docker.io/en/latest/terms/repository/#repository-def) of [images](http://docs.docker.io/en/latest/terms/image/#image-def) which responds to the Registry API.
+A hub is a hosted service containing [repositories](http://docs.docker.io/en/latest/terms/repository/#repository-def) of [images](http://docs.docker.io/en/latest/terms/image/#image-def) which responds to the Registry API.
 
 
 What's FQIN?
@@ -63,27 +63,27 @@ Nginx Conf
 ==========
 
 ```
-upstream index_upstream {
+upstream hub_upstream {
   server 127.0.0.1:9911;
 }
 
 server {
   listen 80;
-  server_name index.dockboard.org;
-  rewrite  ^/(.*)$  https://index.dockboard.org/$1  permanent;
+  server_name xxx.org;
+  rewrite  ^/(.*)$  https://xxx.org/$1  permanent;
 }
 
 server {
   listen 443;
 
-  server_name index.dockboard.org;
+  server_name xxx.org;
 
-  access_log /var/log/nginx/index-dockboard.log;
-  error_log /var/log/nginx/index-dockboard-error.log;
+  access_log /var/log/nginx/xxx.log;
+  error_log /var/log/nginx/xxx-errror.log;
 
   ssl on;
-  ssl_certificate /etc/nginx/ssl/index.dockboard/ssl-bundle.crt;
-  ssl_certificate_key /etc/nginx/ssl/index.dockboard/index_dockboard.key;
+  ssl_certificate /etc/nginx/ssl/xxx/x.crt;
+  ssl_certificate_key /etc/nginx/ssl/xxx/x.key;
 
   client_max_body_size 1024m;
   chunked_transfer_encoding on;
@@ -98,7 +98,7 @@ server {
   proxy_http_version 1.1;
 
   location / {
-    proxy_pass         http://index_upstream;
+    proxy_pass         http://hub_upstream;
   }
 }
 ```
