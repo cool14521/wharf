@@ -1,13 +1,13 @@
-docker-hub
+docker-bucket
 ===============
 
-The dockercn's [docker-hub](https://github.com/dockercn/docker-hub) is a [Golang](http://golang.org) version what clone offical [docker-registry](https://github.com/docker/docker-registry), and we add user manage, UI and more features. We will add more backend storage services support like [Qiniu](http://qiniu.com), [Aliyun OSS](http://www.aliyun.com/product/oss), [Baidu Storage](http://developer.baidu.com/cloud/stor), [Tencent COS](http://www.qcloud.com/product/product.php?item=cos) and [OpenStack Swift](http://docs.openstack.org/developer/swift).
+The dockercn's [docker-bucket](https://github.com/dockercn/docker-hub) is a [Golang](http://golang.org) version what clone and beyond official [docker-registry](https://github.com/docker/docker-registry), and we add user manage, UI and more features. We will add more backend storage services support like [Qiniu](http://qiniu.com), [Aliyun OSS](http://www.aliyun.com/product/oss), [Baidu Storage](http://developer.baidu.com/cloud/stor), [Tencent COS](http://www.qcloud.com/product/product.php?item=cos) and [OpenStack Swift](http://docs.openstack.org/developer/swift).
 
 
-What's hub?
+What's Bucket?
 ================
 
-A hub is a hosted service containing [repositories](http://docs.docker.io/en/latest/terms/repository/#repository-def) of [images](http://docs.docker.io/en/latest/terms/image/#image-def) which responds to the Registry API.
+A bucket is a hosted service containing [repositories](http://docs.docker.io/en/latest/terms/repository/#repository-def) of [images](http://docs.docker.io/en/latest/terms/image/#image-def) which responds to the Registry API.
 
 
 What's FQIN?
