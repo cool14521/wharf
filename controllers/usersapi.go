@@ -18,7 +18,14 @@ Docker Registry & Login
 */
 package controllers
 
-import "github.com/astaxie/beego"
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/astaxie/beego"
+	"github.com/dockerclouds/docker-hub/models"
+	"github.com/dockerclouds/docker-hub/utils"
+)
 
 type UsersAPIController struct {
 	beego.Controller
@@ -33,12 +40,46 @@ func (this *UsersAPIController) Prepare() {
 func (this *UsersAPIController) PostUsers() {
 
 	beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
-
+	//TODO 检查配置文件是否可以在命令行注册的设置进行不同的处理。
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	this.Ctx.Output.Context.Output.SetStatus(401)
-	this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are limited beta testing now. Please contact Meaglith Ma <genedna@gmail.com> for beta account.\"}"))
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+	this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are not support create a account from cli.\"}"))
 }
 
 func (this *UsersAPIController) GetUsers() {
 
+	username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
+	if err != nil {
+		beego.Error("[Decode Authoriztion Header] " + this.Ctx.Input.Header("Authorization") + " " + " error: " + err.Error())
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized) //根据 Specification ，解码 Basic Authorization 数据失败也认为是 401 错误。
+		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+		this.StopRun()
+	}
+
+	beego.Trace("username: " + username)
+	beego.Trace("password: " + passwd)
+
+	user := new(models.User)
+	has, err := user.Get(username, passwd, true)
+
+	if err != nil {
+		//查询用户数据失败，返回 401 错误
+		beego.Error("[Search User] " + username + " " + passwd + " has error: " + err.Error())
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+		this.StopRun()
+	}
+
+	if has == false {
+		//没有查询到用户数据
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
+		this.StopRun()
+	}
+
+	user.History(0, user.Id, fmt.Sprintf("%s %s %s", models.FROM_CLI, models.ACTION_SIGNIN, this.Ctx.Input.Header("X-Real-IP")))
+
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.Output.Body([]byte("{\"OK\"}"))
 }
