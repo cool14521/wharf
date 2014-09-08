@@ -31,7 +31,7 @@ In Docker terminology, a read-only [Layer](http://docs.docker.io/en/latest/terms
 How to build?
 =============
 
-The project build with [gopm](https://github.com/gpmgo/gopm). 
+The project build with [gopm](https://github.com/gpmgo/gopm).
 
 Install [gopm](https://github.com/gpmgo/gopm)
 
@@ -42,21 +42,7 @@ go get -u github.com/gpmgo/gopm
 Build commands:
 
 ```
-gopm build 
-```
-
-How to Deploy?
-==============
-
-How to Initlization MySQL Database?
-===================================
-
-```
-INSERT INTO mysql.user(Host,User,Password) VALUES ('localhost', 'docker', password('docker'));
-FLUSH PRIVILEGES;
-CREATE DATABASE `registry` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
-GRANT ALL PRIVILEGES ON registry.* TO docker@localhost IDENTIFIED BY 'docker';
-FLUSH PRIVILEGES;
+gopm build
 ```
 
 Nginx Conf
