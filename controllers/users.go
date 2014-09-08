@@ -18,11 +18,7 @@ Docker Registry & Login
 */
 package controllers
 
-import (
-	"github.com/astaxie/beego"
-	"github.com/dockercn/docker-bucket/models"
-	"github.com/dockercn/docker-bucket/utils"
-)
+import "github.com/astaxie/beego"
 
 type UsersController struct {
 	beego.Controller
@@ -45,40 +41,4 @@ func (this *UsersController) PostUsers() {
 
 func (this *UsersController) GetUsers() {
 
-	beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
-
-	username, password, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-	if err != nil {
-		this.Ctx.Output.Context.Output.SetStatus(401) //根据 Specification ，解码 Basic Authorization 数据失败也认为是 401 错误。
-		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
-		this.StopRun()
-	}
-
-	beego.Trace("[Username & Password] " + username + " -> " + password)
-
-	var has bool
-	user := &models.User{Username: username, Password: password}
-	has, err = models.Engine.Get(user)
-
-	if err != nil {
-		this.Ctx.Output.Context.Output.SetStatus(401)
-		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
-		this.StopRun()
-	}
-
-	if has == false {
-		this.Ctx.Output.Context.Output.SetStatus(404)
-		this.Ctx.Output.Body([]byte("{\"error\":\"No User\"}"))
-		this.StopRun()
-	}
-
-	if user.Actived == false {
-		this.Ctx.Output.Context.Output.SetStatus(401)
-		this.Ctx.Output.Body([]byte("{\"error\":\"Actived First!\"}"))
-		this.StopRun()
-	}
-
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	this.Ctx.Output.Context.Output.SetStatus(200)
-	this.Ctx.Output.Context.Output.Body([]byte("{\"OK\"}"))
 }
