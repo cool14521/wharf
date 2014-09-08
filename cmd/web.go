@@ -7,9 +7,9 @@ import (
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/codegangsta/cli"
-	"github.com/dockboard/docker-registry/backup"
-	"github.com/dockboard/docker-registry/models"
-	_ "github.com/dockboard/docker-registry/routers"
+	"github.com/dockercn/docker-bucket/backup"
+	"github.com/dockercn/docker-bucket/models"
+	_ "github.com/dockercn/docker-bucket/routers"
 	. "github.com/qiniu/api/conf"
 )
 
@@ -19,10 +19,26 @@ var CmdWeb = cli.Command{
 	Description: "Docker web service provide Docker Registry API service and web view for search & comment",
 	Action:      runRegistry,
 	Flags: []cli.Flag{
-		cli.StringFlag{"address", "", "docker registry listen ip"},
-		cli.IntFlag{"port", 9911, "docker registry listen port"},
-		cli.StringFlag{"qiniu_access", "", "Qiniu.com's access key for backup docker image layer file."},
-		cli.StringFlag{"qiniu_secret", "", "Qiniu.com's secret key for backup docker image layer file."},
+		cli.StringFlag{
+			Name:  "address",
+			Value: "127.0.0.1",
+			Usage: "Web 服务监听的 IP，默认 127.0.0.1",
+		},
+		cli.IntFlag{
+			Name:  "port",
+			Value: 9911,
+			Usage: "Web 服务坚挺的端口，默认 9911",
+		},
+		cli.StringFlag{
+			Name:  "qiniu_access",
+			Value: "",
+			Usage: "七牛云存储服务 Access Key",
+		},
+		cli.StringFlag{
+			Name:  "qiniu_secret",
+			Value: "",
+			Usage: "七牛云存储服务 Secret Key",
+		},
 	},
 }
 
