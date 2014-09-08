@@ -27,11 +27,11 @@ package controllers
 
 import "github.com/astaxie/beego"
 
-type RepositoryController struct {
+type RepositoryAPIController struct {
 	beego.Controller
 }
 
-func (r *RepositoryController) URLMapping() {
+func (r *RepositoryAPIController) URLMapping() {
 	r.Mapping("PutTag", r.PutTag)
 	r.Mapping("PutRepositoryImages", r.PutRepositoryImages)
 	r.Mapping("GetRepositoryImages", r.GetRepositoryImages)
@@ -39,27 +39,27 @@ func (r *RepositoryController) URLMapping() {
 	r.Mapping("PutRepository", r.PutRepository)
 }
 
-func (this *RepositoryController) Prepare() {
+func (this *RepositoryAPIController) Prepare() {
 
 }
 
-func (this *RepositoryController) PutRepository() {
+func (this *RepositoryAPIController) PutRepository() {
 
 }
 
-func (this *RepositoryController) PutTag() {
+func (this *RepositoryAPIController) PutTag() {
 
 }
 
 //根据最初上传的 Image 数据和每个 Image 的上传信息确定是否上传成功
-func (this *RepositoryController) PutRepositoryImages() {
+func (this *RepositoryAPIController) PutRepositoryImages() {
 
 }
 
-func (this *RepositoryController) GetRepositoryImages() {
+func (this *RepositoryAPIController) GetRepositoryImages() {
 
 }
 
-func (this *RepositoryController) GetRepositoryTags() {
+func (this *RepositoryAPIController) GetRepositoryTags() {
 
 }

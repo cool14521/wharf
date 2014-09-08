@@ -20,17 +20,17 @@ package controllers
 
 import "github.com/astaxie/beego"
 
-type UsersController struct {
+type UsersAPIController struct {
 	beego.Controller
 }
 
-func (this *UsersController) Prepare() {
+func (this *UsersAPIController) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", beego.AppConfig.String("docker::Standalone"))
 }
 
-func (this *UsersController) PostUsers() {
+func (this *UsersAPIController) PostUsers() {
 
 	beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
 
@@ -39,6 +39,6 @@ func (this *UsersController) PostUsers() {
 	this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are limited beta testing now. Please contact Meaglith Ma <genedna@gmail.com> for beta account.\"}"))
 }
 
-func (this *UsersController) GetUsers() {
+func (this *UsersAPIController) GetUsers() {
 
 }
