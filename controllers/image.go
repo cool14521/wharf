@@ -9,9 +9,9 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego"
-	"github.com/dockboard/docker-registry/backup"
-	"github.com/dockboard/docker-registry/models"
-	"github.com/dockboard/docker-registry/utils"
+	"github.com/dockercn/docker-bucket/backup"
+	"github.com/dockercn/docker-bucket/models"
+	"github.com/dockercn/docker-bucket/utils"
 )
 
 type ImageController struct {
