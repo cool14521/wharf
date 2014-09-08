@@ -1,62 +1,64 @@
 package models
 
 import (
-  "time"
+	"time"
+)
+
+const (
+	FROM_CLI = "cli"
+	FROM_WEB = "web"
+)
+
+const (
+	PUBLIC  = "public"
+	PRIVATE = "private"
+)
+
+const (
+	ACTION_SIGNIN         = "signin"
+	ACTION_SINGOUT        = "signout"
+	ACTION_UPDATE_PROFILE = "update_profile"
+	ACTION_ADD_REPO       = "add_repository"
+	ACTION_UPDATE_REPO    = "update_repository"
+	ACTION_DEL_REPO       = "del_repository"
+	ACTION_ADD_COMMENT    = "add_comment"
+	ACTION_DEL_COMMENT    = "del_comment"
+	ACTION_ADD_ORG        = "add_org"
+	ACTION_DEL_ORG        = "del_org"
+	ACTION_ADD_MEMBER     = "add_member"
+	ACTION_DEL_MEMBER     = "del_member"
+	ACTION_ADD_STAR       = "add_star"
+	ACTION_DEL_STAR       = "del_star"
 )
 
 type User struct {
-  Id       int64
-  Username string `xorm:"unique not null"`
-  Password string
-  Email    string    `xorm:"unique not null"`
-  Token    string    `xorm:"unique"`
-  Quota    int64     `xorm:"default 1000"`
-  Size     int64     `xorm:"default 10240"`
-  Actived  bool      `xorm:"default false"`
-  Created  time.Time `xorm:"created"`
-  Updated  time.Time `xorm:"updated"`
-  Version  int       `xorm:"version"`
-}
-
-type Profile struct {
-  Id       string
-  UserId   int64 `xorm:"unique not null 'user_id'"`
-  Fullname string
-  Company  string
-  Location string
-  URL      string `xorm:"text 'url'"`
-  Gravatar string
-  Created  time.Time `xorm:"created"`
-  Updated  time.Time `xorm:"updated"`
-  Version  int       `xorm:"version"`
+	Username string    //
+	Password string    //
+	Email    string    //Email 可以更换，全局唯一
+	Quota    int64     //可以创建 Repository 的数量
+	Size     int64     //所有 Repository 存储总和，单位 G
+	Fullname string    //
+	Company  string    //
+	Location string    //
+	Mobile   string    //
+	URL      string    //
+	Gravatar string    //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
+	Actived  bool      //默认创建的用户是不激活
+	Created  time.Time //
+	Updated  time.Time //
+	Log      string    //
 }
 
 type Organization struct {
-  Id      int64
-  Name    string `xorm:"unique not null"`
-  Email   string
-  Quota   int64     `xorm:"default 200"`
-  Size    int64     `xorm:"default 4096"`
-  Actived bool      `xorm:"default 0"`
-  Created time.Time `xorm:"created"`
-  Updated time.Time `xorm:"updated"`
-  Version int       `xorm:"version"`
+	Owner   string    //用户的 ID，每个组织都由用户创建，Owner 默认是拥有所有 Repository 的读写权限
+	Name    string    //
+	Email   string    //未来的 Billing 邮件地址
+	Quota   int64     //可以创建 Repository 的数量
+	Size    int64     //所有 Repository 存储总和，单位 G
+	Actived bool      //组织创建后就是默认激活的
+	Created time.Time //
+	Updated time.Time //
+	Log     string    //
 }
 
-type Member struct {
-  Id             int64
-  OrganizationId int64     `xorm:"not null 'organization_id'"`
-  UserId         int64     `xorm:"not null 'user_id'"`
-  Actived        bool      `xorm:"default 0"`
-  Created        time.Time `xorm:"created"`
-  Updated        time.Time `xorm:"updated"`
-  Version        int       `xorm:"version"`
-}
-
-type History struct {
-  Id       int64
-  UserId   int64     `xorm:"not null 'user_id'"`
-  Action   string    `xorm:"not null"`
-  ActionId int64     `xorm:"not null 'action_id'"`
-  Created  time.Time `xorm:"created"`
-}
+//TODO 组织和用户之间的对应关系 struct

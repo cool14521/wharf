@@ -1,22 +1,63 @@
 package models
 
 import (
-  "time"
+	"time"
 )
 
 type Image struct {
-  Id         int64
-  ImageId    string    `xorm:"unique not null"`
-  JSON       string    `xorm:"text 'json'"`
-  ParentJSON string    `xorm:"text 'parent_json'"`
-  Checksum   string    `xorm:"text"`
-  Payload    string    `xorm:"text"`
-  URL        string    `xorm:"text 'url'"`
-  Backup     string    `xorm:"text 'backup'"`
-  Size       int64     `xorm:"default 0"`
-  Uploaded   bool      `xorm:"default 0 'uploaded'"`
-  CheckSumed bool      `xorm:"default 0 'checksumed'"`
-  Created    time.Time `xorm:"created"`
-  Updated    time.Time `xorm:"updated"`
-  Version    int       `xorm:"version"`
+	ImageId    string    //
+	JSON       string    //
+	ParentJSON string    //
+	Checksum   string    //
+	Payload    string    //
+	URL        string    //
+	Location   string    //
+	Size       int64     //
+	Uploaded   bool      //
+	CheckSumed bool      //
+	Privated   bool      //
+	Security   bool      //是否加密
+	Created    time.Time //
+	Updated    time.Time //
+	Log        string    //
+}
+
+func (image *Image) Get(imageId string) (bool, error) {
+	return false, nil
+}
+
+func (image *Image) GetPushed(imageId string, uploaded, checksumed bool) (bool, error) {
+	return false, nil
+}
+
+func (image *Image) UpdateJSON(json string) (bool, error) {
+	return false, nil
+}
+
+func (image *Image) Insert(imageId, json string) (bool, error) {
+	return true, nil
+}
+
+func (image *Image) UpdateChecksum(checksum string) (bool, error) {
+	return true, nil
+}
+
+func (image *Image) UpdatePayload(payload string) (bool, error) {
+	return true, nil
+}
+
+func (image *Image) UpdateSize(size int64) (bool, error) {
+	return true, nil
+}
+
+func (image *Image) UpdateUploaded(uploaded bool) (bool, error) {
+	return true, nil
+}
+
+func (image *Image) UpdateChecksumed(checksumed bool) (bool, error) {
+	return true, nil
+}
+
+func (image *Image) UpdateParentJSON() (bool, error) {
+	return true, nil
 }
