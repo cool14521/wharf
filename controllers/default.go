@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/astaxie/beego"
 )
 
@@ -12,12 +14,7 @@ func (this *MainController) Prepare() {
 }
 
 func (this *MainController) Get() {
-	this.Layout = "default.html"
-	this.TplNames = "index.html"
-	this.LayoutSections = make(map[string]string)
-	this.LayoutSections["Head"] = "index/head.html"
-	this.LayoutSections["Header"] = "header.html"
-	this.LayoutSections["Footer"] = "footer.html"
-	this.Data["Title"] = "Hub"
-	this.Render()
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.Output.Body([]byte("{\"status\":\"OK\"}"))
 }
