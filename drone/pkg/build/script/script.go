@@ -52,6 +52,9 @@ type Build struct {
 	// to identify the build.
 	Name string
 
+	//repo specifies the code repo for this build
+	Repo string
+
 	// Script specifies the build and test commands.
 	Script []string
 
