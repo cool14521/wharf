@@ -33,8 +33,8 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
-	"github.com/dockerclouds/docker-hub/models"
-	"github.com/dockerclouds/docker-hub/utils"
+	"github.com/dockercn/docker-bucket/models"
+	"github.com/dockercn/docker-bucket/utils"
 )
 
 type RepositoryAPIController struct {
