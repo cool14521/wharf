@@ -1,1 +1,4 @@
-
+repo: https://github.com/ztl2004/drone_demo.git
+image: bradrydzewski/go:1.2 
+script:
+  - g++ -o main main.cpp 
