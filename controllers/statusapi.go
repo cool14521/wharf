@@ -9,7 +9,7 @@ type StatusAPIController struct {
 }
 
 func (this *StatusAPIController) Prepare() {
-
+	this.EnableXSRF = false
 }
 
 func (this *StatusAPIController) GET() {

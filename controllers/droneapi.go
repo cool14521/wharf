@@ -11,6 +11,7 @@ type DroneAPIController struct {
 }
 
 func (this *DroneAPIController) Prepare() {
+	this.EnableXSRF = false
 }
 
 func (this *DroneAPIController) PostYAML() {
