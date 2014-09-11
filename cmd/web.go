@@ -19,7 +19,7 @@ var CmdWeb = cli.Command{
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "address",
-			Value: "127.0.0.1",
+			Value: "0.0.0.0",
 			Usage: "Web 服务监听的 IP，默认 127.0.0.1",
 		},
 		cli.IntFlag{
