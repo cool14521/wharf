@@ -1,10 +1,10 @@
 repo: https://github.com/ztl2004/drone_demo.git
 image: bradrydzewski/go:1.2 
-script:
-  - mysql -u root -e 'create database test;'
-  - start redis
-  - sleep 10
-  - g++ -o main main.cpp 
 services:
   - bradrydzewski/redis:2.6
   - bradrydzewski/mysql:5.5
+script:
+  - mysql -u root -h127.0.0.1 -P 3306 -e 'create database rails_app_test;'
+  - start redis
+  - sleep 10
+  - g++ -o main main.cpp 
