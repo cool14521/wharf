@@ -50,8 +50,8 @@ func (this *ImageAPIController) Prepare() {
 			//Decode Basic Auth 进行用户的判断
 			username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
 
-			beego.Trace("username: " + username)
-			beego.Trace("password: " + passwd)
+			beego.Debug("username: " + username)
+			beego.Debug("password: " + passwd)
 
 			if err != nil {
 				beego.Error("[Decode Authoriztion Header] " + this.Ctx.Input.Header("Authorization") + " " + " error: " + err.Error())
@@ -249,9 +249,9 @@ func (this *ImageAPIController) PutChecksum() {
 
 	if this.GetSession("access") == "write" {
 
-		beego.Trace("Cookie: " + this.Ctx.Input.Header("Cookie"))
-		beego.Trace("X-Docker-Checksum: " + this.Ctx.Input.Header("X-Docker-Checksum"))
-		beego.Trace("X-Docker-Checksum-Payload: " + this.Ctx.Input.Header("X-Docker-Checksum-Payload"))
+		beego.Debug("Cookie: " + this.Ctx.Input.Header("Cookie"))
+		beego.Debug("X-Docker-Checksum: " + this.Ctx.Input.Header("X-Docker-Checksum"))
+		beego.Debug("X-Docker-Checksum-Payload: " + this.Ctx.Input.Header("X-Docker-Checksum-Payload"))
 
 		//将 checksum 的值保存到数据库
 

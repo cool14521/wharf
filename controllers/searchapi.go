@@ -9,7 +9,7 @@ type SearchAPIController struct {
 }
 
 func (this *SearchAPIController) Prepare() {
-
+	this.EnableXSRF = false
 }
 
 func (this *SearchAPIController) GET() {
