@@ -6,9 +6,26 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
+
+func ToString(args ...interface{}) string {
+	result := ""
+
+	for _, arg := range args {
+		switch val := arg.(type) {
+		case int:
+			result += strconv.Itoa(val)
+		case int64:
+			result += strconv.FormatInt(val, 10)
+		case string:
+			result += val
+		}
+	}
+	return result
+}
 
 func SendActiveEmail(code string, email string, host string, port int, user string, password string) error {
 	return nil
