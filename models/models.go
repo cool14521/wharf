@@ -17,7 +17,7 @@ var (
 func InitDb() {
 	initLedisFunc := func() {
 		cfg := new(config.Config)
-
+		//cfg.DBName = "docker"
 		cfg.DataDir = beego.AppConfig.String("ledisdb::DataDir")
 
 		var err error

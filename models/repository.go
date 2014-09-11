@@ -1,6 +1,8 @@
 package models
 
 import (
+	"github.com/dockercn/docker-bucket/utils"
+	"strconv"
 	"time"
 )
 
@@ -40,6 +42,7 @@ type Template struct {
 }
 
 type Repository struct {
+	Id           int64
 	Namespace    string    //即用户名或 Organization 的 Name
 	Repository   string    //仓库名
 	Organization string    //如果是 Organization ，存 Organization 的 ID
@@ -71,16 +74,65 @@ type Tag struct {
 	Log        string    //
 }
 
-func (repo *Repository) Get(namespace string, repository string) (bool, error) {
-	return false, nil
+func (repo *Repository) Get(namespace string, repository string, namespaceType string) (bool, error) {
+	if namespaceType == "Organization" {
+		info, err := LedisDB.HGet([]byte(utils.ToString("#", namespace, "$", repository)), []byte("JSON"))
+		if err != nil {
+			return false, err
+		} else if len(info) <= 0 {
+			return false, nil
+		} else {
+			return true, nil
+		}
+	} else {
+		info, err := LedisDB.HGet([]byte(utils.ToString("@", namespace, "$", repository)), []byte("JSON"))
+		if err != nil {
+			return false, err
+		} else if len(info) <= 0 {
+			return false, nil
+		} else {
+			return true, nil
+		}
+	}
 }
 
 func (repo *Repository) GetPushed(namespace string, repository string, uploaded bool, checksumed bool) (bool, error) {
 	return false, nil
 }
 
-func (repo *Repository) UpdateJSON(id int64, json string) (bool, error) {
-	return false, nil
+//通用方法更新Repository的信息
+func (repo *Repository) UpdateRepositoryInfo(namespace, repository, namespaceType, infoKey, infoData string) (bool, error) {
+	if namespaceType == "Organization" {
+		_, infoErr := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository)), []byte(infoKey), []byte(infoData))
+
+		if infoErr != nil {
+			return false, infoErr
+		}
+		return true, nil
+	} else {
+		_, infoErr := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository)), []byte(infoKey), []byte(infoData))
+		if infoErr != nil {
+			return false, infoErr
+		}
+		return true, nil
+	}
+}
+
+func (repo *Repository) UpdateJSON(namespace, repository, namespaceType, json string) (bool, error) {
+	if namespaceType == "Organization" {
+		_, jsonInfoErr := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository)), []byte("JSON"), []byte(json))
+
+		if jsonInfoErr != nil {
+			return false, jsonInfoErr
+		}
+		return true, nil
+	} else {
+		_, jsonInfoErr := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository)), []byte("JSON"), []byte(json))
+		if jsonInfoErr != nil {
+			return false, jsonInfoErr
+		}
+		return true, nil
+	}
 }
 
 func (repo *Repository) UpdateUploaded(uploaded bool) (bool, error) {
@@ -95,16 +147,52 @@ func (repo *Repository) UpdateSize(size int64) (bool, error) {
 	return false, nil
 }
 
-func (repo *Repository) Insert(namespace, repository, json string, privated bool) (bool, error) {
-	return false, nil
+func (repo *Repository) Insert(namespace, repository, namespaceType, json string, privated bool) (bool, error) {
+	if namespaceType == "Organization" {
+		_, jsonInfoErr := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository)), []byte("JSON"), []byte(json))
+		_, privatedInfoErr := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository)), []byte("Privated"), []byte(strconv.FormatBool(privated)))
+
+		if jsonInfoErr != nil {
+			return false, jsonInfoErr
+		}
+		if privatedInfoErr != nil {
+			return false, privatedInfoErr
+		}
+		return true, nil
+	} else {
+		_, jsonInfoErr := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository)), []byte("JSON"), []byte(json))
+		_, privatedInfoErr := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository)), []byte("Privated"), []byte(strconv.FormatBool(privated)))
+
+		if jsonInfoErr != nil {
+			return false, jsonInfoErr
+		}
+		if privatedInfoErr != nil {
+			return false, privatedInfoErr
+		}
+		return true, nil
+	}
 }
 
 func (tag *Tag) Insert(name string, imageId string, repository int64) (bool, error) {
 	return false, nil
 }
 
-func (tag *Tag) Get(name string, repository int64) (bool, error) {
-	return false, nil
+func (tag *Tag) Get(namespace, repository, namespaceType, tagName string) (bool, error) {
+	if namespaceType == "Organization" {
+		info, err := LedisDB.HGet([]byte(utils.ToString("#", namespace, "$", repository, "%", tagName)), []byte("Name"))
+		if len(info) <= 0 || err != nil {
+			return false, err
+		} else {
+			return true, nil
+		}
+	} else {
+		info, err := LedisDB.HGet([]byte(utils.ToString("@", namespace, "$", repository, "%", tagName)), []byte("Name"))
+		if len(info) <= 0 || err != nil {
+			return false, err
+		} else {
+			return true, nil
+		}
+	}
 }
 
 func (tag *Tag) GetImagesJSON(repository int64) ([]byte, error) {
