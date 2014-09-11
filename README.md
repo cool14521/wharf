@@ -45,6 +45,45 @@ Build commands:
 gopm build
 ```
 
+
+
+LedisDB Key Conf
+================
+```
+@Username
+#Organization
+
+User 一对一 Profile
+User 一对多 History
+
+Organization多对多User
+
+Organization一对多Member
+
+$Repository@Username(用户的名字:@Namespace)
+$Repository#Organization(组织的名字#Namespace)
+
+%Tag$Repository@Username
+%Tag$Repository#Organization
+
+&Image(ImageID)
+
+//public
+&ImageId+(第一个加号公有)+(第二个加号加密)
+
+//private
+&ImageId-(第一个减号私有)-(第二个减号未加密)
+
+//Template
+*TemplateName
+
+//Job
+!JOBID(加YAML配置)
+```
+
+
+
+
 Nginx Conf
 ==========
 
