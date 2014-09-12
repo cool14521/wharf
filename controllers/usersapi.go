@@ -19,12 +19,12 @@ Docker Registry & Login
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
-
 	"github.com/astaxie/beego"
 	"github.com/dockercn/docker-bucket/models"
 	"github.com/dockercn/docker-bucket/utils"
+	"net/http"
 )
 
 type UsersAPIController struct {
@@ -42,9 +42,35 @@ func (this *UsersAPIController) PostUsers() {
 
 	beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
 	//TODO 检查配置文件是否可以在命令行注册的设置进行不同的处理。
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-	this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are not support create a account from cli.\"}"))
+	IsOpenUserSignUp, _ := beego.AppConfig.Bool("IsOpenUserSignUp")
+	if IsOpenUserSignUp {
+		//此处需要抓取允许注册时候的协议
+
+		//获得用户提交的登陆(注册)信息
+		var createUserJson map[string]interface{}
+		json.Unmarshal(this.Ctx.Input.CopyBody(), &createUserJson)
+
+		user := new(models.User)
+		//查看用户是否已经注册过：这里取出Username只是为了证明用户存在
+		userName, uerInfoErr := user.GetUserInfo(createUserJson["username"].(string), "Username")
+
+		if uerInfoErr == nil && len(userName) > 0 {
+			this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are not support create a account from cli.\"}"))
+			return
+		} else {
+			user.CreateUser(createUserJson["username"].(string), createUserJson["password"].(string), createUserJson["email"].(string))
+			this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusCreated)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"info\": \"create a account success.\"}"))
+			return
+		}
+	} else {
+		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are not support create a account from cli.\"}"))
+	}
 }
 
 func (this *UsersAPIController) GetUsers() {
@@ -78,6 +104,7 @@ func (this *UsersAPIController) GetUsers() {
 		this.StopRun()
 	}
 
+	//这句没明白记录什么的
 	user.History(0, user.Id, fmt.Sprintf("%s %s %s", models.FROM_CLI, models.ACTION_SIGNIN, this.Ctx.Input.Header("X-Real-IP")))
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")

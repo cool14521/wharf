@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+	"github.com/dockercn/docker-bucket/utils"
 	"time"
 )
 
@@ -32,6 +34,7 @@ const (
 )
 
 type User struct {
+	Id       int64
 	Username string    //
 	Password string    //
 	Email    string    //Email 可以更换，全局唯一
@@ -47,6 +50,36 @@ type User struct {
 	Created  time.Time //
 	Updated  time.Time //
 	Log      string    //
+}
+
+func (this *User) CreateUser(username string, passwd string, email string) (errorInfo error) {
+	LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Username"), []byte(username))
+	LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Password"), []byte(passwd))
+	LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Email"), []byte(email))
+	return nil
+}
+
+func (this *User) GetUserInfo(username string, userInfoKey string) (userInfo string, errorInfo error) {
+	info, err := LedisDB.HGet([]byte(utils.ToString("@", username)), []byte(userInfoKey))
+	return string(info), err
+}
+
+func (this *User) Get(username string, passwd string, defValue bool) (isAuth bool, errorInfo error) {
+	userPassword, userPasswordErr := LedisDB.HGet([]byte(utils.ToString("@", username)), []byte("Password"))
+	if userPasswordErr == nil && passwd == string(userPassword) {
+		return true, nil
+	} else {
+		return false, userPasswordErr
+	}
+}
+
+func (this *User) History(index int64, repositoryId int64, log string) {
+	fmt.Println(index)
+}
+func (this *User) SetToken(username, token string) (errorInfo error) {
+	//UserToken保存位置需要讨论-fivestarsky
+	LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Token"), []byte(token))
+	return nil
 }
 
 type Organization struct {
