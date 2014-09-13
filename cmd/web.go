@@ -19,8 +19,8 @@ var CmdWeb = cli.Command{
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "address",
-			Value: "127.0.0.1",
-			Usage: "Web 服务监听的 IP，默认 127.0.0.1",
+			Value: "0.0.0.0",
+			Usage: "Web 服务监听的 IP，默认 0.0.0.0",
 		},
 		cli.IntFlag{
 			Name:  "port",
@@ -33,9 +33,6 @@ var CmdWeb = cli.Command{
 func runRegistry(c *cli.Context) {
 	var address, port string
 
-	beego.Trace("[Address] " + strconv.Itoa(len(c.String("address"))))
-	beego.Trace("[Port] " + strconv.Itoa(c.Int("port")))
-
 	//检查 address / port 的合法性
 	if len(c.String("address")) > 0 {
 		address = c.String("address")
@@ -45,9 +42,8 @@ func runRegistry(c *cli.Context) {
 		port = strconv.Itoa(c.Int("port"))
 	}
 
-	beego.SessionProvider = "redis"
-	beego.SessionSavePath = "127.0.0.1:6379"
-
+	models.InitSession()
 	models.InitDb()
+
 	beego.Run(fmt.Sprintf("%v:%v", address, port))
 }
