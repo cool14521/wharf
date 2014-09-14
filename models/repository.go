@@ -99,7 +99,7 @@ func (repo *Repository) Get(namespace string, repository string, namespaceType s
 func (repo *Repository) GetPushed(namespace string, repository string, uploaded bool, checksumed bool) (bool, error) {
 	return false, nil
 }
-
+//多个UP方法可以合并
 //通用方法更新Repository的信息
 func (repo *Repository) UpdateRepositoryInfo(namespace, repository, namespaceType, infoKey, infoData string) (bool, error) {
 	if namespaceType == "Organization" {
