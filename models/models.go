@@ -13,6 +13,26 @@ var (
 	LedisDB   *ledis.DB
 )
 
+func setSessionEngine() {
+	beego.SessionProvider = beego.AppConfig.String("session::Provider")
+	beego.SessionSavePath = beego.AppConfig.String("session::SavePath")
+
+	switch beego.AppConfig.String("docker::RunMode") {
+	case "Bucket":
+		beego.SessionName = "Bucket"
+	case "Registry":
+		beego.SessionName = beego.AppConfig.String("docker::endpoint")
+	default:
+		beego.SessionName = "Bucket"
+	}
+
+	beego.SessionHashKey = "dwzemsxoltmv"
+}
+
+func InitSession() {
+	setSessionEngine()
+}
+
 // InitDb initializes the database.
 func InitDb() {
 	initLedisFunc := func() {
