@@ -99,6 +99,7 @@ func (repo *Repository) Get(namespace string, repository string, namespaceType s
 func (repo *Repository) GetPushed(namespace string, repository string, uploaded bool, checksumed bool) (bool, error) {
 	return false, nil
 }
+
 //多个UP方法可以合并
 //通用方法更新Repository的信息
 func (repo *Repository) UpdateRepositoryInfo(namespace, repository, namespaceType, infoKey, infoData string) (bool, error) {
@@ -173,8 +174,44 @@ func (repo *Repository) Insert(namespace, repository, namespaceType, json string
 	}
 }
 
-func (tag *Tag) Insert(name string, imageId string, repository int64) (bool, error) {
-	return false, nil
+//func (tag *Tag) Insert(name string, imageId string, repository int64) (bool, error) {
+//	return false, nil
+//}
+
+func (tag *Tag) Insert(namespace, repository, namespaceType, tagName, imageId string) (bool, error) {
+	if namespaceType == "Organization" {
+		info, err := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository, "%", tagName)), []byte("ImageId"), []byte(imageId))
+		if info <= 0 || err != nil {
+			return false, err
+		} else {
+			return true, nil
+		}
+	} else {
+		info, err := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository, "%", tagName)), []byte("ImageId"), []byte(imageId))
+		if info <= 0 || err != nil {
+			return false, err
+		} else {
+			return true, nil
+		}
+	}
+}
+
+func (tag *Tag) UpdateImageId(namespace, repository, namespaceType, tagName, imageId string) (bool, error) {
+	if namespaceType == "Organization" {
+		info, err := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository, "%", tagName)), []byte("ImageId"), []byte(imageId))
+		if info <= 0 || err != nil {
+			return false, err
+		} else {
+			return true, nil
+		}
+	} else {
+		info, err := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository, "%", tagName)), []byte("ImageId"), []byte(imageId))
+		if info <= 0 || err != nil {
+			return false, err
+		} else {
+			return true, nil
+		}
+	}
 }
 
 func (tag *Tag) Get(namespace, repository, namespaceType, tagName string) (bool, error) {
@@ -197,8 +234,4 @@ func (tag *Tag) Get(namespace, repository, namespaceType, tagName string) (bool,
 
 func (tag *Tag) GetImagesJSON(repository int64) ([]byte, error) {
 	return []byte(""), nil
-}
-
-func (tag *Tag) UpdateImageId(imageId string) (bool, error) {
-	return false, nil
 }
