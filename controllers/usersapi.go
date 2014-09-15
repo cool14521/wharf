@@ -20,11 +20,11 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
+	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/dockercn/docker-bucket/models"
 	"github.com/dockercn/docker-bucket/utils"
-	"net/http"
 )
 
 type UsersAPIController struct {
@@ -60,7 +60,7 @@ func (this *UsersAPIController) PostUsers() {
 			this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are not support create a account from cli.\"}"))
 			return
 		} else {
-			user.CreateUser(createUserJson["username"].(string), createUserJson["password"].(string), createUserJson["email"].(string))
+			user.Add(createUserJson["username"].(string), createUserJson["password"].(string), createUserJson["email"].(string), true)
 			this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusCreated)
 			this.Ctx.Output.Context.Output.Body([]byte("{\"info\": \"create a account success.\"}"))
@@ -105,7 +105,7 @@ func (this *UsersAPIController) GetUsers() {
 	}
 
 	//这句没明白记录什么的
-	user.History(0, user.Id, fmt.Sprintf("%s %s %s", models.FROM_CLI, models.ACTION_SIGNIN, this.Ctx.Input.Header("X-Real-IP")))
+	//user.History(0, user.Id, fmt.Sprintf("%s %s %s", models.FROM_CLI, models.ACTION_SIGNIN, this.Ctx.Input.Header("X-Real-IP")))
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)

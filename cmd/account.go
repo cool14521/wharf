@@ -3,10 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/astaxie/beego"
 	"github.com/codegangsta/cli"
-	"github.com/dockerclouds/docker-hub/models"
-	"github.com/dockerclouds/docker-hub/utils"
+	"github.com/dockercn/docker-bucket/models"
 )
 
 var CmdAccount = cli.Command{
@@ -55,17 +53,8 @@ func runAccount(c *cli.Context) {
 				if err := user.Add(username, passwd, email, true); err != nil {
 					fmt.Println(fmt.Sprintf("%s: %s", "添加用户失败", err.Error()))
 				} else {
-					port, _ := beego.AppConfig.Int("email::Port")
-
-					if err := utils.SendAddEmail(username, passwd, email,
-						beego.AppConfig.String("email::Host"),
-						port,
-						beego.AppConfig.String("email::User"),
-						beego.AppConfig.String("email::Password")); err != nil {
-						fmt.Println("为用户发送新建账户邮件失败")
-					} else {
-						fmt.Println("添加用户成功并发送通知邮件")
-					}
+					fmt.Println(fmt.Sprintf("添加 %s 用户成功！", username))
+					//TODO 发送注册邮件
 				}
 
 			} else {

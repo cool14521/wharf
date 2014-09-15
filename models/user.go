@@ -1,9 +1,12 @@
 package models
 
 import (
+	"errors"
 	"fmt"
-	"github.com/dockercn/docker-bucket/utils"
+	"strconv"
 	"time"
+
+	"github.com/dockercn/docker-bucket/utils"
 )
 
 const (
@@ -34,7 +37,6 @@ const (
 )
 
 type User struct {
-	Id       int64
 	Username string    //
 	Password string    //
 	Email    string    //Email 可以更换，全局唯一
@@ -52,11 +54,21 @@ type User struct {
 	Log      string    //
 }
 
-func (this *User) CreateUser(username string, passwd string, email string) (errorInfo error) {
-	LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Username"), []byte(username))
-	LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Password"), []byte(passwd))
-	LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Email"), []byte(email))
-	return nil
+func (user *User) Add(username string, passwd string, email string, actived bool) error {
+	if u, err := LedisDB.HGet([]byte(GetObjectKey("user", username)), []byte("Password")); err != nil {
+		return nil
+	} else if u != nil {
+		return errors.New("已经存在用户!")
+	} else {
+		LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Username"), []byte(username))
+		LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Password"), []byte(passwd))
+		LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Email"), []byte(email))
+
+		rst := make([]byte, 0)
+		LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Actived"), strconv.AppendBool(rst, actived))
+
+		return nil
+	}
 }
 
 func (this *User) GetUserInfo(username string, userInfoKey string) (userInfo string, errorInfo error) {

@@ -1,10 +1,21 @@
 package models
 
 import (
+	"sync"
+
 	"github.com/astaxie/beego"
 	"github.com/siddontang/ledisdb/config"
 	"github.com/siddontang/ledisdb/ledis"
-	"sync"
+)
+
+const (
+	USER_SYMBLE         = "@"
+	ORGANIZATION_SYMBLE = "#"
+	REPOSITORY_SYMBLE   = "$"
+	TAG_SYMBLE          = "%"
+	IMAGE_SYMBLE        = "&"
+	TEMPLATE_SYMBLE     = "*"
+	JOB_SYMBLE          = "!"
 )
 
 var (
@@ -49,4 +60,25 @@ func InitDb() {
 	}
 	ledisOnce.Do(initLedisFunc)
 	LedisDB, _ = nowLedis.Select(0)
+}
+
+func GetObjectKey(object string, id string) string {
+	switch object {
+	case "user":
+		return USER_SYMBLE + id
+	case "org":
+		return ORGANIZATION_SYMBLE + id
+	case "repo":
+		return REPOSITORY_SYMBLE + id
+	case "tag":
+		return TAG_SYMBLE + id
+	case "image":
+		return IMAGE_SYMBLE + id
+	case "template":
+		return TEMPLATE_SYMBLE + id
+	case "job":
+		return JOB_SYMBLE + id
+	default:
+		return ""
+	}
 }
