@@ -274,7 +274,9 @@ func (this *RepositoryAPIController) PutTag() {
 	imageIds := r.FindStringSubmatch(string(this.Ctx.Input.CopyBody()))
 
 	if has == true {
-		_, err := tag.UpdateImageId(imageIds[1])
+		//_, err := tag.UpdateImageId(imageIds[1])
+		_, err := tag.UpdateImageId(namespace, repository, "User", this.Ctx.Input.Param(":tag"), imageIds[1])
+
 		if err != nil {
 			beego.Error("[Update Tag] " + namespace + " " + repository + " " + this.Ctx.Input.Param(":tag") + " error: " + err.Error())
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -282,7 +284,8 @@ func (this *RepositoryAPIController) PutTag() {
 			this.StopRun()
 		}
 	} else {
-		_, err := tag.Insert(this.Ctx.Input.Param(":tag"), imageIds[1], repo.Id)
+		//_, err := tag.Insert(this.Ctx.Input.Param(":tag"), imageIds[1], repo.Id)
+		_, err := tag.Insert(namespace, repository, "User", this.Ctx.Input.Param(":tag"), imageIds[1])
 		if err != nil {
 			beego.Error("[Insert Tag] " + namespace + " " + repository + " " + this.Ctx.Input.Param(":tag") + " error: " + err.Error())
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -439,8 +442,11 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 
 	//查询 Repository 数据
 	repo := new(models.Repository)
+
 	//查询已经完成上传的 Repository
+	//**这句话判断依据忘记了,是所有Image都完毕？--fivestarsky
 	has, err := repo.GetPushed(namespace, repository, true, true)
+
 	if err != nil {
 		beego.Error("[Search Repository] " + namespace + " " + repository + " search pushed error: " + err.Error())
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -492,7 +498,9 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 	//查询 Repository 数据
 	repo := new(models.Repository)
 	//查询已经完成上传的 Repository
+	//**这句话判断依据忘记了,是所有Image都完毕？--fivestarsky
 	has, err := repo.GetPushed(namespace, repository, true, true)
+
 	if err != nil {
 		beego.Error("[Search Repository] " + namespace + " " + repository + " search pushed error: " + err.Error())
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -515,6 +523,7 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 		//存在 Repository 数据，查询所有的 Tag 数据。
 		tag := new(models.Tag)
 
+		//**这块应该设计从哪里取得？--fviestarksy
 		result, err := tag.GetImagesJSON(repo.Id)
 		if err != nil {
 			beego.Error("[Search Tags] " + namespace + " " + repository + " search pushed tags error: " + err.Error())

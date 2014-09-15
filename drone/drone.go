@@ -62,7 +62,7 @@ func run(path string) {
 
 	// this is where the code gets uploaded to the container
 	// TODO move this code to the build package
-	code.Dir = filepath.Join("/var/cache/drone/src", s.Repo)
+	code.Dir = filepath.Join("/var/cache/drone/src", s.Repo[5:])
 
 	// track all build results
 	var builders []*build.Builder
