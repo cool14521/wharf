@@ -42,8 +42,8 @@ func (this *UsersAPIController) PostUsers() {
 
 	beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
 	//TODO 检查配置文件是否可以在命令行注册的设置进行不同的处理。
-	IsOpenUserSignUp, _ := beego.AppConfig.Bool("IsOpenUserSignUp")
-	if IsOpenUserSignUp {
+	openSignup, _ := beego.AppConfig.Bool("docker::OpenSignup")
+	if openSignup {
 		//此处需要抓取允许注册时候的协议
 
 		//获得用户提交的登陆(注册)信息
