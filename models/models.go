@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/astaxie/beego"
@@ -63,21 +64,21 @@ func InitDb() {
 }
 
 func GetObjectKey(object string, id string) string {
-	switch object {
+	switch strings.TrimSpace(object) {
 	case "user":
-		return USER_SYMBLE + id
+		return USER_SYMBLE + strings.TrimSpace(id)
 	case "org":
-		return ORGANIZATION_SYMBLE + id
+		return ORGANIZATION_SYMBLE + strings.TrimSpace(id)
 	case "repo":
-		return REPOSITORY_SYMBLE + id
+		return REPOSITORY_SYMBLE + strings.TrimSpace(id)
 	case "tag":
-		return TAG_SYMBLE + id
+		return TAG_SYMBLE + strings.TrimSpace(id)
 	case "image":
-		return IMAGE_SYMBLE + id
+		return IMAGE_SYMBLE + strings.TrimSpace(id)
 	case "template":
-		return TEMPLATE_SYMBLE + id
+		return TEMPLATE_SYMBLE + strings.TrimSpace(id)
 	case "job":
-		return JOB_SYMBLE + id
+		return JOB_SYMBLE + strings.TrimSpace(id)
 	default:
 		return ""
 	}

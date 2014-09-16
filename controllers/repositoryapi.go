@@ -27,7 +27,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/dockercn/docker-bucket/models"
 	"github.com/dockercn/docker-bucket/utils"
@@ -189,7 +188,6 @@ func (this *RepositoryAPIController) PutRepository() {
 			this.StopRun()
 		}
 
-		user.History(0, repo.Id, fmt.Sprintf("%s %s %s %s", models.FROM_CLI, models.ACTION_UPDATE_REPO, this.Ctx.Input.Header("X-Real-IP"), this.Ctx.Input.Header("User-Agent")))
 	} else {
 		//从 API 创建的 Repository 默认是 Public 的。
 		_, err := repo.Insert(namespace, repository, "User", string(this.Ctx.Input.CopyBody()), false)
@@ -200,8 +198,6 @@ func (this *RepositoryAPIController) PutRepository() {
 			this.StopRun()
 		}
 
-		//还是没明白这个记录什么
-		user.History(0, repo.Id, fmt.Sprintf("%s %s %s %s", models.FROM_CLI, models.ACTION_UPDATE_REPO, this.Ctx.Input.Header("X-Real-IP"), this.Ctx.Input.Header("User-Agent")))
 	}
 
 	//TODO 更新 repository 的 User-Agent 数据，From this.Ctx.Input.Header("User-Agent")

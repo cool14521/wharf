@@ -9,33 +9,6 @@ import (
 	"github.com/dockercn/docker-bucket/utils"
 )
 
-const (
-	FROM_CLI = "cli"
-	FROM_WEB = "web"
-)
-
-const (
-	PUBLIC  = "public"
-	PRIVATE = "private"
-)
-
-const (
-	ACTION_SIGNIN         = "signin"
-	ACTION_SINGOUT        = "signout"
-	ACTION_UPDATE_PROFILE = "update_profile"
-	ACTION_ADD_REPO       = "add_repository"
-	ACTION_UPDATE_REPO    = "update_repository"
-	ACTION_DEL_REPO       = "del_repository"
-	ACTION_ADD_COMMENT    = "add_comment"
-	ACTION_DEL_COMMENT    = "del_comment"
-	ACTION_ADD_ORG        = "add_org"
-	ACTION_DEL_ORG        = "del_org"
-	ACTION_ADD_MEMBER     = "add_member"
-	ACTION_DEL_MEMBER     = "del_member"
-	ACTION_ADD_STAR       = "add_star"
-	ACTION_DEL_STAR       = "del_star"
-)
-
 type User struct {
 	Username string    //
 	Password string    //
