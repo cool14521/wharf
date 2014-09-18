@@ -211,12 +211,12 @@ func (this *RepositoryAPIController) PutRepository() {
 		token := utils.GeneralToken(user.Username + user.Password)
 
 		//保存 Token
-		if err := user.SetToken(username, token); err != nil {
-			beego.Error("[Update Token] " + user.Username + " update token error.")
-			this.Ctx.Output.Context.Output.SetStatus(400)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update token error.\"}"))
-			this.StopRun()
-		}
+		//if err := user.SetToken(username, token); err != nil {
+		//	beego.Error("[Update Token] " + user.Username + " update token error.")
+		//	this.Ctx.Output.Context.Output.SetStatus(400)
+		//	this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update token error.\"}"))
+		//	this.StopRun()
+		//}
 
 		this.SetSession("token", token)
 

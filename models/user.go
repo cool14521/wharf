@@ -64,14 +64,21 @@ func (user *User) Add(username string, passwd string, email string, actived bool
 	}
 }
 
-func (this *User) Get(username string, passwd string, actived bool) (bool, error) {
-	return true, nil
-}
+func (user *User) Get(username string, passwd string, actived bool) (bool, error) {
+	//读取密码和Actived的值进行判断是否存在用户
+	if results, err := LedisDB.HMget([]byte(GetObjectKey("user", username)), []byte("Password"), []byte("Actived")); err != nil {
+		return false, err
+	} else {
+		if password := results[0]; string(password) != passwd {
+			return false, nil
+		}
 
-func (this *User) SetToken(username, token string) (errorInfo error) {
-	//UserToken保存位置需要讨论-fivestarsky
-	LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Token"), []byte(token))
-	return nil
+		if active := results[1]; utils.BytesToBool(active) != actived {
+			return false, nil
+		}
+
+		return true, nil
+	}
 }
 
 type Organization struct {
