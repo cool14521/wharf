@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"time"
@@ -21,7 +22,7 @@ type User struct {
 	Actived  bool      //
 	Created  time.Time //
 	Updated  time.Time //
-	Log      string    //
+	Logs     string    //用户日志信息
 }
 
 func (user *User) Add(username string, passwd string, email string, actived bool) error {
@@ -78,6 +79,32 @@ func (user *User) Get(username string, passwd string, actived bool) (bool, error
 		}
 
 		return true, nil
+	}
+}
+
+func (user *User) Log(username string, log string) error {
+	var logs []string
+
+	if l, err := LedisDB.HGet([]byte(GetObjectKey("user", username)), []byte("Logs")); err != nil {
+		//没有找到数据会返回 Error
+		return err
+	} else {
+		//解码 Log 数据的数组
+		if e := json.Unmarshal(l, logs); e != nil {
+			return e
+		}
+	}
+	//向数组追加 Log 记录
+	logs = append(logs, fmt.Sprintf("%d %s %s", time.Now().Unix, GetObjectKey("user", username), log))
+	//压缩 Log 数组，写入数据库
+	if bytes, e := json.Marshal(logs); e != nil {
+		return e
+	} else {
+		if _, e := LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Logs"), bytes); e != nil {
+			return e
+		}
+
+		return nil
 	}
 }
 
