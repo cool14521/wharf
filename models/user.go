@@ -1,9 +1,8 @@
 package models
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
+	"regexp"
 	"time"
 
 	"github.com/dockercn/docker-bucket/utils"
@@ -13,54 +12,62 @@ type User struct {
 	Username string    //
 	Password string    //
 	Email    string    //Email 可以更换，全局唯一
-	Quota    int64     //可以创建 Repository 的数量
-	Size     int64     //所有 Repository 存储总和，单位 G
 	Fullname string    //
 	Company  string    //
 	Location string    //
 	Mobile   string    //
 	URL      string    //
 	Gravatar string    //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
-	Actived  bool      //默认创建的用户是不激活
+	Actived  bool      //
 	Created  time.Time //
 	Updated  time.Time //
 	Log      string    //
 }
 
 func (user *User) Add(username string, passwd string, email string, actived bool) error {
+	//检查是否存在用户
 	if u, err := LedisDB.HGet([]byte(GetObjectKey("user", username)), []byte("Password")); err != nil {
 		return nil
 	} else if u != nil {
-		return errors.New("已经存在用户!")
+		//已经存在用户
+		return fmt.Errorf("已经 %s 存在用户", username)
 	} else {
-		LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Username"), []byte(username))
-		LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Password"), []byte(passwd))
-		LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Email"), []byte(email))
+		//检查用户名合法性，参考实现标准：
+		//https://github.com/docker/docker/blob/28f09f06326848f4117baf633ec9fc542108f051/registry/registry.go#L27
+		validNamespace := regexp.MustCompile(`^([a-z0-9_]{4,30})$`)
+		if !validNamespace.MatchString(username) {
+			return fmt.Errorf("用户名必须是 4 - 30 位之间，且只能由 a-z，0-9 和 下划线组成")
+		}
 
-		rst := make([]byte, 0)
-		LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Actived"), strconv.AppendBool(rst, actived))
+		//检查密码合法性
+		if len(passwd) < 5 {
+			return fmt.Errorf("密码必须等于或大于 5 位字符以上")
+		}
+
+		//检查邮箱合法性
+		validEmail := regexp.MustCompile(`^[a-z0-9A-Z]+([\-_\.][a-z0-9A-Z]+)*@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)*\.)+[a-zA-Z]+$`)
+		if !validEmail.MatchString(email) {
+			return fmt.Errorf("Email 格式不合法")
+		}
+
+		//设置用户属性
+		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Username"), []byte(username))
+		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Password"), []byte(passwd))
+		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Email"), []byte(email))
+		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Actived"), utils.BoolToBytes(actived))
+
+		//设置用户创建的时间
+		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Updated"), utils.NowToBytes())
+		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Created"), utils.NowToBytes())
 
 		return nil
 	}
 }
 
-func (this *User) GetUserInfo(username string, userInfoKey string) (userInfo string, errorInfo error) {
-	info, err := LedisDB.HGet([]byte(utils.ToString("@", username)), []byte(userInfoKey))
-	return string(info), err
+func (this *User) Get(username string, passwd string, actived bool) (bool, error) {
+	return true, nil
 }
 
-func (this *User) Get(username string, passwd string, defValue bool) (isAuth bool, errorInfo error) {
-	userPassword, userPasswordErr := LedisDB.HGet([]byte(utils.ToString("@", username)), []byte("Password"))
-	if userPasswordErr == nil && passwd == string(userPassword) {
-		return true, nil
-	} else {
-		return false, userPasswordErr
-	}
-}
-
-func (this *User) History(index int64, repositoryId int64, log string) {
-	fmt.Println(index)
-}
 func (this *User) SetToken(username, token string) (errorInfo error) {
 	//UserToken保存位置需要讨论-fivestarsky
 	LedisDB.HSet([]byte(utils.ToString("@", username)), []byte("Token"), []byte(token))
