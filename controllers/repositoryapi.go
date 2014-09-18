@@ -54,13 +54,14 @@ func (this *RepositoryAPIController) Prepare() {
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
 
 	if beego.AppConfig.String("docker::Standalone") == "true" {
 		//单机运行模式，检查 Basic Auth 的认证。
 		if len(this.Ctx.Input.Header("Authorization")) == 0 {
 			//没有 Basic Auth 的认证，返回错误信息。
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"服务器只支持 Basic Auth 验证模式，请联系系统管理员。\"}"))
 			this.StopRun()
 		} else {
 			//Standalone True 模式，检查是否 Basic
@@ -517,22 +518,23 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 		}
 
 		//存在 Repository 数据，查询所有的 Tag 数据。
-		tag := new(models.Tag)
+		//tag := new(models.Tag)
 
 		//**这块应该设计从哪里取得？--fviestarksy
-		result, err := tag.GetImagesJSON(repo.Id)
-		if err != nil {
-			beego.Error("[Search Tags] " + namespace + " " + repository + " search pushed tags error: " + err.Error())
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Cloud not found tags.\"}"))
-			this.StopRun()
-		}
+		//result, err := tag.GetImagesJSON(repo.Id)
+		//if err != nil {
+		//	beego.Error("[Search Tags] " + namespace + " " + repository + " search pushed tags error: " + err.Error())
+		//	this.Ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
+		//	this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Cloud not found tags.\"}"))
+		//	this.StopRun()
+		//}
 
 		//操作正常的输出
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.Ctx.Output.Context.Output.Body(result)
+		//this.Ctx.Output.Context.Output.Body(result)
+		this.Ctx.Output.Context.Output.Body([]byte(""))
 	}
 }

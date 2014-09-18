@@ -1,9 +1,10 @@
 package models
 
 import (
-	"github.com/dockercn/docker-bucket/utils"
 	"strconv"
 	"time"
+
+	"github.com/dockercn/docker-bucket/utils"
 )
 
 type Job struct {
@@ -18,7 +19,7 @@ type Job struct {
 	Actived      bool      //
 	Created      time.Time //
 	Updated      time.Time //
-	Log          string    //
+	Logs         string    //
 }
 
 type Template struct {
@@ -38,16 +39,16 @@ type Template struct {
 	Actived      bool      //
 	Created      time.Time //
 	Updated      time.Time //
-	Log          string    //
+	Logs         string    //
 }
 
 type Repository struct {
-	Id           int64
 	Namespace    string    //即用户名或 Organization 的 Name
 	Repository   string    //仓库名
 	Organization string    //如果是 Organization ，存 Organization 的 ID
 	Description  string    //保存 Markdown 格式
-	JSON         string    //
+	JSON         string    //Docker 客户端上传的 Images 信息，JSON 格式。
+	Data         string    //包含的 Image 信息集合，由 Image 的 ID 组成。
 	Dockerfile   string    //生产 Repository 的 Dockerfile 文件内容
 	Agent        string    //docker 命令产生的 agent 信息
 	Links        string    //保存 JSON 的信息，保存官方库的 Link，产生 repository 库的 Git 库地址
@@ -57,21 +58,24 @@ type Repository struct {
 	Checksumed   bool      //Checksum 检查标志
 	Labels       string    //用户设定的标签，和库的 Tag 是不一样
 	Icon         string    //
+	Sign         string    //
 	Privated     bool      //私有 Repository
+	Clear        string    //对 Repository 进行了杀毒，杀毒的结果和 status 等信息以 JSON 格式保存
+	Cleared      bool      //对 Repository 是否进行了杀毒处理
 	Actived      bool      //删除标志
-	Security     bool      //是否加密
+	Encrypt      bool      //是否加密
 	Created      time.Time //
 	Updated      time.Time //
-	Log          string    //
+	Logs         string    //
 }
 
 type Tag struct {
 	Name       string    //
-	ImageId    string    //
+	Image      string    //
 	Repository string    //
 	Created    time.Time //
 	Updated    time.Time //
-	Log        string    //
+	Logs       string    //
 }
 
 func (repo *Repository) Get(namespace string, repository string, namespaceType string) (bool, error) {

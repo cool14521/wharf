@@ -117,7 +117,7 @@ type Organization struct {
 	Actived bool      //组织创建后就是默认激活的
 	Created time.Time //
 	Updated time.Time //
-	Log     string    //
+	Logs    string    //
 }
 
 //TODO 组织和用户之间的对应关系 struct

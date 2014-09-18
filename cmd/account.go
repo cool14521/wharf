@@ -10,13 +10,13 @@ import (
 var CmdAccount = cli.Command{
 	Name:        "account",
 	Usage:       "通过命令行管理系统的账户",
-	Description: "通过命令行添加、激活、停用 Hub 中的用户账户，账户停用后该账户下公开的 Repository 依旧可以下载。",
+	Description: "通过命令行添加、激活、停用 Bucket 中的用户账户，账户停用后该账户下公开的 Repository 依旧可以下载。",
 	Action:      runAccount,
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "action",
 			Value: "",
-			Usage: "Action 参数: add/active/unactive，添加激活的账户/添加待激活的账户/停用账户",
+			Usage: "Action 参数: add/active/unactive/log，添加激活的账户/添加待激活的账户/停用账户/查看用户日志",
 		},
 		cli.StringFlag{
 			Name:  "email",
@@ -67,6 +67,8 @@ func runAccount(c *cli.Context) {
 		case "active":
 			break
 		case "unactive":
+			break
+		case "log":
 			break
 		default:
 			fmt.Println("目前只支持 add/active/unactive 三个指令。")
