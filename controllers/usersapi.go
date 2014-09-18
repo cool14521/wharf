@@ -50,7 +50,7 @@ func (this *UsersAPIController) PostUsers() {
 		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户创建] 失败: %s", err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("{\"error\":\"%s\"}", err.Error())))
+			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("{\"错误\":\"%s\"}", err.Error())))
 			this.StopRun()
 		}
 
@@ -71,7 +71,7 @@ func (this *UsersAPIController) PostUsers() {
 		}
 	} else {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"不支持从 docker 命令行创建用户\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"不支持从 docker 命令行创建用户\"}"))
 	}
 }
 
@@ -81,7 +81,7 @@ func (this *UsersAPIController) GetUsers() {
 	if err != nil {
 		beego.Error(fmt.Sprintf("[API 用户登录] Basic Auth 验证错误: %s", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized) //根据 Specification ，解码 Basic Authorization 数据失败也认为是 401 错误。
-		this.Ctx.Output.Body([]byte(fmt.Sprintf("{\"error\":\"用户验证失败: %s\"}", err.Error())))
+		this.Ctx.Output.Body([]byte(fmt.Sprintf("{\"错误\":\"用户验证失败: %s\"}", err.Error())))
 		this.StopRun()
 	}
 
@@ -92,7 +92,7 @@ func (this *UsersAPIController) GetUsers() {
 		user.Log(username, fmt.Sprintf("API 用户登录查询用户错误：", err.Error()))
 		beego.Error(fmt.Sprintf("[API 用户登录] 查询用户错误： ", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.Ctx.Output.Body([]byte(fmt.Sprintf("{\"error\":\"用户验证失败: %s\"}", err.Error())))
+		this.Ctx.Output.Body([]byte(fmt.Sprintf("{\"错误\":\"用户验证失败: %s\"}", err.Error())))
 		this.StopRun()
 	}
 
@@ -100,10 +100,12 @@ func (this *UsersAPIController) GetUsers() {
 		//没有查询到用户数据
 		user.Log(username, fmt.Sprintf("API 用户登录 没有查询到用户："))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有查询到用户数据\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户数据\"}"))
 		this.StopRun()
 	}
 
+	beego.Info(fmt.Sprintf("[API 用户登录] 成功: %s", username))
+
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte("{\"OK\"}"))
+	this.Ctx.Output.Context.Output.Body([]byte("{\"登录成功\"}"))
 }

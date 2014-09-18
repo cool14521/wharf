@@ -10,23 +10,26 @@ import (
 )
 
 type User struct {
-	Username string    //
-	Password string    //
-	Email    string    //Email 可以更换，全局唯一
-	Fullname string    //
-	Company  string    //
-	Location string    //
-	Mobile   string    //
-	URL      string    //
-	Gravatar string    //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
-	Actived  bool      //
-	Created  time.Time //
-	Updated  time.Time //
-	Logs     string    //用户日志信息
+	Username      string    //
+	Password      string    //
+	Repositories  string    //
+	Organizations string    //
+	Email         string    //Email 可以更换，全局唯一
+	Fullname      string    //
+	Company       string    //
+	Location      string    //
+	Mobile        string    //
+	URL           string    //
+	Gravatar      string    //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
+	Actived       bool      //
+	Created       time.Time //
+	Updated       time.Time //
+	Logs          string    //用户日志信息
 }
 
 func (user *User) Add(username string, passwd string, email string, actived bool) error {
 	//检查是否存在用户
+	//检查组织中是否存在相同的 Name
 	if u, err := LedisDB.HGet([]byte(GetObjectKey("user", username)), []byte("Password")); err != nil {
 		return nil
 	} else if u != nil {
@@ -109,15 +112,15 @@ func (user *User) Log(username string, log string) error {
 }
 
 type Organization struct {
-	Owner   string    //用户的 ID，每个组织都由用户创建，Owner 默认是拥有所有 Repository 的读写权限
-	Name    string    //
-	Email   string    //未来的 Billing 邮件地址
-	Quota   int64     //可以创建 Repository 的数量
-	Size    int64     //所有 Repository 存储总和，单位 G
-	Actived bool      //组织创建后就是默认激活的
-	Created time.Time //
-	Updated time.Time //
-	Logs    string    //
+	Owner        string    //用户的 Key，每个组织都由用户创建，Owner 默认是拥有所有 Repository 的读写权限
+	Name         string    //
+	Repositories string    //
+	privileges   string    //
+	Users        string    //
+	Actived      bool      //组织创建后就是默认激活的
+	Created      time.Time //
+	Updated      time.Time //
+	Logs         string    //
 }
 
 //TODO 组织和用户之间的对应关系 struct

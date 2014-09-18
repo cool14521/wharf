@@ -45,7 +45,7 @@ type Template struct {
 type Repository struct {
 	Namespace    string    //即用户名或 Organization 的 Name
 	Repository   string    //仓库名
-	Organization string    //如果是 Organization ，存 Organization 的 ID
+	Organization string    //如果是 Organization ，存 Organization 的 Key
 	Description  string    //保存 Markdown 格式
 	JSON         string    //Docker 客户端上传的 Images 信息，JSON 格式。
 	Data         string    //包含的 Image 信息集合，由 Image 的 ID 组成。
@@ -78,30 +78,21 @@ type Tag struct {
 	Logs       string    //
 }
 
-func (repo *Repository) Get(namespace string, repository string, namespaceType string) (bool, error) {
-	if namespaceType == "Organization" {
-		info, err := LedisDB.HGet([]byte(utils.ToString("#", namespace, "$", repository)), []byte("JSON"))
-		if err != nil {
-			return false, err
-		} else if len(info) <= 0 {
-			return false, nil
-		} else {
-			return true, nil
-		}
-	} else {
-		info, err := LedisDB.HGet([]byte(utils.ToString("@", namespace, "$", repository)), []byte("JSON"))
-		if err != nil {
-			return false, err
-		} else if len(info) <= 0 {
-			return false, nil
-		} else {
-			return true, nil
-		}
-	}
+func (repo *Repository) Get(namespace, repository, organization string) (bool, error) {
+	return true, nil
 }
 
-func (repo *Repository) GetPushed(namespace string, repository string, uploaded bool, checksumed bool) (bool, error) {
-	return false, nil
+func (repo *Repository) GetActived(namespace, repository string) (bool, error) {
+	return true, nil
+}
+
+func (repo *Repository) Add(namespace, repository, organization, json string) (bool, error) {
+	//从 API 创建的 Repository 默认是 Public 的。
+	return true, nil
+}
+
+func (repo *Repository) SetAgent(namespace, repository, organization, agent string) (bool, error) {
+	return true, nil
 }
 
 //多个UP方法可以合并

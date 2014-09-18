@@ -27,13 +27,16 @@ package controllers
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego"
-	"github.com/dockercn/docker-bucket/models"
-	"github.com/dockercn/docker-bucket/utils"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/astaxie/beego"
+
+	"github.com/dockercn/docker-bucket/models"
+	"github.com/dockercn/docker-bucket/utils"
 )
 
 type RepositoryAPIController struct {
@@ -60,27 +63,25 @@ func (this *RepositoryAPIController) Prepare() {
 		//单机运行模式，检查 Basic Auth 的认证。
 		if len(this.Ctx.Input.Header("Authorization")) == 0 {
 			//没有 Basic Auth 的认证，返回错误信息。
+			beego.Error("没有 Authorization 信息的 API 访问")
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"服务器只支持 Basic Auth 验证模式，请联系系统管理员。\"}"))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"服务器只支持 Basic Auth 验证模式，请联系系统管理员\"}"))
 			this.StopRun()
 		} else {
 			//Standalone True 模式，检查是否 Basic
 			if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
+				beego.Error("Authorization 中 Auth 的格式错误")
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"HTTP Header 的 Authorization 格式错误\"}"))
 				this.StopRun()
 			}
 
 			//Decode Basic Auth 进行用户的判断
 			username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-
-			beego.Trace("username: " + username)
-			beego.Trace("password: " + passwd)
-
 			if err != nil {
-				beego.Error("[Decode Authoriztion Header] " + this.Ctx.Input.Header("Authorization") + " " + " error: " + err.Error())
+				beego.Error(fmt.Sprintf("[解码 Basic Auth] %s 错误： %s ", this.Ctx.Input.Header("Authorization"), err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码 HTTP Header 的 Basic Auth 信息错误\"}"))
 				this.StopRun()
 			}
 
@@ -88,139 +89,71 @@ func (this *RepositoryAPIController) Prepare() {
 			has, err := user.Get(username, passwd, true)
 			if err != nil {
 				//查询用户数据失败，返回 401 错误
-				beego.Error("[Search User] " + username + " " + passwd + " has error: " + err.Error())
+				user.Log(username, fmt.Sprintf("API 用户访问 Repository 查询用户错误：", err.Error()))
+				beego.Error(fmt.Sprintf("[API 用户] 查询用户错误： ", err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询用户错误\"}"))
 				this.StopRun()
 			}
 
 			if has == true {
 				//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["user"]
-				//TODO 这里需要根据数据库特点改为存储 Key 么？
-				this.Data["user"] = user
+				//存储 User 的 Key
+				this.Data["username"] = username
+				this.Data["passwd"] = passwd
 			} else {
 				//没有查询到用户数据
+				user.Log(username, fmt.Sprintf("API 用户登录 没有查询到用户："))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户数据\"}"))
 				this.StopRun()
 			}
 		}
 	} else {
+		beego.Error("非 Standalone 模式登录尝试错误")
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Service only support in standalone model.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"服务器只支持 Basic Auth 验证模式，请联系系统管理员\"}"))
 		this.StopRun()
 	}
 
 }
 
 func (this *RepositoryAPIController) PutRepository() {
-	//从 Prepare 中获取已经查询到 User 数据
-	//TODO 这里需要根据数据库方案调整
-	//user := this.Data["user"].(*models.User)
+	organization := ""
 
-	//取得用户Authorization认证信息并验证是否正确
-	username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-	if err != nil {
-		beego.Error("[Decode Authoriztion Header] " + this.Ctx.Input.Header("Authorization") + " " + " error: " + err.Error())
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized) //根据 Specification ，解码 Basic Authorization 数据失败也认为是 401 错误。
-		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
-		this.StopRun()
-	}
-
-	beego.Trace("username: " + username)
-	beego.Trace("password: " + passwd)
-
-	user := new(models.User)
-	has, err := user.Get(username, passwd, true)
-
-	if err != nil {
-		//查询用户数据失败，返回 401 错误
-		beego.Error("[Search User] " + username + " " + passwd + " has error: " + err.Error())
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
-		this.StopRun()
-	}
-
-	if has == false {
-		//没有查询到用户数据
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
-		this.StopRun()
-	}
-
+	username := this.Data["username"].(string)
+	passwd := this.Data["passwd"].(string)
 	//获取namespace/repository
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
 	//判断用户的username和namespace是否相同
 	if username != namespace {
-		beego.Error("[Put Repository] " + user.Username + ":" + namespace)
+		//在未实现组织功能的时候，当用户名和 namespace 不相同时就返回错误信息。
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"username != namespace.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"用户名和仓库的命名空间不同\"}"))
 		this.StopRun()
 	} else {
 		//TODO 如果是 Organization 用户，判断是否有写入 Organization 的 Repository 权限。
-		//TODO  需要定义Organization 用户和User的关系-fivestarsky
 	}
 
 	//创建或更新 Repository 数据
 	//也可以采用 ioutil.ReadAll(this.Ctx.Request.Body) 的方式读取 body 数据
 	//TODO 检查 JSON 字符串是否合法
 	//TODO 检查 逻辑是否合法
-	beego.Info("[Request Body] " + string(this.Ctx.Input.CopyBody()))
 
+	//从 API 创建的 Repository 默认是 Public 的。
 	repo := new(models.Repository)
-	hasRepo, repoErr := repo.Get(namespace, repository, "User")
-	if repoErr != nil {
-		beego.Error("[Search Repository] " + namespace + " " + repository + " search repository error: " + err.Error())
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Search repository error.\"}"))
-		this.StopRun()
-	}
-
-	//TODO 判断 Docker 命令发上来的 JSON 内容是合法的。
-	//判断存在 Repository
-	if hasRepo == true {
-		_, err := repo.UpdateJSON(namespace, repository, "User", string(this.Ctx.Input.CopyBody()))
-		if err != nil {
-			beego.Error("[Update Repository JSON] " + namespace + " " + repository + " repository error: " + err.Error())
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the repository JSON data error.\"}"))
-			this.StopRun()
-		}
-
-	} else {
-		//从 API 创建的 Repository 默认是 Public 的。
-		_, err := repo.Insert(namespace, repository, "User", string(this.Ctx.Input.CopyBody()), false)
-		if err != nil {
-			beego.Error("[Insert Repository] " + namespace + " " + repository + " repository error." + err.Error())
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Create the repository error。\"}"))
-			this.StopRun()
-		}
-
-	}
-
-	//TODO 更新 repository 的 User-Agent 数据，From this.Ctx.Input.Header("User-Agent")
-	repo.UpdateRepositoryInfo(namespace, repository, "User", "Agent", this.Ctx.Input.Header("User-Agent"))
+	//由于是非关系型数据库，所以新建和修改是同样操作。
+	repo.Add(namespace, repository, organization, string(this.Ctx.Input.CopyBody()))
+	repo.SetAgent(namespace, repository, organization, this.Ctx.Input.Header("User-Agent"))
 	//如果 Request 的 Header 中含有 X-Docker-Token 且为 True，需要在返回值设置 Token 值。
 	//否则客户端报错 Index response didn't contain an access token
 	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
 		//创建 token 并保存
 		//需要加密的字符串为 UserName + UserPassword + 时间戳
-		//Token 在数据库中是唯一的
-		token := utils.GeneralToken(user.Username + user.Password)
-
-		//保存 Token
-		//if err := user.SetToken(username, token); err != nil {
-		//	beego.Error("[Update Token] " + user.Username + " update token error.")
-		//	this.Ctx.Output.Context.Output.SetStatus(400)
-		//	this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update token error.\"}"))
-		//	this.StopRun()
-		//}
-
+		token := utils.GeneralToken(username + passwd)
 		this.SetSession("token", token)
-
 		//在返回值 Header 里面设置 Token
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
@@ -241,9 +174,9 @@ func (this *RepositoryAPIController) PutRepository() {
 //TODO：删除一个 Tag 的完整性检查
 func (this *RepositoryAPIController) PutTag() {
 
-	beego.Trace("Namespace: " + this.Ctx.Input.Param(":namespace"))
-	beego.Trace("Repository: " + this.Ctx.Input.Param(":repo_name"))
-	beego.Trace("Tag: " + this.Ctx.Input.Param(":tag"))
+	beego.Debug("Namespace: " + this.Ctx.Input.Param(":namespace"))
+	beego.Debug("Repository: " + this.Ctx.Input.Param(":repo_name"))
+	beego.Debug("Tag: " + this.Ctx.Input.Param(":tag"))
 
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
@@ -305,8 +238,8 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
-	beego.Trace("[Namespace] " + namespace)
-	beego.Trace("[Repository] " + repository)
+	beego.Debug("[Namespace] " + namespace)
+	beego.Debug("[Repository] " + repository)
 
 	repo := new(models.Repository)
 	has, err := repo.Get(namespace, repository, "User")
@@ -434,15 +367,15 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
-	beego.Trace("[Namespace] " + namespace)
-	beego.Trace("[Repository] " + repository)
+	beego.Debug("[Namespace] " + namespace)
+	beego.Debug("[Repository] " + repository)
 
 	//查询 Repository 数据
 	repo := new(models.Repository)
 
 	//查询已经完成上传的 Repository
 	//**这句话判断依据忘记了,是所有Image都完毕？--fivestarsky
-	has, err := repo.GetPushed(namespace, repository, true, true)
+	has, err := repo.GetActived(namespace, repository)
 
 	if err != nil {
 		beego.Error("[Search Repository] " + namespace + " " + repository + " search pushed error: " + err.Error())
@@ -489,14 +422,14 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
-	beego.Trace("[Namespace] " + namespace)
-	beego.Trace("[Repository] " + repository)
+	beego.Debug("[Namespace] " + namespace)
+	beego.Debug("[Repository] " + repository)
 
 	//查询 Repository 数据
 	repo := new(models.Repository)
 	//查询已经完成上传的 Repository
 	//**这句话判断依据忘记了,是所有Image都完毕？--fivestarsky
-	has, err := repo.GetPushed(namespace, repository, true, true)
+	has, err := repo.GetActived(namespace, repository)
 
 	if err != nil {
 		beego.Error("[Search Repository] " + namespace + " " + repository + " search pushed error: " + err.Error())
