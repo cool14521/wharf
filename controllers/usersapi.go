@@ -42,7 +42,6 @@ func (this *UsersAPIController) Prepare() {
 }
 
 func (this *UsersAPIController) PostUsers() {
-	beego.Debug("Authorization:" + this.Ctx.Input.Header("Authorization"))
 	//根据配置文件中得是否可以注册处理逻辑
 	open, _ := beego.AppConfig.Bool("docker::OpenSignup")
 	if open {
@@ -56,7 +55,9 @@ func (this *UsersAPIController) PostUsers() {
 		}
 
 		user := new(models.User)
-		if err := user.Add(u["username"].(string), u["password"].(string), u["email"].(string), true); err != nil {
+		//通过 API 创建用户默认是 false 的。
+		//TODO 设置 Email 的激活流程。
+		if err := user.Add(u["username"].(string), u["password"].(string), u["email"].(string), false); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户创建] 失败: %s", err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("{\"error\":\"%s\"}", err.Error())))

@@ -27,12 +27,19 @@ func NowToBytes() []byte {
 }
 
 func BoolToBytes(boolean bool) []byte {
-	rst := make([]byte, 0)
-	return strconv.AppendBool(rst, boolean)
+	if boolean == true {
+		return Int64ToBytes(1)
+	} else {
+		return Int64ToBytes(0)
+	}
 }
 
-func BytesToBool(value []byte) (bool, error) {
-	return false, nil
+func BytesToBool(value []byte) bool {
+	if BytesToInt64(value) == 0 {
+		return false
+	} else {
+		return true
+	}
 }
 
 func ToString(args ...interface{}) string {
