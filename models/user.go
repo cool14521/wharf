@@ -64,7 +64,7 @@ func (user *User) Add(username string, passwd string, email string, actived bool
 	}
 }
 
-func (this *User) Get(username string, passwd string, actived bool) (bool, error) {
+func (user *User) Get(username string, passwd string, actived bool) (bool, error) {
 	//读取密码和Actived的值进行判断是否存在用户
 	if results, err := LedisDB.HMget([]byte(GetObjectKey("user", username)), []byte("Password"), []byte("Actived")); err != nil {
 		return false, err
