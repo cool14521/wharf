@@ -31,6 +31,10 @@ func BoolToBytes(boolean bool) []byte {
 	return strconv.AppendBool(rst, boolean)
 }
 
+func BytesToBool(value []byte) (bool, error) {
+	return false, nil
+}
+
 func ToString(args ...interface{}) string {
 	result := ""
 
