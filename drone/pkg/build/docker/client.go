@@ -13,8 +13,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/docker/docker/pkg/term"
-	"github.com/docker/docker/utils"
+	"github.com/dockercn/docker/pkg/term"
+	"github.com/dockercn/docker/utils"
 )
 
 const (
