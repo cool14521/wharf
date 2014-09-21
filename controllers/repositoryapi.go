@@ -182,7 +182,7 @@ func (this *RepositoryAPIController) PutTag() {
 	repository := this.Ctx.Input.Param(":repo_name")
 
 	repo := new(models.Repository)
-	has, err := repo.Get(namespace, repository, "User")
+	has, err := repo.Get(namespace, repository, "User", true)
 	if err != nil {
 		beego.Error("[Search Repository] " + namespace + " " + repository + " search repository error: " + err.Error())
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -242,7 +242,7 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 	beego.Debug("[Repository] " + repository)
 
 	repo := new(models.Repository)
-	has, err := repo.Get(namespace, repository, "User")
+	has, err := repo.Get(namespace, repository, "User", true)
 	if err != nil {
 		beego.Error("[Search Repository] " + namespace + " " + repository + " search repository error: " + err.Error())
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)

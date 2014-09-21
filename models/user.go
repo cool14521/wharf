@@ -28,11 +28,10 @@ type User struct {
 }
 
 func (user *User) Add(username string, passwd string, email string, actived bool) error {
-	//检查是否存在用户
-	//检查组织中是否存在相同的 Name
-	if u, err := LedisDB.HGet([]byte(GetObjectKey("user", username)), []byte("Password")); err != nil {
+	//检查用户的 Key 是否存在
+	if u, err := LedisDB.Exists([]byte(GetObjectKey("user", username))); err != nil {
 		return nil
-	} else if u != nil {
+	} else if u > 0 {
 		//已经存在用户
 		return fmt.Errorf("已经 %s 存在用户", username)
 	} else {
@@ -69,24 +68,37 @@ func (user *User) Add(username string, passwd string, email string, actived bool
 }
 
 func (user *User) Get(username string, passwd string, actived bool) (bool, error) {
-	//读取密码和Actived的值进行判断是否存在用户
-	if results, err := LedisDB.HMget([]byte(GetObjectKey("user", username)), []byte("Password"), []byte("Actived")); err != nil {
-		return false, err
+	//检查用户的 Key 是否存在
+	if u, err := LedisDB.Exists([]byte(GetObjectKey("user", username))); err != nil {
+		return false, nil
+	} else if u > 0 {
+		//读取密码和Actived的值进行判断是否存在用户
+		if results, err := LedisDB.HMget([]byte(GetObjectKey("user", username)), []byte("Password"), []byte("Actived")); err != nil {
+			return false, err
+		} else {
+			if password := results[0]; string(password) != passwd {
+				return false, nil
+			}
+
+			if active := results[1]; utils.BytesToBool(active) != actived {
+				return false, nil
+			}
+
+			return true, nil
+		}
 	} else {
-		if password := results[0]; string(password) != passwd {
-			return false, nil
-		}
-
-		if active := results[1]; utils.BytesToBool(active) != actived {
-			return false, nil
-		}
-
-		return true, nil
+		return false, nil
 	}
 }
 
 func (user *User) Log(username string, log string) error {
 	var logs []string
+
+	if u, err := LedisDB.Exists([]byte(GetObjectKey("user", username))); err != nil {
+		return nil
+	} else if u == 0 {
+		return fmt.Errorf("没有找到用户 %s ", username)
+	}
 
 	if l, err := LedisDB.HGet([]byte(GetObjectKey("user", username)), []byte("Logs")); err != nil {
 		//没有找到数据会返回 Error
@@ -97,6 +109,7 @@ func (user *User) Log(username string, log string) error {
 			return e
 		}
 	}
+
 	//向数组追加 Log 记录
 	logs = append(logs, fmt.Sprintf("%d %s %s", time.Now().Unix, GetObjectKey("user", username), log))
 	//压缩 Log 数组，写入数据库
@@ -109,13 +122,14 @@ func (user *User) Log(username string, log string) error {
 
 		return nil
 	}
+
 }
 
 type Organization struct {
 	Owner        string    //用户的 Key，每个组织都由用户创建，Owner 默认是拥有所有 Repository 的读写权限
 	Name         string    //
 	Repositories string    //
-	privileges   string    //
+	Privileges   string    //
 	Users        string    //
 	Actived      bool      //组织创建后就是默认激活的
 	Created      time.Time //

@@ -78,7 +78,7 @@ type Tag struct {
 	Logs       string    //
 }
 
-func (repo *Repository) Get(namespace, repository, organization string) (bool, error) {
+func (repo *Repository) Get(namespace, repository, organization string, active bool) (bool, error) {
 	return true, nil
 }
 
