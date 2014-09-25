@@ -95,22 +95,12 @@ func (this *RepositoryAPIController) Prepare() {
 			}
 
 			if has == true {
-				//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["user"]
-				//存储 User 的 Key
+				//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["username"]
 				this.Data["username"] = username
 				this.Data["passwd"] = passwd
 			} else {
-				//没有查询到用户数据
-				beego.Error(fmt.Sprintf("API 用户登录 没有查询到用户：%s", username))
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户数据\"}"))
-				this.StopRun()
-			}
-
-			//根据 namespace 和 username 是否相同判断是不是组织的 organization ，判断数据库中有没有对应的组织。
-			namespace := string(this.Ctx.Input.Param(":namespace"))
-			//判断用户的username和namespace是否相同，不同的情况下判断 Organization 的数据
-			if username != namespace {
+				//没有找到用户数据的情况下，查询组织数据
+				namespace := string(this.Ctx.Input.Param(":namespace"))
 				org := new(models.Organization)
 				if has, err := org.Get(namespace, true); err != nil {
 					beego.Error(fmt.Sprintf("查询组织名称 %s 时错误 %s", namespace, err.Error()))
@@ -119,10 +109,12 @@ func (this *RepositoryAPIController) Prepare() {
 					this.StopRun()
 				} else if has == false {
 					//即没有找到组织数据，用户数据和 namespace 还不相同的情况下返回错误的信息。
+					beego.Error(fmt.Sprintf("API 用户登录 没有查询到用户：%s", username))
 					this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 					this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有用户或组织的数据\"}"))
 					this.StopRun()
 				} else {
+					//查询到组织数据，在以下的 Action 处理函数中使用 this.Data["org"]
 					this.Data["org"] = namespace
 				}
 			}
@@ -141,9 +133,11 @@ func (this *RepositoryAPIController) PutRepository() {
 	username := this.Data["username"].(string)
 	passwd := this.Data["passwd"].(string)
 	org := this.Data["org"].(string)
+
 	//获取namespace/repository
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
+
 	//加密签名
 	sign := string(this.Ctx.Input.Header("X-Docker-Sign"))
 

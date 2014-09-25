@@ -170,7 +170,7 @@ func (org *Organization) Has(name string) (bool, error) {
 	return false, nil
 }
 
-func (org *Organization) Add(user, name, description string) error {
+func (org *Organization) Add(user, name, description string, actived bool) error {
 	if has, err := org.Has(name); err != nil {
 		return err
 	} else if has == true {
@@ -189,6 +189,7 @@ func (org *Organization) Add(user, name, description string) error {
 		org.Owner = user
 		org.Name = name
 		org.Description = description
+		org.Actived = actived
 
 		org.Updated = time.Now().Unix()
 		org.Created = time.Now().Unix()
