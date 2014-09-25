@@ -88,7 +88,6 @@ func (this *RepositoryAPIController) Prepare() {
 			has, err := user.Get(username, passwd, true)
 			if err != nil {
 				//查询用户数据失败，返回 401 错误
-				user.Log(username, fmt.Sprintf("API 用户访问 Repository 查询用户错误：", err.Error()))
 				beego.Error(fmt.Sprintf("[API 用户] 查询用户错误： ", err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询用户错误\"}"))

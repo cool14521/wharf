@@ -51,10 +51,8 @@ func runAccount(c *cli.Context) {
 
 				user := new(models.User)
 				if err := user.Add(username, passwd, email, true); err != nil {
-					user.Log(username, fmt.Sprintf("%s: %s %s", "使用命令添加用户失败", username, err.Error()))
 					fmt.Println(fmt.Sprintf("%s: %s", "添加用户失败", err.Error()))
 				} else {
-					user.Log(username, fmt.Sprintf("使用命令添加 %s 用户成功！", username))
 					fmt.Println(fmt.Sprintf("添加 %s 用户成功！", username))
 					//TODO 发送注册邮件
 				}
