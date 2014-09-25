@@ -1,7 +1,7 @@
 package models
 
 import (
-	"strconv"
+	"fmt"
 	"time"
 
 	"github.com/dockercn/docker-bucket/utils"
@@ -57,6 +57,7 @@ type Repository struct {
 	Checksum     string    //
 	Checksumed   bool      //Checksum 检查标志
 	Labels       string    //用户设定的标签，和库的 Tag 是不一样
+	Tags         string    //
 	Icon         string    //
 	Sign         string    //
 	Privated     bool      //私有 Repository
@@ -64,169 +65,79 @@ type Repository struct {
 	Cleared      bool      //对 Repository 是否进行了杀毒处理
 	Actived      bool      //删除标志
 	Encrypt      bool      //是否加密
+	Token        string    //
 	Created      time.Time //
 	Updated      time.Time //
 	Logs         string    //
 }
 
-type Tag struct {
-	Name       string    //
-	Image      string    //
-	Repository string    //
-	Created    time.Time //
-	Updated    time.Time //
-	Logs       string    //
-}
+func (repo *Repository) Get(namespace, repository, organization, sign string, active bool) (bool, error) {
+	var keys [][]byte
 
-func (repo *Repository) Get(namespace, repository, organization string, active bool) (bool, error) {
-	return true, nil
-}
-
-func (repo *Repository) GetActived(namespace, repository string) (bool, error) {
-	return true, nil
-}
-
-func (repo *Repository) Add(namespace, repository, organization, json string) (bool, error) {
-	//从 API 创建的 Repository 默认是 Public 的。
-	return true, nil
-}
-
-func (repo *Repository) SetAgent(namespace, repository, organization, agent string) (bool, error) {
-	return true, nil
-}
-
-//多个UP方法可以合并
-//通用方法更新Repository的信息
-func (repo *Repository) UpdateRepositoryInfo(namespace, repository, namespaceType, infoKey, infoData string) (bool, error) {
-	if namespaceType == "Organization" {
-		_, infoErr := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository)), []byte(infoKey), []byte(infoData))
-
-		if infoErr != nil {
-			return false, infoErr
+	user := new(User)
+	if has, err := user.Has(namespace); err != nil {
+		return false, err
+	} else if has == true {
+		//个人用户的 repository
+		if len(sign) == 0 {
+			keys = append(keys, []byte(fmt.Sprintf("%s%s+", GetObjectKey("user", namespace), GetObjectKey("repo", repository))))
+			keys = append(keys, []byte(fmt.Sprintf("%s%s-", GetObjectKey("user", namespace), GetObjectKey("repo", repository))))
+		} else if len(sign) > 0 {
+			keys = append(keys, []byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("user", namespace), GetObjectKey("repo", repository), sign)))
 		}
-		return true, nil
 	} else {
-		_, infoErr := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository)), []byte(infoKey), []byte(infoData))
-		if infoErr != nil {
-			return false, infoErr
+		//企业用户的 repository
+		if len(sign) == 0 {
+			keys = append(keys, []byte(fmt.Sprintf("%s%s+", GetObjectKey("org", namespace), GetObjectKey("repo", repository))))
+			keys = append(keys, []byte(fmt.Sprintf("%s%s-", GetObjectKey("org", namespace), GetObjectKey("repo", repository))))
+		} else if len(sign) > 0 {
+			keys = append(keys, []byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("org", namespace), GetObjectKey("repo", repository), sign)))
 		}
-		return true, nil
 	}
-}
 
-func (repo *Repository) UpdateJSON(namespace, repository, namespaceType, json string) (bool, error) {
-	if namespaceType == "Organization" {
-		_, jsonInfoErr := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository)), []byte("JSON"), []byte(json))
-
-		if jsonInfoErr != nil {
-			return false, jsonInfoErr
+	for _, value := range keys {
+		if r, err := LedisDB.Exists(value); err != nil {
+			return false, err
+		} else if r > 0 {
+			if result, err := LedisDB.HGet(value, []byte("active")); err != nil {
+				return false, err
+			} else if utils.BytesToBool(result) == active {
+				return true, nil
+			}
 		}
-		return true, nil
-	} else {
-		_, jsonInfoErr := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository)), []byte("JSON"), []byte(json))
-		if jsonInfoErr != nil {
-			return false, jsonInfoErr
-		}
-		return true, nil
 	}
-}
 
-func (repo *Repository) UpdateUploaded(uploaded bool) (bool, error) {
 	return false, nil
 }
 
-func (repo *Repository) UpdateChecksumed(checksumed bool) (bool, error) {
-	return false, nil
+func (repo *Repository) Add(namespace, repository, organization, sign, json string) error {
+	return nil
 }
 
-func (repo *Repository) UpdateSize(size int64) (bool, error) {
-	return false, nil
+func (repo *Repository) SetAgent(namespace, repository, organization, agent string) error {
+	return nil
 }
 
-func (repo *Repository) Insert(namespace, repository, namespaceType, json string, privated bool) (bool, error) {
-	if namespaceType == "Organization" {
-		_, jsonInfoErr := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository)), []byte("JSON"), []byte(json))
-		_, privatedInfoErr := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository)), []byte("Privated"), []byte(strconv.FormatBool(privated)))
-
-		if jsonInfoErr != nil {
-			return false, jsonInfoErr
-		}
-		if privatedInfoErr != nil {
-			return false, privatedInfoErr
-		}
-		return true, nil
-	} else {
-		_, jsonInfoErr := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository)), []byte("JSON"), []byte(json))
-		_, privatedInfoErr := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository)), []byte("Privated"), []byte(strconv.FormatBool(privated)))
-
-		if jsonInfoErr != nil {
-			return false, jsonInfoErr
-		}
-		if privatedInfoErr != nil {
-			return false, privatedInfoErr
-		}
-		return true, nil
-	}
+func (repo *Repository) SetToken(namespace, repository, organization, token string) error {
+	return nil
 }
 
-//func (tag *Tag) Insert(name string, imageId string, repository int64) (bool, error) {
-//	return false, nil
-//}
-
-func (tag *Tag) Insert(namespace, repository, namespaceType, tagName, imageId string) (bool, error) {
-	if namespaceType == "Organization" {
-		info, err := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository, "%", tagName)), []byte("ImageId"), []byte(imageId))
-		if info <= 0 || err != nil {
-			return false, err
-		} else {
-			return true, nil
-		}
-	} else {
-		info, err := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository, "%", tagName)), []byte("ImageId"), []byte(imageId))
-		if info <= 0 || err != nil {
-			return false, err
-		} else {
-			return true, nil
-		}
-	}
+func (repo *Repository) SetTag(namespace, repository, organization, tag, image string) error {
+	return nil
 }
 
-func (tag *Tag) UpdateImageId(namespace, repository, namespaceType, tagName, imageId string) (bool, error) {
-	if namespaceType == "Organization" {
-		info, err := LedisDB.HSet([]byte(utils.ToString("#", namespace, "$", repository, "%", tagName)), []byte("ImageId"), []byte(imageId))
-		if info <= 0 || err != nil {
-			return false, err
-		} else {
-			return true, nil
-		}
-	} else {
-		info, err := LedisDB.HSet([]byte(utils.ToString("@", namespace, "$", repository, "%", tagName)), []byte("ImageId"), []byte(imageId))
-		if info <= 0 || err != nil {
-			return false, err
-		} else {
-			return true, nil
-		}
-	}
+func (repo *Repository) SetJSON(namespace, repository, organization, json string) error {
+	return nil
 }
 
-func (tag *Tag) Get(namespace, repository, namespaceType, tagName string) (bool, error) {
-	if namespaceType == "Organization" {
-		info, err := LedisDB.HGet([]byte(utils.ToString("#", namespace, "$", repository, "%", tagName)), []byte("Name"))
-		if len(info) <= 0 || err != nil {
-			return false, err
-		} else {
-			return true, nil
-		}
-	} else {
-		info, err := LedisDB.HGet([]byte(utils.ToString("@", namespace, "$", repository, "%", tagName)), []byte("Name"))
-		if len(info) <= 0 || err != nil {
-			return false, err
-		} else {
-			return true, nil
-		}
-	}
+func (repo *Repository) Setloaded(uploaded bool) error {
+	return nil
 }
 
-func (tag *Tag) GetImagesJSON(repository int64) ([]byte, error) {
-	return []byte(""), nil
+func (repo *Repository) SetChecksumed(checksumed bool) error {
+	return nil
+}
+
+func (repo *Repository) SetSize(size int64) error {
+	return nil
 }
