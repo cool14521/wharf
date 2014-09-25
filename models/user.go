@@ -73,10 +73,12 @@ func (user *User) Add(username string, passwd string, email string, actived bool
 		if err := user.Save(key); err != nil {
 			return err
 		} else {
-			LedisDB.Set([]byte(GetObjectKey("user", username)), key)
-		}
+			if err := LedisDB.Set([]byte(GetObjectKey("user", username)), key); err != nil {
+				return err
+			}
 
-		return nil
+			return nil
+		}
 	}
 }
 
@@ -104,7 +106,7 @@ func (user *User) Save(key []byte) error {
 					return err
 				}
 			default:
-				return fmt.Errorf("不支持的数据类型 %s", value.Kind().String())
+				return fmt.Errorf("不支持的数据类型 %s:%s", s.Field(i).Name, value.Kind().String())
 			}
 		}
 
@@ -147,14 +149,15 @@ func (user *User) Get(username string, passwd string, actived bool) (bool, error
 }
 
 type Organization struct {
-	Owner        string    //用户的 Key，每个组织都由用户创建，Owner 默认是拥有所有 Repository 的读写权限
-	Name         string    //
-	Repositories string    //
-	Privileges   string    //
-	Users        string    //
-	Actived      bool      //组织创建后就是默认激活的
-	Created      time.Time //
-	Updated      time.Time //
+	Owner        string //用户的 Key，每个组织都由用户创建，Owner 默认是拥有所有 Repository 的读写权限
+	Name         string //
+	Description  string //保存 Markdown 格式
+	Repositories string //
+	Privileges   string //
+	Users        string //
+	Actived      bool   //组织创建后就是默认激活的
+	Created      int64  //
+	Updated      int64  //
 }
 
 func (org *Organization) Has(name string) (bool, error) {
@@ -167,6 +170,100 @@ func (org *Organization) Has(name string) (bool, error) {
 	return false, nil
 }
 
+func (org *Organization) Add(user, name, description string) error {
+	if has, err := org.Has(name); err != nil {
+		return err
+	} else if has == true {
+		return fmt.Errorf("组织 %s 已经存在", name)
+	} else {
+		//检查用户的命名空间是否冲突
+		u := new(User)
+		if has, err := u.Has(name); err != nil {
+			return err
+		} else if has == true {
+			return fmt.Errorf("%s 和用户名称冲突", name)
+		}
+
+		key := utils.GeneralKey(name)
+
+		org.Owner = user
+		org.Name = name
+		org.Description = description
+
+		org.Updated = time.Now().Unix()
+		org.Created = time.Now().Unix()
+
+		if err := org.Save(key); err != nil {
+			return err
+		} else {
+			if err := LedisDB.Set([]byte(GetObjectKey("org", name)), key); err != nil {
+				return err
+			}
+
+			return nil
+		}
+	}
+}
+
 func (org *Organization) Get(name string, actived bool) (bool, error) {
-	return true, nil
+	//检查组织的 Key 是否存在
+	if has, err := org.Has(name); err != nil {
+		return false, err
+	} else if has == true {
+		var key []byte
+
+		//获取用户对象的 Key
+		if key, err = LedisDB.Get([]byte(GetObjectKey("org", name))); err != nil {
+			return false, err
+		}
+
+		//读取密码和Actived的值进行判断是否存在用户
+		if active, err := LedisDB.HGet(key, []byte("Actived")); err != nil {
+			return false, err
+		} else {
+
+			if utils.BytesToBool(active) != actived {
+				return false, nil
+			}
+
+			return true, nil
+		}
+
+	} else {
+		//没有组织的 Key 存在
+		return false, nil
+	}
+}
+
+func (org *Organization) Save(key []byte) error {
+	s := reflect.TypeOf(org).Elem()
+
+	//循环处理 Struct 的每一个 Field
+	for i := 0; i < s.NumField(); i++ {
+		//获取 Field 的 Value
+		value := reflect.ValueOf(org).Elem().Field(s.Field(i).Index[0])
+
+		//判断 Field 不为空
+		if utils.IsEmptyValue(value) == false {
+			switch value.Kind() {
+			case reflect.String:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(value.String())); err != nil {
+					return err
+				}
+			case reflect.Bool:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.BoolToBytes(value.Bool())); err != nil {
+					return err
+				}
+			case reflect.Int64:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
+					return err
+				}
+			default:
+				return fmt.Errorf("不支持的数据类型 %s:%s", s.Field(i).Name, value.Kind().String())
+			}
+		}
+
+	}
+
+	return nil
 }
