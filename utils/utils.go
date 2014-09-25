@@ -26,6 +26,10 @@ func NowToBytes() []byte {
 	return Int64ToBytes(time.Now().Unix())
 }
 
+func TimeToBytes(now time.Time) []byte {
+	return Int64ToBytes(now.Unix())
+}
+
 func BoolToBytes(boolean bool) []byte {
 	if boolean == true {
 		return Int64ToBytes(1)
@@ -64,6 +68,13 @@ func SendActiveEmail(code string, email string, host string, port int, user stri
 
 func SendAddEmail(username string, passwd string, email string, host string, port int, user string, password string) error {
 	return nil
+}
+
+func GeneralKey(key string) []byte {
+	md5String := fmt.Sprintf("%v%v", key, string(time.Now().Unix()))
+	h := md5.New()
+	h.Write([]byte(md5String))
+	return h.Sum(nil)
 }
 
 func GeneralToken(key string) string {

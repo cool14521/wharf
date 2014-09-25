@@ -10,31 +10,30 @@ import (
 )
 
 type User struct {
-	Username      string    //
-	Password      string    //
-	Repositories  string    //
-	Organizations string    //
-	Email         string    //Email 可以更换，全局唯一
-	Fullname      string    //
-	Company       string    //
-	Location      string    //
-	Mobile        string    //
-	URL           string    //
-	Gravatar      string    //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
-	Actived       bool      //
-	Created       time.Time //
-	Updated       time.Time //
-	Logs          string    //用户日志信息
+	Key           []byte    "[]byte" //
+	Username      string    "string" //
+	Password      string    "string" //
+	Repositories  string    "string" //
+	Organizations string    "string" //
+	Email         string    "string" //Email 可以更换，全局唯一
+	Fullname      string    "string" //
+	Company       string    "string" //
+	Location      string    "string" //
+	Mobile        string    "string" //
+	URL           string    "string" //
+	Gravatar      string    "string" //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
+	Actived       bool      "int64"  //
+	Created       time.Time "int64"  //
+	Updated       time.Time "int64"  //
+	Logs          string    "string" //用户日志信息
 }
 
 func (user *User) Has(username string) (bool, error) {
-	if user, err := LedisDB.Exists([]byte(GetObjectKey("user", username))); err != nil {
+	if exist, err := LedisDB.Exists([]byte(GetObjectKey("user", username))); err != nil || exist == 0 {
 		return false, err
-	} else if user > 0 {
+	} else {
 		return true, nil
 	}
-
-	return false, nil
 }
 
 func (user *User) Add(username string, passwd string, email string, actived bool) error {
@@ -63,18 +62,29 @@ func (user *User) Add(username string, passwd string, email string, actived bool
 			return fmt.Errorf("Email 格式不合法")
 		}
 
-		//设置用户属性
-		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Username"), []byte(username))
-		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Password"), []byte(passwd))
-		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Email"), []byte(email))
-		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Actived"), utils.BoolToBytes(actived))
+		user.Key = utils.GeneralKey(username)
+		user.Username = username
+		user.Password = passwd
+		user.Email = email
+		user.Actived = actived
 
-		//设置用户创建的时间
-		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Updated"), utils.NowToBytes())
-		LedisDB.HSet([]byte(GetObjectKey("user", username)), []byte("Created"), utils.NowToBytes())
+		user.Updated = time.Now()
+		user.Created = time.Now()
+
+		if err := user.Save(); err != nil {
+			return err
+		}
 
 		return nil
 	}
+}
+
+func (user *User) Save() error {
+	if user.Key != nil {
+		LedisDB.Set([]byte(user.Username), user.Key)
+	}
+
+	return nil
 }
 
 func (user *User) Get(username string, passwd string, actived bool) (bool, error) {
