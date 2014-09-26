@@ -140,13 +140,17 @@ func (repo *Repository) Add(username, repository, organization, sign, json strin
 			repo.Encrypted = true
 		}
 
-		if e := repo.Save(key); e != nil {
+		if k, e := LedisDB.Get(key); e != nil {
 			return e
+		} else {
+			if e := repo.Save(k); e != nil {
+				return e
+			}
 		}
 
 	} else if has == false {
 		//第一次创建数据
-		key = utils.GeneralKey(fmt.Sprintf("%s%s+", GetObjectKey("user", username), GetObjectKey("repo", repository)))
+		k := utils.GeneralKey(fmt.Sprintf("%s%s+", GetObjectKey("user", username), GetObjectKey("repo", repository)))
 
 		repo.Username = username
 		repo.Repository = repository
@@ -168,9 +172,12 @@ func (repo *Repository) Add(username, repository, organization, sign, json strin
 			repo.Encrypted = true
 		}
 
-		if e := repo.Save(key); e != nil {
+		if e := repo.Save(k); e != nil {
 			return e
+		} else {
+			//根据username org sign 等生成 Key
 		}
+
 	}
 
 	return nil

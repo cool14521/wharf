@@ -57,78 +57,85 @@ func (this *RepositoryAPIController) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
 
-	if beego.AppConfig.String("docker::Standalone") == "true" {
-		//单机运行模式，检查 Basic Auth 的认证。
-		if len(this.Ctx.Input.Header("Authorization")) == 0 {
-			//没有 Basic Auth 的认证，返回错误信息。
-			beego.Error("没有 Authorization 信息的 API 访问")
+	beego.Debug(this.Ctx.Request.Header)
+
+	//单机运行模式，检查 Basic Auth 的认证。
+	if len(this.Ctx.Input.Header("Authorization")) == 0 {
+		//检查 Token 的认证
+		if len(this.Ctx.Input.Header("Token")) == 0 {
+			//没有 Token 的认证，返回错误信息。
+			beego.Error("没有找到 Authorization 和 Token 的认证信息")
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"服务器只支持 Basic Auth 验证模式，请联系系统管理员\"}"))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有找到 Authorization 和 Token 的认证信息\"}"))
 			this.StopRun()
 		} else {
-			beego.Debug("Debug: " + this.Ctx.Input.Header("Authorization"))
-			//Standalone True 模式，检查是否 Basic
-			if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
-				beego.Error("Authorization 中 Auth 的格式错误: " + this.Ctx.Input.Header("Authorization"))
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"HTTP Header 的 Authorization 格式错误\"}"))
-				this.StopRun()
-			}
+			token := this.GetSession("token")
 
-			//Decode Basic Auth 进行用户的判断
-			username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-			if err != nil {
-				beego.Error(fmt.Sprintf("[解码 Basic Auth] %s 错误： %s ", this.Ctx.Input.Header("Authorization"), err.Error()))
+			if token != this.Ctx.Input.Header("Token") {
+				beego.Error("Token 验证信息错误")
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码 HTTP Header 的 Basic Auth 信息错误\"}"))
-				this.StopRun()
-			}
-
-			//判断 Header 信息里面的用户数据是否存在
-			user := new(models.User)
-			has, err := user.Get(username, passwd, true)
-			if err != nil {
-				//查询用户数据失败，返回 401 错误
-				beego.Error(fmt.Sprintf("[API 用户] 查询用户错误： ", err.Error()))
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询用户错误\"}"))
-				this.StopRun()
-			}
-
-			if has == true {
-				//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["username"]
-				this.Data["username"] = username
-				this.Data["passwd"] = passwd
-
-				//根据 Namespace 查询组织数据
-				namespace := string(this.Ctx.Input.Param(":namespace"))
-				org := new(models.Organization)
-				if has, err := org.Get(namespace, true); err != nil {
-					beego.Error(fmt.Sprintf("查询组织名称 %s 时错误 %s", namespace, err.Error()))
-					this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-					this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询组织数据报错。\"}"))
-					this.StopRun()
-				} else if has == false {
-					this.Data["org"] = ""
-				} else {
-					//查询到组织数据，在以下的 Action 处理函数中使用 this.Data["org"]
-					this.Data["org"] = namespace
-				}
-			} else {
-				//查询用户数据失败，返回 401 错误
-				beego.Error(fmt.Sprintf("[API 用户] 没有查询到用户：%s ", username))
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户\"}"))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Token 验证信息错误\"}"))
 				this.StopRun()
 			}
 		}
-	} else {
-		beego.Error("非 Standalone 模式登录尝试错误")
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"服务器只支持 Basic Auth 验证模式，请联系系统管理员\"}"))
-		this.StopRun()
-	}
 
+	} else {
+		beego.Debug("Debug: " + this.Ctx.Input.Header("Authorization"))
+		//Standalone True 模式，检查是否 Basic
+		if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
+			beego.Error("Authorization 中 Auth 的格式错误: " + this.Ctx.Input.Header("Authorization"))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"HTTP Header 的 Authorization 格式错误\"}"))
+			this.StopRun()
+		}
+
+		//Decode Basic Auth 进行用户的判断
+		username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
+		if err != nil {
+			beego.Error(fmt.Sprintf("[解码 Basic Auth] %s 错误： %s ", this.Ctx.Input.Header("Authorization"), err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码 HTTP Header 的 Basic Auth 信息错误\"}"))
+			this.StopRun()
+		}
+
+		//判断 Header 信息里面的用户数据是否存在
+		user := new(models.User)
+		has, err := user.Get(username, passwd, true)
+		if err != nil {
+			//查询用户数据失败，返回 401 错误
+			beego.Error(fmt.Sprintf("[API 用户] 查询用户错误： ", err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询用户错误\"}"))
+			this.StopRun()
+		}
+
+		if has == true {
+			//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["username"]
+			this.Data["username"] = username
+			this.Data["passwd"] = passwd
+
+			//根据 Namespace 查询组织数据
+			namespace := string(this.Ctx.Input.Param(":namespace"))
+			org := new(models.Organization)
+			if has, err := org.Get(namespace, true); err != nil {
+				beego.Error(fmt.Sprintf("查询组织名称 %s 时错误 %s", namespace, err.Error()))
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询组织数据报错。\"}"))
+				this.StopRun()
+			} else if has == false {
+				this.Data["org"] = ""
+			} else {
+				//查询到组织数据，在以下的 Action 处理函数中使用 this.Data["org"]
+				this.Data["org"] = namespace
+			}
+		} else {
+			//查询用户数据失败，返回 401 错误
+			beego.Error(fmt.Sprintf("[API 用户] 没有查询到用户：%s ", username))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户\"}"))
+			this.StopRun()
+		}
+	}
 }
 
 func (this *RepositoryAPIController) PutRepository() {
@@ -201,8 +208,12 @@ func (this *RepositoryAPIController) PutTag() {
 
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
+
 	//加密签名
-	//sign := string(this.Ctx.Input.Header("X-Docker-Sign"))
+	//sign := ""
+	//if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+	//	sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+	//}
 
 	tag := this.Ctx.Input.Param(":tag")
 

@@ -34,59 +34,64 @@ func (this *ImageAPIController) Prepare() {
 
 	beego.Debug(this.Ctx.Request.Header)
 
-	if beego.AppConfig.String("docker::Standalone") == "true" {
-		//单机运行模式，检查 Basic Auth 的认证。
-		if len(this.Ctx.Input.Header("Authorization")) == 0 {
-			//没有 Basic Auth 的认证，返回错误信息。
+	//检查 Basic Auth 的认证。
+	if len(this.Ctx.Input.Header("Authorization")) == 0 {
+		//检查 Token 的认证
+		if len(this.Ctx.Input.Header("Token")) == 0 {
+			//没有 Token 的认证，返回错误信息。
+			beego.Error("没有找到 Authorization 和 Token 的认证信息")
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有找到 Authorization 和 Token 的认证信息\"}"))
 			this.StopRun()
 		} else {
-			//Standalone True 模式，检查是否 Basic
-			if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
+			token := this.GetSession("token")
+
+			if token != this.Ctx.Input.Header("Token") {
+				beego.Error("Token 验证信息错误")
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
-				this.StopRun()
-			}
-
-			//Decode Basic Auth 进行用户的判断
-			username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-
-			beego.Debug("username: " + username)
-			beego.Debug("password: " + passwd)
-
-			if err != nil {
-				beego.Error("[Decode Authoriztion Header] " + this.Ctx.Input.Header("Authorization") + " " + " error: " + err.Error())
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
-				this.StopRun()
-			}
-
-			user := new(models.User)
-			has, err := user.Get(username, passwd, true)
-			if err != nil {
-				//查询用户数据失败，返回 401 错误
-				beego.Error("[Search User] " + username + " " + passwd + " has error: " + err.Error())
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
-				this.StopRun()
-			}
-
-			if has == true {
-				//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["user"]
-				//TODO 这里需要根据数据库特点改为存储 Key 么？
-				this.Data["user"] = user
-			} else {
-				//没有查询到用户数据
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
+				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Token 验证信息错误\"}"))
 				this.StopRun()
 			}
 		}
+
 	} else {
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Service only support in standalone model.\"}"))
-		this.StopRun()
+		//检查是否 Basic Auth
+		if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+			this.StopRun()
+		}
+
+		//Decode Basic Auth 进行用户的判断
+		username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
+
+		if err != nil {
+			beego.Error("[Decode Authoriztion Header] " + this.Ctx.Input.Header("Authorization") + " " + " error: " + err.Error())
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+			this.StopRun()
+		}
+
+		user := new(models.User)
+		has, err := user.Get(username, passwd, true)
+		if err != nil {
+			//查询用户数据失败，返回 401 错误
+			beego.Error("[Search User] " + username + " " + passwd + " has error: " + err.Error())
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+			this.StopRun()
+		}
+
+		if has == true {
+			//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["user"]
+			//TODO 这里需要根据数据库特点改为存储 Key 么？
+			this.Data["user"] = user
+		} else {
+			//没有查询到用户数据
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
+			this.StopRun()
+		}
 	}
 }
 
