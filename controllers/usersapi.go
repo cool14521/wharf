@@ -58,13 +58,11 @@ func (this *UsersAPIController) PostUsers() {
 		//通过 API 创建用户默认是 false 的。
 		//TODO 设置 Email 的激活流程。
 		if err := user.Add(u["username"].(string), u["password"].(string), u["email"].(string), false); err != nil {
-			user.Log(u["username"].(string), fmt.Sprintf("API 用户创建失败: %s %s", u["username"].(string), err.Error()))
 			beego.Error(fmt.Sprintf("[API 用户创建] 失败: %s", err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("{\"error\":\"%s\"}", err.Error())))
 			this.StopRun()
 		} else {
-			user.Log(u["username"].(string), fmt.Sprintf("API 用户创建成功: %s", u["username"].(string)))
 			beego.Info(fmt.Sprintf("[API 用户创建] 成功: %s", u["username"].(string)))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusCreated)
 			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("{\"info\": \"创建用户 %s 成功\"}", u["username"].(string))))
@@ -89,7 +87,6 @@ func (this *UsersAPIController) GetUsers() {
 	has, err := user.Get(username, passwd, true)
 	if err != nil {
 		//查询用户数据失败，返回 401 错误
-		user.Log(username, fmt.Sprintf("API 用户登录查询用户错误：", err.Error()))
 		beego.Error(fmt.Sprintf("[API 用户登录] 查询用户错误： ", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 		this.Ctx.Output.Body([]byte(fmt.Sprintf("{\"错误\":\"用户验证失败: %s\"}", err.Error())))
@@ -98,7 +95,6 @@ func (this *UsersAPIController) GetUsers() {
 
 	if has == false {
 		//没有查询到用户数据
-		user.Log(username, fmt.Sprintf("API 用户登录 没有查询到用户："))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户数据\"}"))
 		this.StopRun()
