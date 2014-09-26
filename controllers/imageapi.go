@@ -32,6 +32,8 @@ func (this *ImageAPIController) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 
+	beego.Debug(this.Ctx.Request.Header)
+
 	if beego.AppConfig.String("docker::Standalone") == "true" {
 		//单机运行模式，检查 Basic Auth 的认证。
 		if len(this.Ctx.Input.Header("Authorization")) == 0 {

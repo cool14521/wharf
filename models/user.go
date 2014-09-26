@@ -115,7 +115,7 @@ func (user *User) Save(key []byte) error {
 	return nil
 }
 
-func (user *User) Get(username string, passwd string, actived bool) (bool, error) {
+func (user *User) Get(username, passwd string, actived bool) (bool, error) {
 	//检查用户的 Key 是否存在
 	if has, err := user.Has(username); err != nil {
 		return false, err

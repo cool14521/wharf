@@ -2,6 +2,8 @@ package models
 
 import (
 	"fmt"
+	"reflect"
+	"time"
 
 	"github.com/dockercn/docker-bucket/utils"
 )
@@ -18,7 +20,6 @@ type Job struct {
 	Actived      bool   //
 	Created      int64  //
 	Updated      int64  //
-	Logs         string //
 }
 
 type Template struct {
@@ -38,7 +39,6 @@ type Template struct {
 	Actived      bool   //
 	Created      int64  //
 	Updated      int64  //
-	Logs         string //
 }
 
 type Repository struct {
@@ -63,11 +63,10 @@ type Repository struct {
 	Clear        string //对 Repository 进行了杀毒，杀毒的结果和 status 等信息以 JSON 格式保存
 	Cleared      bool   //对 Repository 是否进行了杀毒处理
 	Actived      bool   //删除标志
-	Encrypt      bool   //是否加密
+	Encrypted    bool   //是否加密
 	Token        string //
 	Created      int64  //
 	Updated      int64  //
-	Logs         string //
 }
 
 func (repo *Repository) Get(username, repository, organization, sign string, active bool) (bool, []byte, error) {
@@ -120,10 +119,93 @@ func (repo *Repository) Get(username, repository, organization, sign string, act
 			}
 		}
 	}
+
 	return false, []byte(""), nil
 }
 
 func (repo *Repository) Add(username, repository, organization, sign, json string) error {
+	if has, key, err := repo.Get(username, repository, organization, sign, true); err != nil {
+		return err
+	} else if has == true {
+		//修改数据
+		repo.Username = username
+		repo.Repository = repository
+		repo.Organization = organization
+		repo.JSON = json
+		repo.Actived = true
+		repo.Updated = time.Now().Unix()
+
+		if len(sign) > 0 {
+			repo.Sign = sign
+			repo.Encrypted = true
+		}
+
+		if e := repo.Save(key); e != nil {
+			return e
+		}
+
+	} else if has == false {
+		//第一次创建数据
+		key = utils.GeneralKey(fmt.Sprintf("%s%s+", GetObjectKey("user", username), GetObjectKey("repo", repository)))
+
+		repo.Username = username
+		repo.Repository = repository
+		repo.Organization = organization
+		repo.JSON = json
+
+		repo.Updated = time.Now().Unix()
+		repo.Created = time.Now().Unix()
+
+		repo.Privated = false
+		repo.Checksumed = false
+		repo.Uploaded = false
+		repo.Cleared = false
+		repo.Encrypted = false
+		repo.Actived = true
+
+		if len(sign) > 0 {
+			repo.Sign = sign
+			repo.Encrypted = true
+		}
+
+		if e := repo.Save(key); e != nil {
+			return e
+		}
+	}
+
+	return nil
+}
+
+func (repo *Repository) Save(key []byte) error {
+	s := reflect.TypeOf(repo).Elem()
+
+	//循环处理 Struct 的每一个 Field
+	for i := 0; i < s.NumField(); i++ {
+		//获取 Field 的 Value
+		value := reflect.ValueOf(repo).Elem().Field(s.Field(i).Index[0])
+
+		//判断 Field 不为空
+		if utils.IsEmptyValue(value) == false {
+			switch value.Kind() {
+			case reflect.String:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(value.String())); err != nil {
+					return err
+				}
+			case reflect.Bool:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.BoolToBytes(value.Bool())); err != nil {
+					return err
+				}
+			case reflect.Int64:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
+					return err
+				}
+			default:
+				return fmt.Errorf("不支持的数据类型 %s:%s", s.Field(i).Name, value.Kind().String())
+			}
+		}
+
+	}
+
 	return nil
 }
 

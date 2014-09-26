@@ -1,25 +1,20 @@
 package models
 
-import (
-	"time"
-)
-
 type Image struct {
-	ImageId    string    //
-	JSON       string    //
-	ParentJSON string    //
-	Checksum   string    //
-	Payload    string    //
-	URL        string    //
-	Location   string    //
-	Size       int64     //
-	Uploaded   bool      //
-	CheckSumed bool      //
-	Privated   bool      //
-	Security   bool      //是否加密
-	Created    time.Time //
-	Updated    time.Time //
-	Log        string    //
+	ImageId    string //
+	JSON       string //
+	ParentJSON string //
+	Checksum   string //
+	Payload    string //
+	URL        string //
+	Location   string //
+	Size       int64  //
+	Uploaded   bool   //
+	CheckSumed bool   //
+	Privated   bool   //
+	Security   bool   //是否加密
+	Created    int64  //
+	Updated    int64  //
 }
 
 func (image *Image) Get(imageId string) (bool, error) {

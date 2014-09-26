@@ -66,6 +66,7 @@ func (this *RepositoryAPIController) Prepare() {
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"服务器只支持 Basic Auth 验证模式，请联系系统管理员\"}"))
 			this.StopRun()
 		} else {
+			beego.Debug("Debug: " + this.Ctx.Input.Header("Authorization"))
 			//Standalone True 模式，检查是否 Basic
 			if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
 				beego.Error("Authorization 中 Auth 的格式错误: " + this.Ctx.Input.Header("Authorization"))
@@ -98,8 +99,8 @@ func (this *RepositoryAPIController) Prepare() {
 				//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["username"]
 				this.Data["username"] = username
 				this.Data["passwd"] = passwd
-			} else {
-				//没有找到用户数据的情况下，查询组织数据
+
+				//根据 Namespace 查询组织数据
 				namespace := string(this.Ctx.Input.Param(":namespace"))
 				org := new(models.Organization)
 				if has, err := org.Get(namespace, true); err != nil {
@@ -108,17 +109,18 @@ func (this *RepositoryAPIController) Prepare() {
 					this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询组织数据报错。\"}"))
 					this.StopRun()
 				} else if has == false {
-					//即没有找到组织数据，用户数据和 namespace 还不相同的情况下返回错误的信息。
-					beego.Error(fmt.Sprintf("API 用户登录 没有查询到用户：%s", username))
-					this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-					this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有用户或组织的数据\"}"))
-					this.StopRun()
+					this.Data["org"] = ""
 				} else {
 					//查询到组织数据，在以下的 Action 处理函数中使用 this.Data["org"]
 					this.Data["org"] = namespace
 				}
+			} else {
+				//查询用户数据失败，返回 401 错误
+				beego.Error(fmt.Sprintf("[API 用户] 没有查询到用户：%s ", username))
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户\"}"))
+				this.StopRun()
 			}
-
 		}
 	} else {
 		beego.Error("非 Standalone 模式登录尝试错误")
@@ -134,22 +136,36 @@ func (this *RepositoryAPIController) PutRepository() {
 	passwd := this.Data["passwd"].(string)
 	org := this.Data["org"].(string)
 
+	beego.Debug("Username: " + username)
+
 	//获取namespace/repository
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
 	//加密签名
-	sign := string(this.Ctx.Input.Header("X-Docker-Sign"))
+	sign := ""
+	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+	}
+
+	beego.Debug("Sign: " + sign)
 
 	//创建或更新 Repository 数据
 	//也可以采用 ioutil.ReadAll(this.Ctx.Request.Body) 的方式读取 body 数据
 	//TODO 检查 JSON 字符串是否合法
 	//TODO 检查 逻辑是否合法
 
+	beego.Debug("JSON: " + string(this.Ctx.Input.CopyBody()))
+
 	//从 API 创建的 Repository 默认是 Public 的。
 	repo := new(models.Repository)
-	repo.Add(username, repository, org, sign, string(this.Ctx.Input.CopyBody()))
-	repo.SetAgent(username, repository, org, this.Ctx.Input.Header("User-Agent"))
+	if err := repo.Add(username, repository, org, sign, string(this.Ctx.Input.CopyBody())); err != nil {
+		beego.Error("更新/新建 repository 数据错误")
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新/新建 repository 数据错误\"}"))
+		this.StopRun()
+	}
+	//repo.SetAgent(username, repository, org, this.Ctx.Input.Header("User-Agent"))
 
 	//如果 Request 的 Header 中含有 X-Docker-Token 且为 True，需要在返回值设置 Token 值。
 	//否则客户端报错 Index response didn't contain an access token
@@ -158,12 +174,6 @@ func (this *RepositoryAPIController) PutRepository() {
 		//需要加密的字符串为 UserName + UserPassword + 时间戳
 		token := utils.GeneralToken(username + passwd)
 		this.SetSession("token", token)
-		//在 Repository 的数据中保存 Token 记录。
-		if username == namespace {
-			repo.SetToken(username, repository, "", token)
-		} else {
-			repo.SetToken(username, repository, namespace, token)
-		}
 		//在返回值 Header 里面设置 Token
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
