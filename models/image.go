@@ -7,12 +7,14 @@ type Image struct {
 	Checksum   string //
 	Payload    string //
 	URL        string //
-	Location   string //
+	Backend    string //
+	Location   string //文件在服务器的存储路径
+	Sign       string //
 	Size       int64  //
 	Uploaded   bool   //
 	CheckSumed bool   //
 	Privated   bool   //
-	Security   bool   //是否加密
+	Encrypted  bool   //是否加密
 	Created    int64  //
 	Updated    int64  //
 }
