@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/dockercn/docker-bucket/utils"
+
+	"github.com/astaxie/beego"
 )
 
 type Job struct {
@@ -153,6 +155,8 @@ func (repo *Repository) Add(username, repository, organization, sign, json strin
 	} else if has == false {
 		//第一次创建数据
 		key = utils.GeneralKey(fmt.Sprintf("%s%s+", GetObjectKey("user", username), GetObjectKey("repo", repository)))
+
+		beego.Debug(fmt.Sprintf("Repository %s Key : %s", repository, string(key)))
 
 		repo.Username = username
 		repo.Repository = repository

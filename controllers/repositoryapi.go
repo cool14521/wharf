@@ -144,6 +144,7 @@ func (this *RepositoryAPIController) PutRepository() {
 	org := this.Data["org"].(string)
 
 	beego.Debug("Username: " + username)
+	beego.Debug("Org: " + org)
 
 	//获取namespace/repository
 	namespace := string(this.Ctx.Input.Param(":namespace"))
@@ -167,7 +168,7 @@ func (this *RepositoryAPIController) PutRepository() {
 	//从 API 创建的 Repository 默认是 Public 的。
 	repo := new(models.Repository)
 	if err := repo.Add(username, repository, org, sign, string(this.Ctx.Input.CopyBody())); err != nil {
-		beego.Error("更新/新建 repository 数据错误")
+		beego.Error("更新/新建 repository 数据错误: " + err.Error())
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新/新建 repository 数据错误\"}"))
 		this.StopRun()
@@ -210,10 +211,12 @@ func (this *RepositoryAPIController) PutTag() {
 	repository := this.Ctx.Input.Param(":repo_name")
 
 	//加密签名
-	//sign := ""
-	//if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
-	//	sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
-	//}
+	sign := ""
+	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+	}
+
+	beego.Debug("Sign: " + sign)
 
 	tag := this.Ctx.Input.Param(":tag")
 
