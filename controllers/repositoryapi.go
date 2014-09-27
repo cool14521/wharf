@@ -50,6 +50,8 @@ func (r *RepositoryAPIController) URLMapping() {
 }
 
 func (this *RepositoryAPIController) Prepare() {
+	beego.Debug("[" + this.Ctx.Request.Method + "] " + this.Ctx.Request.URL.String())
+
 	//相应 docker api 命令的 Controller 屏蔽 beego 的 XSRF ，避免错误。
 	this.EnableXSRF = false
 
@@ -61,79 +63,82 @@ func (this *RepositoryAPIController) Prepare() {
 
 	//单机运行模式，检查 Basic Auth 的认证。
 	if len(this.Ctx.Input.Header("Authorization")) == 0 {
-		//检查 Token 的认证
-		if len(this.Ctx.Input.Header("Token")) == 0 {
-			//没有 Token 的认证，返回错误信息。
-			beego.Error("没有找到 Authorization 和 Token 的认证信息")
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有找到 Authorization 和 Token 的认证信息\"}"))
-			this.StopRun()
-		} else {
-			token := this.GetSession("token")
-
-			if token != this.Ctx.Input.Header("Token") {
-				beego.Error("Token 验证信息错误")
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Token 验证信息错误\"}"))
-				this.StopRun()
-			}
-		}
-
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有找到 Authorization 的认证信息\"}"))
+		this.StopRun()
 	} else {
 		beego.Debug("Debug: " + this.Ctx.Input.Header("Authorization"))
 		//Standalone True 模式，检查是否 Basic
 		if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
-			beego.Error("Authorization 中 Auth 的格式错误: " + this.Ctx.Input.Header("Authorization"))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"HTTP Header 的 Authorization 格式错误\"}"))
-			this.StopRun()
-		}
-
-		//Decode Basic Auth 进行用户的判断
-		username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-		if err != nil {
-			beego.Error(fmt.Sprintf("[解码 Basic Auth] %s 错误： %s ", this.Ctx.Input.Header("Authorization"), err.Error()))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码 HTTP Header 的 Basic Auth 信息错误\"}"))
-			this.StopRun()
-		}
-
-		//判断 Header 信息里面的用户数据是否存在
-		user := new(models.User)
-		has, err := user.Get(username, passwd)
-		if err != nil {
-			//查询用户数据失败，返回 401 错误
-			beego.Error(fmt.Sprintf("[API 用户] 查询用户错误： ", err.Error()))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询用户错误\"}"))
-			this.StopRun()
-		}
-
-		if has == true {
-			//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["username"]
-			this.Data["username"] = username
-			this.Data["passwd"] = passwd
-
-			//根据 Namespace 查询组织数据
-			namespace := string(this.Ctx.Input.Param(":namespace"))
-			org := new(models.Organization)
-			if has, err := org.Has(namespace); err != nil {
-				beego.Error(fmt.Sprintf("查询组织名称 %s 时错误 %s", namespace, err.Error()))
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询组织数据报错。\"}"))
+			//非 Basic Auth ，检查 Token
+			if strings.Index(this.Ctx.Input.Header("Authorization"), "Token") == -1 {
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"在 HTTP Header Authorization 中没有找到 Basic Auth 和 Token 信息\"}"))
 				this.StopRun()
-			} else if has == false {
-				this.Data["org"] = ""
-			} else {
-				//查询到组织数据，在以下的 Action 处理函数中使用 this.Data["org"]
-				this.Data["org"] = namespace
 			}
+
+			r, _ := regexp.Compile(`Token (?P<token>\w+)`)
+			tokens := r.FindStringSubmatch(this.Ctx.Input.Header("Authorization"))
+			_, token := tokens[0], tokens[1]
+
+			beego.Debug("[Token in Header]" + token)
+
+			t := this.GetSession("token")
+
+			if token != t {
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"HTTP Header 中的 Token 和 Session 的 Token 不同\"}"))
+				this.StopRun()
+			}
+
 		} else {
-			//查询用户数据失败，返回 401 错误
-			beego.Error(fmt.Sprintf("[API 用户] 没有查询到用户：%s ", username))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户\"}"))
-			this.StopRun()
+
+			//Decode Basic Auth 进行用户的判断
+			username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
+			if err != nil {
+				beego.Error(fmt.Sprintf("[解码 Basic Auth] %s 错误： %s ", this.Ctx.Input.Header("Authorization"), err.Error()))
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码 HTTP Header 的 Basic Auth 信息错误\"}"))
+				this.StopRun()
+			}
+
+			//判断 Header 信息里面的用户数据是否存在
+			user := new(models.User)
+			has, err := user.Get(username, passwd)
+			if err != nil {
+				//查询用户数据失败，返回 401 错误
+				beego.Error(fmt.Sprintf("[API 用户] 查询用户错误： ", err.Error()))
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询用户错误\"}"))
+				this.StopRun()
+			}
+
+			if has == true {
+				//查询到用户数据，在以下的 Action 处理函数中使用 this.Data["username"]
+				this.Data["username"] = username
+				this.Data["passwd"] = passwd
+
+				//根据 Namespace 查询组织数据
+				namespace := string(this.Ctx.Input.Param(":namespace"))
+				org := new(models.Organization)
+				if has, err := org.Has(namespace); err != nil {
+					beego.Error(fmt.Sprintf("查询组织名称 %s 时错误 %s", namespace, err.Error()))
+					this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
+					this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询组织数据报错。\"}"))
+					this.StopRun()
+				} else if has == false {
+					this.Data["org"] = ""
+				} else {
+					//查询到组织数据，在以下的 Action 处理函数中使用 this.Data["org"]
+					this.Data["org"] = namespace
+				}
+			} else {
+				//查询用户数据失败，返回 401 错误
+				beego.Error(fmt.Sprintf("[API 用户] 没有查询到用户：%s ", username))
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户\"}"))
+				this.StopRun()
+			}
 		}
 	}
 }

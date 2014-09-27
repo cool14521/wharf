@@ -33,7 +33,13 @@ type UsersAPIController struct {
 	beego.Controller
 }
 
+func (u *UsersAPIController) URLMapping() {
+	u.Mapping("PostUsers", u.PostUsers)
+	u.Mapping("GetUsers", u.GetUsers)
+}
+
 func (this *UsersAPIController) Prepare() {
+	beego.Debug("[Path] " + this.Ctx.Request.URL.String())
 	this.EnableXSRF = false
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
