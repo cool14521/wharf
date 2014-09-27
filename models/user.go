@@ -21,7 +21,6 @@ type User struct {
 	Mobile        string //
 	URL           string //
 	Gravatar      string //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
-	Actived       bool   //
 	Created       int64  //
 	Updated       int64  //
 }
@@ -34,7 +33,7 @@ func (user *User) Has(username string) (bool, error) {
 	}
 }
 
-func (user *User) Add(username string, passwd string, email string, actived bool) error {
+func (user *User) Add(username string, passwd string, email string) error {
 	//检查用户的 Key 是否存在
 	if has, err := user.Has(username); err != nil {
 		return err
@@ -65,7 +64,6 @@ func (user *User) Add(username string, passwd string, email string, actived bool
 		user.Username = username
 		user.Password = passwd
 		user.Email = email
-		user.Actived = actived
 
 		user.Updated = time.Now().Unix()
 		user.Created = time.Now().Unix()
@@ -115,7 +113,7 @@ func (user *User) Save(key []byte) error {
 	return nil
 }
 
-func (user *User) Get(username, passwd string, actived bool) (bool, error) {
+func (user *User) Get(username, passwd string) (bool, error) {
 	//检查用户的 Key 是否存在
 	if has, err := user.Has(username); err != nil {
 		return false, err
@@ -127,21 +125,15 @@ func (user *User) Get(username, passwd string, actived bool) (bool, error) {
 			return false, err
 		}
 
-		//读取密码和Actived的值进行判断是否存在用户
-		if results, err := LedisDB.HMget(key, []byte("Password"), []byte("Actived")); err != nil {
+		//读取密码的值进行判断是否密码相同
+		if password, err := LedisDB.HGet(key, []byte("Password")); err != nil {
 			return false, err
 		} else {
-			if password := results[0]; string(password) != passwd {
+			if string(password) != passwd {
 				return false, nil
 			}
-
-			if active := results[1]; utils.BytesToBool(active) != actived {
-				return false, nil
-			}
-
 			return true, nil
 		}
-
 	} else {
 		//没有用户的 Key 存在
 		return false, nil
@@ -155,7 +147,6 @@ type Organization struct {
 	Repositories string //
 	Privileges   string //
 	Users        string //
-	Actived      bool   //组织创建后就是默认激活的
 	Created      int64  //
 	Updated      int64  //
 }
@@ -170,7 +161,7 @@ func (org *Organization) Has(name string) (bool, error) {
 	return false, nil
 }
 
-func (org *Organization) Add(user, name, description string, actived bool) error {
+func (org *Organization) Add(user, name, description string) error {
 	if has, err := org.Has(name); err != nil {
 		return err
 	} else if has == true {
@@ -189,7 +180,6 @@ func (org *Organization) Add(user, name, description string, actived bool) error
 		org.Owner = user
 		org.Name = name
 		org.Description = description
-		org.Actived = actived
 
 		org.Updated = time.Now().Unix()
 		org.Created = time.Now().Unix()
@@ -203,36 +193,6 @@ func (org *Organization) Add(user, name, description string, actived bool) error
 
 			return nil
 		}
-	}
-}
-
-func (org *Organization) Get(name string, actived bool) (bool, error) {
-	//检查组织的 Key 是否存在
-	if has, err := org.Has(name); err != nil {
-		return false, err
-	} else if has == true {
-		var key []byte
-
-		//获取用户对象的 Key
-		if key, err = LedisDB.Get([]byte(GetObjectKey("org", name))); err != nil {
-			return false, err
-		}
-
-		//读取密码和Actived的值进行判断是否存在用户
-		if active, err := LedisDB.HGet(key, []byte("Actived")); err != nil {
-			return false, err
-		} else {
-
-			if utils.BytesToBool(active) != actived {
-				return false, nil
-			}
-
-			return true, nil
-		}
-
-	} else {
-		//没有组织的 Key 存在
-		return false, nil
 	}
 }
 

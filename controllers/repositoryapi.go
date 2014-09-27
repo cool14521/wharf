@@ -100,7 +100,7 @@ func (this *RepositoryAPIController) Prepare() {
 
 		//判断 Header 信息里面的用户数据是否存在
 		user := new(models.User)
-		has, err := user.Get(username, passwd, true)
+		has, err := user.Get(username, passwd)
 		if err != nil {
 			//查询用户数据失败，返回 401 错误
 			beego.Error(fmt.Sprintf("[API 用户] 查询用户错误： ", err.Error()))
@@ -117,7 +117,7 @@ func (this *RepositoryAPIController) Prepare() {
 			//根据 Namespace 查询组织数据
 			namespace := string(this.Ctx.Input.Param(":namespace"))
 			org := new(models.Organization)
-			if has, err := org.Get(namespace, true); err != nil {
+			if has, err := org.Has(namespace); err != nil {
 				beego.Error(fmt.Sprintf("查询组织名称 %s 时错误 %s", namespace, err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询组织数据报错。\"}"))

@@ -57,7 +57,7 @@ func (this *UsersAPIController) PostUsers() {
 		user := new(models.User)
 		//通过 API 创建用户默认是 false 的。
 		//TODO 设置 Email 的激活流程。
-		if err := user.Add(u["username"].(string), u["password"].(string), u["email"].(string), false); err != nil {
+		if err := user.Add(u["username"].(string), u["password"].(string), u["email"].(string)); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户创建] 失败: %s", err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("{\"error\":\"%s\"}", err.Error())))
@@ -84,7 +84,7 @@ func (this *UsersAPIController) GetUsers() {
 	}
 
 	user := new(models.User)
-	has, err := user.Get(username, passwd, true)
+	has, err := user.Get(username, passwd)
 	if err != nil {
 		//查询用户数据失败，返回 401 错误
 		beego.Error(fmt.Sprintf("[API 用户登录] 查询用户错误： ", err.Error()))

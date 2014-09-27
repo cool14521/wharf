@@ -73,7 +73,7 @@ func (this *ImageAPIController) Prepare() {
 		}
 
 		user := new(models.User)
-		has, err := user.Get(username, passwd, true)
+		has, err := user.Get(username, passwd)
 		if err != nil {
 			//查询用户数据失败，返回 401 错误
 			beego.Error("[Search User] " + username + " " + passwd + " has error: " + err.Error())
