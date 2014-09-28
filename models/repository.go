@@ -234,19 +234,31 @@ func (repo *Repository) Save(key []byte) error {
 	return nil
 }
 
-func (repo *Repository) SetAgent(namespace, repository, organization, agent string) error {
+func (repo *Repository) SetAgent(username, repository, organization, sign, agent string) error {
+	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("没有在数据库中查询到要更新的 Repository 数据")
+	} else if has == true {
+		repo.Agent = agent
+
+		if e := repo.Save(key); e != nil {
+			return e
+		}
+	}
+
 	return nil
 }
 
-func (repo *Repository) SetToken(namespace, repository, organization, token string) error {
+func (repo *Repository) SetTag(username, repository, organization, sign, tag, image string) error {
 	return nil
 }
 
-func (repo *Repository) SetTag(namespace, repository, organization, tag, image string) error {
+func (repo *Repository) SetToken(username, repository, organization, token string) error {
 	return nil
 }
 
-func (repo *Repository) SetJSON(namespace, repository, organization, json string) error {
+func (repo *Repository) SetJSON(username, repository, organization, json string) error {
 	return nil
 }
 

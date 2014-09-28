@@ -188,12 +188,18 @@ func (this *RepositoryAPIController) PutRepository() {
 	//从 API 创建的 Repository 默认是 Public 的。
 	repo := new(models.Repository)
 	if err := repo.Add(username, repository, org, sign, string(this.Ctx.Input.CopyBody())); err != nil {
-		beego.Error("更新/新建 repository 数据错误: " + err.Error())
+		beego.Error(fmt.Sprintf("更新/新建 repository 数据错误: %s", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新/新建 repository 数据错误\"}"))
 		this.StopRun()
 	}
-	//repo.SetAgent(username, repository, org, this.Ctx.Input.Header("User-Agent"))
+
+	if err := repo.SetAgent(username, repository, org, sign, this.Ctx.Input.Header("User-Agent")); err != nil {
+		beego.Error(fmt.Sprintf("更新 User Agent 数据错误: %s", err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 User Agent 数据错误\"}"))
+		this.StopRun()
+	}
 
 	//如果 Request 的 Header 中含有 X-Docker-Token 且为 True，需要在返回值设置 Token 值。
 	//否则客户端报错 Index response didn't contain an access token
@@ -212,7 +218,6 @@ func (this *RepositoryAPIController) PutRepository() {
 	this.SetSession("access", "write")
 
 	//操作正常的输出
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
@@ -220,9 +225,9 @@ func (this *RepositoryAPIController) PutRepository() {
 }
 
 func (this *RepositoryAPIController) PutTag() {
-	beego.Debug("Namespace: " + this.Ctx.Input.Param(":namespace"))
-	beego.Debug("Repository: " + this.Ctx.Input.Param(":repo_name"))
-	beego.Debug("Tag: " + this.Ctx.Input.Param(":tag"))
+	beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
+	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
+	beego.Debug("[Tag] " + this.Ctx.Input.Param(":tag"))
 
 	username := this.Data["username"].(string)
 	org := this.Data["org"].(string)
@@ -236,7 +241,7 @@ func (this *RepositoryAPIController) PutTag() {
 		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
 	}
 
-	beego.Debug("Sign: " + sign)
+	beego.Debug("[Sign] " + sign)
 
 	tag := this.Ctx.Input.Param(":tag")
 
@@ -245,16 +250,14 @@ func (this *RepositoryAPIController) PutTag() {
 	imageIds := r.FindStringSubmatch(string(this.Ctx.Input.CopyBody()))
 
 	repo := new(models.Repository)
-	if err := repo.SetTag(username, repository, org, tag, imageIds[1]); err != nil {
-		beego.Error("[Update Tag] " + namespace + " " + repository + " " + tag + " error: " + err.Error())
+	if err := repo.SetTag(username, repository, org, sign, tag, imageIds[1]); err != nil {
+		beego.Error(fmt.Springf("更新 %s/%s 的 Tag [%s:%s] 错误: %s", namespace, repository, tag, imageIds[1], err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"Update the tag data error.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Tag 数据错误\"}"))
 		this.StopRun()
 	}
 
 	//操作正常的输出
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 }
