@@ -194,7 +194,40 @@ func (this *ImageAPIController) GetImageJSON() {
 
 //向数据库写入 Layer 的 JSON 数据
 func (this *ImageAPIController) PutImageJson() {
+	if this.GetSession("access") == "write" {
+		//判断是否存在 image 的数据, 新建或更改 JSON 数据
+		imageId := this.Ctx.Input.Param(":image_id")
 
+		//初始化加密签名
+		sign := ""
+		if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+			sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+		}
+
+		image := new(models.Image)
+
+		//TODO: 检查 JSON 是否合法
+		//TODO: 检查 JSON 的逻辑性是否合法
+		json := string(this.Ctx.Input.CopyBody())
+
+		if err := image.PutJSON(imageId, sign, json); err != nil {
+			beego.Error(fmt.Sprintf("向数据库写入 Image  [%s] 的 JSON [%s] 信息错误: %s"), imageId, json, err.Error())
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"向数据库写入 Image 的 JSON 数据错误\"}"))
+			this.StopRun()
+
+		}
+
+		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.Ctx.Output.Context.Output.Body([]byte(""))
+	} else {
+		beego.Error("[API 用户] 查询 Image 时在 Session 中没有 write 的权限记录")
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有访问 Image 数据的写权限\"}"))
+		this.StopRun()
+
+	}
 }
 
 //向本地硬盘写入 Layer 的文件
