@@ -13,8 +13,8 @@ import (
 
 var CmdWeb = cli.Command{
 	Name:        "web",
-	Usage:       "Start Docker Registry Web Server",
-	Description: "Docker web service provide Docker Registry API service and web view for search & comment",
+	Usage:       "启动 Docker Bucket 的 Web 服务",
+	Description: "Docker Bucket 提供 Docker Registry 服务的同时，还提供 Build、 CI 和 CD 服务。",
 	Action:      runRegistry,
 	Flags: []cli.Flag{
 		cli.StringFlag{

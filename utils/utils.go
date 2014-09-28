@@ -3,13 +3,67 @@ package utils
 import (
 	"crypto/md5"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
 )
+
+func Int64ToBytes(i int64) []byte {
+	var buf = make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(i))
+	return buf
+}
+
+func BytesToInt64(buf []byte) int64 {
+	return int64(binary.BigEndian.Uint64(buf))
+}
+
+func NowToBytes() []byte {
+	return Int64ToBytes(time.Now().Unix())
+}
+
+func TimeToBytes(now time.Time) []byte {
+	return Int64ToBytes(now.Unix())
+}
+
+func BoolToBytes(boolean bool) []byte {
+	if boolean == true {
+		return Int64ToBytes(1)
+	} else {
+		return Int64ToBytes(0)
+	}
+}
+
+func BytesToBool(value []byte) bool {
+	if BytesToInt64(value) == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+func IsEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	}
+	return false
+}
 
 func ToString(args ...interface{}) string {
 	result := ""
@@ -33,6 +87,13 @@ func SendActiveEmail(code string, email string, host string, port int, user stri
 
 func SendAddEmail(username string, passwd string, email string, host string, port int, user string, password string) error {
 	return nil
+}
+
+func GeneralKey(key string) []byte {
+	md5String := fmt.Sprintf("%v%v", key, string(time.Now().Unix()))
+	h := md5.New()
+	h.Write([]byte(md5String))
+	return h.Sum(nil)
 }
 
 func GeneralToken(key string) string {

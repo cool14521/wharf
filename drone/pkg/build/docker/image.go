@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
-	"github.com/docker/docker/archive"
-	"github.com/docker/docker/utils"
+	"github.com/dockercn/docker/archive"
+	//"github.com/docker/docker/utils"
 )
 
 type Images struct {
@@ -63,7 +64,8 @@ func (c *ImageService) Create(image string) error {
 }
 
 func (c *ImageService) Pull(image string) error {
-	name, tag := utils.ParseRepositoryTag(image)
+	//name, tag := utils.ParseRepositoryTag(image)
+	name, tag := ParseRepositoryTag(image)
 	if len(tag) == 0 {
 		tag = DEFAULTTAG
 	}
@@ -121,4 +123,15 @@ func (c *ImageService) Build(tag, dir string) error {
 
 	// make the request
 	return c.stream("POST", path, body, os.Stdout, headers)
+}
+
+func ParseRepositoryTag(repos string) (string, string) {
+	n := strings.LastIndex(repos, ":")
+	if n < 0 {
+		return repos, ""
+	}
+	if tag := repos[n+1:]; !strings.Contains(tag, "/") {
+		return repos[:n], tag
+	}
+	return repos, ""
 }
