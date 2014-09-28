@@ -187,6 +187,50 @@ func (image *Image) PutJSON(imageId, sign, json string) error {
 	return nil
 }
 
+func (image *Image) PutLocation(imageId, sign, location string) error {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+	} else {
+		image.Location = location
+
+		if e := image.Save(key); e != nil {
+			return e
+		}
+	}
+
+	return nil
+}
+
+func (image *Image) GetLocation(imageId, sign string, uploaded, checksumed bool) (string, error) {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return "", err
+	} else if has == false {
+		return "", fmt.Errorf("没有找到 Image 的数据")
+	} else {
+		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("Location")); e != nil {
+			return "", e
+		} else {
+			checksum := results[0]
+			upload := results[1]
+			location := results[2]
+
+			if utils.BytesToBool(checksum) != checksumed {
+				return "", fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			if utils.BytesToBool(upload) != uploaded {
+				return "", fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			return string(location), nil
+		}
+	}
+
+	return "", nil
+}
+
 func (image *Image) PutUploaded(imageId, sign string, uploaded bool) error {
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return err

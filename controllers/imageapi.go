@@ -275,7 +275,15 @@ func (this *ImageAPIController) PutImageLayer() {
 			this.StopRun()
 		}
 
-		//更新 Image 记录的 Uploaded
+		//更新 Image 的文件本地存储路径
+		if err := image.PutLocation(imageId, sign, layerfile); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] %s 更新 Image Layer 本地存储路径标志错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"更新 Image Layer 本地存储路径标志错误\"}"))
+			this.StopRun()
+		}
+
+		//更新 Image 的 Uploaded
 		if err := image.PutUploaded(imageId, sign, true); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户] %s 更新 Image 上传完成标志错误: %s ", imageId, err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -390,5 +398,49 @@ func (this *ImageAPIController) GetImageAncestry() {
 }
 
 func (this *ImageAPIController) GetImageLayer() {
+	if this.GetSession("access") == "read" {
+		imageId := string(this.Ctx.Input.Param(":image_id"))
+
+		//初始化加密签名
+		sign := ""
+		if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+			sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+		}
+
+		image := new(models.Image)
+
+		if layerfile, err := image.GetLocation(imageId, sign, true, true); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] %s 读取 Layer 数据错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Image Layer 数据错误\"}"))
+			this.StopRun()
+		} else {
+
+			if _, err := os.Stat(layerfile); err != nil {
+				beego.Error(fmt.Sprintf("[API 用户] %s 读取 Layer 文件状态错误：%s", imageId, err.Error()))
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Image Layer 文件状态错误\"}"))
+				this.StopRun()
+			}
+
+			if file, err := ioutil.ReadFile(layerfile); err != nil {
+				beego.Error(fmt.Sprintf("[API 用户] %s 读取 Layer 文件错误：%s", imageId, err.Error()))
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Image Layer 文件错误\"}"))
+				this.StopRun()
+			} else {
+				//读取的文件放在 HTTP Body 中返回给 Docker 命令
+				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/octet-stream")
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+				this.Ctx.Output.Context.Output.Body(file)
+			}
+
+		}
+	} else {
+		beego.Error("[API 用户] 读取 Image Layer 文件时在 Session 中没有 read 的权限记录")
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有读取 Image Layer 文件的权限\"}"))
+		this.StopRun()
+	}
 
 }
