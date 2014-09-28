@@ -59,7 +59,7 @@ func (image *Image) GetPushed(imageId, sign string, uploaded, checksumed bool) (
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return false, err
 	} else if has == false {
-		return false, nil
+		return false, fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded")); e != nil {
 			return false, e
@@ -86,7 +86,7 @@ func (image *Image) GetJSON(imageId, sign string, uploaded, checksumed bool) (st
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return "", err
 	} else if has == false {
-		return "", nil
+		return "", fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("JSON")); e != nil {
 			return "", e
@@ -115,7 +115,7 @@ func (image *Image) GetChecksum(imageId, sign string, uploaded, checksumed bool)
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return "", err
 	} else if has == false {
-		return "", fmt.Errorf("没有找到 Image 的数据")
+		return "", fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("Checksum")); e != nil {
 			return "", e
@@ -191,7 +191,7 @@ func (image *Image) PutLocation(imageId, sign, location string) error {
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return err
 	} else if has == false {
-		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		image.Location = location
 
@@ -207,7 +207,7 @@ func (image *Image) GetLocation(imageId, sign string, uploaded, checksumed bool)
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return "", err
 	} else if has == false {
-		return "", fmt.Errorf("没有找到 Image 的数据")
+		return "", fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("Location")); e != nil {
 			return "", e
@@ -235,7 +235,7 @@ func (image *Image) PutUploaded(imageId, sign string, uploaded bool) error {
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return err
 	} else if has == false {
-		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		image.Uploaded = uploaded
 
@@ -251,7 +251,7 @@ func (image *Image) PutSize(imageId, sign string, size int64) error {
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return err
 	} else if has == false {
-		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		image.Size = size
 
@@ -267,7 +267,7 @@ func (image *Image) PutChecksum(imageId, sign, checksum string) error {
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return err
 	} else if has == false {
-		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		image.Checksum = checksum
 
@@ -283,7 +283,7 @@ func (image *Image) PutPayload(imageId, sign, payload string) error {
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return err
 	} else if has == false {
-		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		image.Payload = payload
 
@@ -299,7 +299,7 @@ func (image *Image) PutChecksumed(imageId, sign string, checksumed bool) error {
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return err
 	} else if has == false {
-		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		image.CheckSumed = checksumed
 
@@ -319,11 +319,10 @@ func (image *Image) PutAncestry(imageId, sign string) error {
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return err
 	} else if has == false {
-		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		var imageJSONMap map[string]interface{}
 		var parents []string
-		var images []string
 
 		//从数据库中读取 JSON 数据
 		if imageJSON, err := LedisDB.HGet(key, []byte("JSON")); err != nil {
@@ -353,8 +352,7 @@ func (image *Image) PutAncestry(imageId, sign string) error {
 				}
 			}
 
-			images = append(images, imageId)
-			parents = append(images, parents...)
+			parents = append(parents, imageId)
 
 			parentJSON, _ := json.Marshal(parents)
 
@@ -373,7 +371,7 @@ func (image *Image) GetAncestry(imageId, sign string, uploaded, checksumed bool)
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return []byte(""), err
 	} else if has == false {
-		return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+		return []byte(""), fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("ParentJSON")); e != nil {
 			return []byte(""), e

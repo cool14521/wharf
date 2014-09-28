@@ -13,7 +13,6 @@ const (
 	USER_SYMBLE         = "@"
 	ORGANIZATION_SYMBLE = "#"
 	REPOSITORY_SYMBLE   = "$"
-	TAG_SYMBLE          = "%"
 	IMAGE_SYMBLE        = "&"
 	TEMPLATE_SYMBLE     = "*"
 	JOB_SYMBLE          = "!"
@@ -71,8 +70,6 @@ func GetObjectKey(object string, id string) string {
 		return ORGANIZATION_SYMBLE + strings.TrimSpace(id)
 	case "repo":
 		return REPOSITORY_SYMBLE + strings.TrimSpace(id)
-	case "tag":
-		return TAG_SYMBLE + strings.TrimSpace(id)
 	case "image":
 		return IMAGE_SYMBLE + strings.TrimSpace(id)
 	case "template":

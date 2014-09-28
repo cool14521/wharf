@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"time"
@@ -64,6 +65,12 @@ type Repository struct {
 	Token        string //
 	Created      int64  //
 	Updated      int64  //
+}
+
+type Tag struct {
+	Name    string //
+	ImageId string //
+	Sign    string //
 }
 
 func (repo *Repository) Get(username, repository, organization, sign string) (bool, []byte, error) {
@@ -234,30 +241,88 @@ func (repo *Repository) Save(key []byte) error {
 	return nil
 }
 
-func (repo *Repository) SetAgent(namespace, repository, organization, agent string) error {
+func (repo *Repository) PutAgent(username, repository, organization, sign, agent string) error {
+	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("没有在数据库中查询到要更新的 Repository 数据")
+	} else if has == true {
+		repo.Agent = agent
+
+		if e := repo.Save(key); e != nil {
+			return e
+		}
+	}
+
 	return nil
 }
 
-func (repo *Repository) SetToken(namespace, repository, organization, token string) error {
+func (repo *Repository) PutTag(username, repository, organization, sign, tag, imageId string) error {
+	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("没有在数据库中查询到要更新的 Repository 数据")
+	} else if has == true {
+		//Tags 字段保存 Tag 结构的数组再 JSON 编码
+		tags := make([]Tag, 0)
+
+		//获取记录中得 Tags 数据，解压到 tags 数组中
+		if ts, err := LedisDB.HGet(key, []byte("Tags")); err != nil {
+			return err
+		} else if ts != nil {
+			if err := json.Unmarshal(ts, tags); err != nil {
+				return err
+			}
+		}
+
+		updated := false
+
+		//循环数组，如果已经存在了 Tag 标签，更新相应的数据
+		for _, t := range tags {
+			if t.Name == tag {
+				t.ImageId = imageId
+				t.Sign = sign
+				updated = true
+			}
+		}
+
+		if updated == false {
+			t := new(Tag)
+			t.Name = tag
+			t.ImageId = imageId
+			t.Sign = sign
+
+			tags = append(tags, *t)
+		}
+
+		tagJSON, _ := json.Marshal(tags)
+
+		repo.Tags = string(tagJSON)
+
+		if e := repo.Save(key); e != nil {
+			return e
+		}
+	}
+
 	return nil
 }
 
-func (repo *Repository) SetTag(namespace, repository, organization, tag, image string) error {
+func (repo *Repository) PutToken(username, repository, organization, sign, token string) error {
 	return nil
 }
 
-func (repo *Repository) SetJSON(namespace, repository, organization, json string) error {
+func (repo *Repository) PutJSON(username, repository, organization, sign, json string) error {
 	return nil
 }
 
-func (repo *Repository) Setloaded(uploaded bool) error {
+func (repo *Repository) Putloaded(uploaded bool) error {
 	return nil
 }
 
-func (repo *Repository) SetChecksumed(checksumed bool) error {
+func (repo *Repository) PutChecksumed(checksumed bool) error {
 	return nil
 }
 
-func (repo *Repository) SetSize(size int64) error {
+func (repo *Repository) PutSize(size int64) error {
 	return nil
 }
