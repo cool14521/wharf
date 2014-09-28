@@ -307,23 +307,110 @@ func (repo *Repository) PutTag(username, repository, organization, sign, tag, im
 }
 
 func (repo *Repository) PutUploaded(username, repository, organization, sign string, uploaded bool) error {
+	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("没有在数据库中查询到 Repository 数据")
+	} else if has == true {
+		//TODO 循环检查所有的 Image 是不是 Uploaded
+		repo.Uploaded = uploaded
+
+		if e := repo.Save(key); e != nil {
+			return e
+		}
+	}
+
 	return nil
 }
 
 func (repo *Repository) PutChecksumed(username, repository, organization, sign string, checksumed bool) error {
+	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("没有在数据库中查询到 Repository 数据")
+	} else if has == true {
+		//TODO 循环检查所有的 Image 是不是 Checksumed
+		repo.Checksumed = checksumed
+
+		if e := repo.Save(key); e != nil {
+			return e
+		}
+	}
+
 	return nil
 }
 
 func (repo *Repository) PutSize(username, repository, organization, sign string) error {
+	//TODO 根据所有的 Image 的总和更新 Repository 的 Size 属性
 	return nil
 }
 
-func (repo *Repository) GetJSON(username, repository, organization, sign string) ([]byte, error) {
+func (repo *Repository) GetJSON(username, repository, organization, sign string, uploaded, checksumed bool) ([]byte, error) {
+	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
+		return []byte(""), err
+	} else if has == false {
+		return []byte(""), fmt.Errorf("没有在数据库中查询到 Repository 数据")
+	} else if has == true {
+		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("JSON")); e != nil {
+			return []byte(""), e
+		} else {
+			checksum := results[0]
+			upload := results[1]
+			json := results[2]
+
+			if utils.BytesToBool(checksum) != checksumed {
+				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			if utils.BytesToBool(upload) != uploaded {
+				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			return json, nil
+		}
+
+	}
 
 	return []byte(""), nil
 }
 
-func (repo *Repository) GetTags(username, repository, organization, sign string) ([]byte, error) {
+func (repo *Repository) GetTags(username, repository, organization, sign string, uploaded, checksumed bool) ([]byte, error) {
+	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
+		return []byte(""), err
+	} else if has == false {
+		return []byte(""), fmt.Errorf("没有在数据库中查询到 Repository 数据")
+	} else if has == true {
+		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("Tags")); e != nil {
+			return []byte(""), e
+		} else {
+			checksum := results[0]
+			upload := results[1]
+			tagsJSON := results[2]
 
+			if utils.BytesToBool(checksum) != checksumed {
+				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			if utils.BytesToBool(upload) != uploaded {
+				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			//循环 JSON 对象的值，生成返回的数据
+			results := make(map[string]string)
+			tags := make([]Tag, 0)
+
+			if err := json.Unmarshal(tagsJSON, tags); err != nil {
+				return []byte(""), err
+			}
+
+			for _, tag := range tags {
+				results[tag.Name] = tag.ImageId
+			}
+
+			result, _ := json.Marshal(results)
+
+			return result, nil
+		}
+	}
 	return []byte(""), nil
 }

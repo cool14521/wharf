@@ -345,7 +345,7 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 	beego.Debug("[Sign] " + sign)
 
 	repo := new(models.Repository)
-	if json, err := repo.GetJSON(username, repository, org, sign); err != nil {
+	if json, err := repo.GetJSON(username, repository, org, sign, true, true); err != nil {
 		beego.Error(fmt.Sprintf("[API 用户] 读取 %s/%s 的 JSON 数据错误: %s", namespace, repository, err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 JSON 数据错误\"}"))
@@ -379,7 +379,7 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 		beego.Debug("[Sign] " + sign)
 
 		repo := new(models.Repository)
-		if tags, err := repo.GetTags(username, repository, org, sign); err != nil {
+		if tags, err := repo.GetTags(username, repository, org, sign, true, true); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户] 读取 %s/%s 的 Tags 数据错误: %s", namespace, repository, err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Tag 数据错误\"}"))
