@@ -38,6 +38,7 @@ func (this *ImageAPIController) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 
 	beego.Debug("[Header] ")
 	beego.Debug(this.Ctx.Request.Header)
@@ -45,7 +46,7 @@ func (this *ImageAPIController) Prepare() {
 	//检查 Authorization 的 Header 信息是否存在。
 	if len(this.Ctx.Input.Header("Authorization")) == 0 {
 		//不存在 Authorization 信息返回错误信息
-		beego.Error("Docker 命令访问 HTTP API 的 Header 中没有 Authorization 信息: ")
+		beego.Error("[API 用户] Docker 命令访问 HTTP API 的 Header 中没有 Authorization 信息: ")
 		beego.Error(this.Ctx.Request.Header)
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
@@ -58,7 +59,7 @@ func (this *ImageAPIController) Prepare() {
 		if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
 			//非 Basic Auth ，检查 Token
 			if strings.Index(this.Ctx.Input.Header("Authorization"), "Token") == -1 {
-				beego.Error("Docker 命令访问 HTTP API 的 Header 中没有 Basic Auth 和 Token 的信息 ")
+				beego.Error("[API 用户] Docker 命令访问 HTTP API 的 Header 中没有 Basic Auth 和 Token 的信息 ")
 				beego.Error(this.Ctx.Request.Header)
 
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
@@ -87,7 +88,7 @@ func (this *ImageAPIController) Prepare() {
 			username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
 
 			if err != nil {
-				beego.Error(fmt.Sprintf("解码 Header Authorization 的 Basic Auth [%s] 时遇到错误： %s", this.Ctx.Input.Header("Authorization"), err.Error()))
+				beego.Error(fmt.Sprintf("[API 用户] 解码 Header Authorization 的 Basic Auth [%s] 时遇到错误： %s", this.Ctx.Input.Header("Authorization"), err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码 Authorization 的 Basic Auth 信息错误\"}"))
 				this.StopRun()
@@ -98,7 +99,7 @@ func (this *ImageAPIController) Prepare() {
 			has, err := user.Get(username, passwd)
 			if err != nil {
 				//查询用户数据失败，返回 401 错误
-				beego.Error(fmt.Sprintf("在数据库中查询用户数据遇到错误：%s", err.Error()))
+				beego.Error(fmt.Sprintf("[API 用户] 在数据库中查询用户数据遇到错误：%s", err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"在数据库中查询用户数据时出现数据库错误\"}"))
 				this.StopRun()
@@ -113,7 +114,7 @@ func (this *ImageAPIController) Prepare() {
 				namespace := string(this.Ctx.Input.Param(":namespace"))
 				org := new(models.Organization)
 				if has, err := org.Has(namespace); err != nil {
-					beego.Error(fmt.Sprintf("查询组织名称 %s 时错误 %s", namespace, err.Error()))
+					beego.Error(fmt.Sprintf("[API 用户] 查询组织名称 %s 时错误 %s", namespace, err.Error()))
 					this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 					this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询组织数据报错。\"}"))
 					this.StopRun()
@@ -161,15 +162,18 @@ func (this *ImageAPIController) GetImageJSON() {
 		}
 
 		if has == true {
-			var json, checksum string
+			var json []byte
+			var checksum string
 			//获取 Image 的 JSON 和 Checksum 数据返回给 Docker 命令
 			if json, err = image.GetJSON(imageId, sign, true, true); err != nil {
+				beego.Error(fmt.Sprintf("[API 用户] 查询 Image JSON %s 时报错 ", imageId, err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"搜索 Image 的 JSON 数据错误\"}"))
 				this.StopRun()
 			}
 
 			if checksum, err = image.GetChecksum(imageId, sign, true, true); err != nil {
+				beego.Error(fmt.Sprintf("[API 用户] 查询 Image Checksum %s 时报错 ", imageId, err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"搜索 Image 的 Checksum 数据错误\"}"))
 				this.StopRun()
@@ -177,7 +181,7 @@ func (this *ImageAPIController) GetImageJSON() {
 
 			this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Checksum", checksum)
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-			this.Ctx.Output.Context.Output.Body([]byte(json))
+			this.Ctx.Output.Context.Output.Body(json)
 			this.StopRun()
 
 		} else {
@@ -212,7 +216,7 @@ func (this *ImageAPIController) PutImageJson() {
 		json := string(this.Ctx.Input.CopyBody())
 
 		if err := image.PutJSON(imageId, sign, json); err != nil {
-			beego.Error(fmt.Sprintf("向数据库写入 Image  [%s] 的 JSON [%s] 信息错误: %s"), imageId, json, err.Error())
+			beego.Error(fmt.Sprintf("[API 用户] 向数据库写入 Image  [%s] 的 JSON [%s] 信息错误: %s"), imageId, json, err.Error())
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"向数据库写入 Image 的 JSON 数据错误\"}"))
 			this.StopRun()
@@ -442,5 +446,4 @@ func (this *ImageAPIController) GetImageLayer() {
 		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有读取 Image Layer 文件的权限\"}"))
 		this.StopRun()
 	}
-
 }

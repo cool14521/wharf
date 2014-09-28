@@ -82,32 +82,32 @@ func (image *Image) GetPushed(imageId, sign string, uploaded, checksumed bool) (
 	return false, nil
 }
 
-func (image *Image) GetJSON(imageId, sign string, uploaded, checksumed bool) (string, error) {
+func (image *Image) GetJSON(imageId, sign string, uploaded, checksumed bool) ([]byte, error) {
 	if has, key, err := image.Get(imageId, sign); err != nil {
-		return "", err
+		return []byte(""), err
 	} else if has == false {
-		return "", fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
+		return []byte(""), fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
 	} else {
 		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("JSON")); e != nil {
-			return "", e
+			return []byte(""), e
 		} else {
 			checksum := results[0]
 			upload := results[1]
 			json := results[2]
 
 			if utils.BytesToBool(checksum) != checksumed {
-				return "", nil
+				return []byte(""), nil
 			}
 
 			if utils.BytesToBool(upload) != uploaded {
-				return "", nil
+				return []byte(""), nil
 			}
 
-			return string(json), nil
+			return json, nil
 		}
 	}
 
-	return "", nil
+	return []byte(""), nil
 
 }
 

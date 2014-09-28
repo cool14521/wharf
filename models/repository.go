@@ -62,7 +62,6 @@ type Repository struct {
 	Clear        string //对 Repository 进行了杀毒，杀毒的结果和 status 等信息以 JSON 格式保存
 	Cleared      bool   //对 Repository 是否进行了杀毒处理
 	Encrypted    bool   //是否加密
-	Token        string //
 	Created      int64  //
 	Updated      int64  //
 }
@@ -133,7 +132,7 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 	return false, []byte(""), nil
 }
 
-func (repo *Repository) Add(username, repository, organization, sign, json string) error {
+func (repo *Repository) PutJSON(username, repository, organization, sign, json string) error {
 	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
 		return err
 	} else if has == true {
@@ -307,22 +306,24 @@ func (repo *Repository) PutTag(username, repository, organization, sign, tag, im
 	return nil
 }
 
-func (repo *Repository) PutToken(username, repository, organization, sign, token string) error {
+func (repo *Repository) PutUploaded(username, repository, organization, sign string, uploaded bool) error {
 	return nil
 }
 
-func (repo *Repository) PutJSON(username, repository, organization, sign, json string) error {
+func (repo *Repository) PutChecksumed(username, repository, organization, sign string, checksumed bool) error {
 	return nil
 }
 
-func (repo *Repository) Putloaded(uploaded bool) error {
+func (repo *Repository) PutSize(username, repository, organization, sign string) error {
 	return nil
 }
 
-func (repo *Repository) PutChecksumed(checksumed bool) error {
-	return nil
+func (repo *Repository) GetJSON(username, repository, organization, sign string) ([]byte, error) {
+
+	return []byte(""), nil
 }
 
-func (repo *Repository) PutSize(size int64) error {
-	return nil
+func (repo *Repository) GetTags(username, repository, organization, sign string) ([]byte, error) {
+
+	return []byte(""), nil
 }
