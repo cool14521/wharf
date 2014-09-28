@@ -115,7 +115,7 @@ func (image *Image) GetChecksum(imageId, sign string, uploaded, checksumed bool)
 	if has, key, err := image.Get(imageId, sign); err != nil {
 		return "", err
 	} else if has == false {
-		return "", nil
+		return "", fmt.Errorf("没有找到 Image 的数据")
 	} else {
 		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("Checksum")); e != nil {
 			return "", e
@@ -323,6 +323,34 @@ func (image *Image) PutAncestry(imageId, sign string) error {
 	}
 
 	return nil
+}
+
+func (image *Image) GetAncestry(imageId, sign string, uploaded, checksumed bool) ([]byte, error) {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return []byte(""), err
+	} else if has == false {
+		return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+	} else {
+		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("ParentJSON")); e != nil {
+			return []byte(""), e
+		} else {
+			checksum := results[0]
+			upload := results[1]
+			parent := results[2]
+
+			if utils.BytesToBool(checksum) != checksumed {
+				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			if utils.BytesToBool(upload) != uploaded {
+				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			return parent, nil
+		}
+	}
+
+	return []byte(""), nil
 }
 
 func (image *Image) Save(key []byte) error {

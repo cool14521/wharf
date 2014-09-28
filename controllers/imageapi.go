@@ -361,7 +361,32 @@ func (this *ImageAPIController) PutChecksum() {
 }
 
 func (this *ImageAPIController) GetImageAncestry() {
+	if this.GetSession("access") == "read" {
+		imageId := string(this.Ctx.Input.Param(":image_id"))
 
+		//初始化加密签名
+		sign := ""
+		if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+			sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+		}
+
+		image := new(models.Image)
+
+		if ancestry, err := image.GetAncestry(imageId, sign, true, true); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] %s 读取 Ancestry 数据错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Ancestry 数据错误\"}"))
+			this.StopRun()
+		} else {
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+			this.Ctx.Output.Context.Output.Body(ancestry)
+		}
+	} else {
+		beego.Error("[API 用户] 读取 Image Ancestry 时在 Session 中没有 read 的权限记录")
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有读取 Image Ancestry 的权限\"}"))
+		this.StopRun()
+	}
 }
 
 func (this *ImageAPIController) GetImageLayer() {
