@@ -87,7 +87,7 @@ func (this *ImageAPIController) Prepare() {
 			username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
 
 			if err != nil {
-				beego.Error("解码 Header Authorization 的 Basic Auth [" + this.Ctx.Input.Header("Authorization") + "] 时遇到错误：" + err.Error())
+				beego.Error(fmt.Sprintf("解码 Header Authorization 的 Basic Auth [%s] 时遇到错误： %s", this.Ctx.Input.Header("Authorization"), err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码 Authorization 的 Basic Auth 信息错误\"}"))
 				this.StopRun()
@@ -98,7 +98,7 @@ func (this *ImageAPIController) Prepare() {
 			has, err := user.Get(username, passwd)
 			if err != nil {
 				//查询用户数据失败，返回 401 错误
-				beego.Error("在数据库中查询用户数据遇到错误：" + err.Error())
+				beego.Error(fmt.Sprintf("在数据库中查询用户数据遇到错误：%s", err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"在数据库中查询用户数据时出现数据库错误\"}"))
 				this.StopRun()

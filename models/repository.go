@@ -172,7 +172,6 @@ func (repo *Repository) Add(username, repository, organization, sign, json strin
 		if e := repo.Save(key); e != nil {
 			return e
 		} else {
-
 			if len(organization) == 0 {
 				//没有 org 为空，根据 sign 的值判断是否为私有
 				if len(sign) == 0 {
@@ -184,9 +183,7 @@ func (repo *Repository) Add(username, repository, organization, sign, json strin
 						return e
 					}
 				}
-
 			} else {
-
 				//没有 org 不为空，根据 sign 的值判断是否为私有
 				if len(sign) == 0 {
 					if e := LedisDB.Set([]byte(fmt.Sprintf("%s%s+", GetObjectKey("org", organization), GetObjectKey("repo", repository))), key); e != nil {
@@ -197,11 +194,8 @@ func (repo *Repository) Add(username, repository, organization, sign, json strin
 						return e
 					}
 				}
-
 			}
-
 		}
-
 	}
 
 	return nil

@@ -109,7 +109,7 @@ func (this *RepositoryAPIController) Prepare() {
 			username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
 
 			if err != nil {
-				beego.Error("解码 Header Authorization 的 Basic Auth [" + this.Ctx.Input.Header("Authorization") + "] 时遇到错误：" + err.Error())
+				beego.Error(fmt.Sprintf("解码 Header Authorization 的 Basic Auth [%s] 时遇到错误： %s", this.Ctx.Input.Header("Authorization"), err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码 Authorization 的 Basic Auth 信息错误\"}"))
 				this.StopRun()
@@ -120,7 +120,7 @@ func (this *RepositoryAPIController) Prepare() {
 			has, err := user.Get(username, passwd)
 			if err != nil {
 				//查询用户数据失败，返回 401 错误
-				beego.Error("在数据库中查询用户数据遇到错误：" + err.Error())
+				beego.Error(fmt.Sprintf("在数据库中查询用户数据遇到错误：%s", err.Error()))
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"在数据库中查询用户数据时出现数据库错误\"}"))
 				this.StopRun()
@@ -163,8 +163,8 @@ func (this *RepositoryAPIController) PutRepository() {
 	passwd := this.Data["passwd"].(string)
 	org := this.Data["org"].(string)
 
-	beego.Debug("Username: " + username)
-	beego.Debug("Org: " + org)
+	beego.Debug("[Username] " + username)
+	beego.Debug("[Org] " + org)
 
 	//获取namespace/repository
 	namespace := string(this.Ctx.Input.Param(":namespace"))
@@ -176,14 +176,14 @@ func (this *RepositoryAPIController) PutRepository() {
 		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
 	}
 
-	beego.Debug("Sign: " + sign)
+	beego.Debug("[Sign] " + sign)
 
 	//创建或更新 Repository 数据
 	//也可以采用 ioutil.ReadAll(this.Ctx.Request.Body) 的方式读取 body 数据
 	//TODO 检查 JSON 字符串是否合法
 	//TODO 检查 逻辑是否合法
 
-	beego.Debug("JSON: " + string(this.Ctx.Input.CopyBody()))
+	beego.Debug("[JSON] " + string(this.Ctx.Input.CopyBody()))
 
 	//从 API 创建的 Repository 默认是 Public 的。
 	repo := new(models.Repository)
