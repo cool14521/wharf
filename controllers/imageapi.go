@@ -233,7 +233,6 @@ func (this *ImageAPIController) PutImageJson() {
 //向本地硬盘写入 Layer 的文件
 func (this *ImageAPIController) PutImageLayer() {
 	if this.GetSession("access") == "write" {
-		//查询是否存在 image 的数据库记录
 		imageId := string(this.Ctx.Input.Param(":image_id"))
 
 		//初始化加密签名
@@ -305,7 +304,60 @@ func (this *ImageAPIController) PutImageLayer() {
 }
 
 func (this *ImageAPIController) PutChecksum() {
+	if this.GetSession("access") == "write" {
 
+		beego.Debug("[Cookie] " + this.Ctx.Input.Header("Cookie"))
+		beego.Debug("[X-Docker-Checksum] " + this.Ctx.Input.Header("X-Docker-Checksum"))
+		beego.Debug("[X-Docker-Checksum-Payload] " + this.Ctx.Input.Header("X-Docker-Checksum-Payload"))
+
+		//初始化加密签名
+		sign := ""
+		if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+			sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+		}
+
+		imageId := string(this.Ctx.Input.Param(":image_id"))
+
+		image := new(models.Image)
+
+		//TODO 检查上传的 Layer 文件的 SHA256 和传上来的 Checksum 的值是否一致？
+
+		if err := image.PutChecksumed(imageId, sign, true); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] %s 更新 Image Checksumed 标志错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Image Checksumed 标志错误\"}"))
+			this.StopRun()
+		}
+
+		if err := image.PutChecksum(imageId, sign, this.Ctx.Input.Header("X-Docker-Checksum")); err != nil {
+			beego.Error(fmt.Sprint("[API 用户] %s 更新 Image Checksum 错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Image Checksum 错误\"}"))
+			this.StopRun()
+		}
+
+		if err := image.PutPayload(imageId, sign, this.Ctx.Input.Header("X-Docker-Checksum-Payload")); err != nil {
+			beego.Error(fmt.Sprint("[API 用户] %s 更新 Image Payload 标志错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Image Payload 标志错误\"}"))
+			this.StopRun()
+		}
+
+		if err := image.PutAncestry(imageId, sign); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] %s 更新 Image Ancestry 错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Image Ancestry 错误\"}"))
+			this.StopRun()
+		}
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.Ctx.Output.Context.Output.Body([]byte(""))
+	} else {
+		beego.Error("[API 用户] 写入 Image Checksum 时在 Session 中没有 write 的权限记录")
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有写入 Image Checksum 的权限\"}"))
+		this.StopRun()
+	}
 }
 
 func (this *ImageAPIController) GetImageAncestry() {

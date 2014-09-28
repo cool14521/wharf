@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 
@@ -266,7 +267,61 @@ func (image *Image) PutChecksumed(imageId, sign string, checksumed bool) error {
 	return nil
 }
 
-func (image *Image) PutParentJSON(imageId, sign string) error {
+//从 JSON 数据中解析查找是否存在 parent 的数据。
+//如果存在 parent 数据，根据 imageId 和 sign 查找 parent 的记录。
+//把当前 imageId 加入到 数组中在 Marshal 后保存在 ParentJSON 中。
+//如果不存在 parent 数据，则认为当前 imageId 是 root 节点。
+func (image *Image) PutAncestry(imageId, sign string) error {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+	} else {
+		var imageJSONMap map[string]interface{}
+		var parents []string
+		var images []string
+
+		//从数据库中读取 JSON 数据
+		if imageJSON, err := LedisDB.HGet(key, []byte("JSON")); err != nil {
+			return err
+		} else {
+			// JSON 数据解码到 image 对象中
+			if err := json.Unmarshal(imageJSON, &imageJSONMap); err != nil {
+				return err
+			}
+
+			//判断是否存在 parent 数据。
+			if value, has := imageJSONMap["parent"]; has == true {
+				//从数据库中读取 parent image 的数据
+				i := new(Image)
+				if h, k, e := i.Get(value.(string), sign); e != nil {
+					return e
+				} else if h == true {
+					//从数据库中获得 parent image 的 key
+					//从数据库中读取 parent image 的 ParentJSON 字段数据
+					if j, e := LedisDB.HGet(k, []byte("ParentJSON")); e != nil {
+						return e
+					} else {
+						if e := json.Unmarshal(j, &parents); e != nil {
+							return e
+						}
+					}
+				}
+			}
+
+			images = append(images, imageId)
+			parents = append(images, parents...)
+
+			parentJSON, _ := json.Marshal(parents)
+
+			image.ParentJSON = string(parentJSON)
+
+			if e := image.Save(key); e != nil {
+				return e
+			}
+		}
+	}
+
 	return nil
 }
 
