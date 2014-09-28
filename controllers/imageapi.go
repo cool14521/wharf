@@ -139,7 +139,7 @@ func (this *ImageAPIController) Prepare() {
 //如果不存在 JSON 信息，docker 客户端会先后执行 PUT /v1/images/:image_id/json 和 PUT /v1/images/:image_id/layer 。
 func (this *ImageAPIController) GetImageJSON() {
 	if this.GetSession("access") == "write" || this.GetSession("access") == "read" {
-		//加密签名
+		//初始化加密签名
 		sign := ""
 		if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
 			sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
@@ -152,6 +152,7 @@ func (this *ImageAPIController) GetImageJSON() {
 		has, err := image.GetPushed(imageId, sign, true, true)
 
 		if err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] 查询 Image %s 时报错 ", imageId, err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"搜索 Image 错误\"}"))
 			this.StopRun()
@@ -159,7 +160,7 @@ func (this *ImageAPIController) GetImageJSON() {
 
 		if has == true {
 			var json, checksum string
-
+			//获取 Image 的 JSON 和 Checksum 数据返回给 Docker 命令
 			if json, err = image.GetJSON(imageId, sign, true, true); err != nil {
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"搜索 Image 的 JSON 数据错误\"}"))
@@ -176,12 +177,15 @@ func (this *ImageAPIController) GetImageJSON() {
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.Ctx.Output.Context.Output.Body([]byte(json))
 			this.StopRun()
+
 		} else {
+			beego.Error(fmt.Sprintf("[API 用户] 没有查询到 Image ：%s ", imageId))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
 			this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有找到 Image 数据\"}"))
 			this.StopRun()
 		}
 	} else {
+		beego.Error("[API 用户] 查询 Image 时在 Session 中没有 write 或 read 的权限记录")
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有访问 Image 数据的权限\"}"))
 		this.StopRun()
