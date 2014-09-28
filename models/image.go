@@ -186,32 +186,88 @@ func (image *Image) PutJSON(imageId, sign, json string) error {
 	return nil
 }
 
-func (image *Image) Insert(imageId, json string) (bool, error) {
-	return true, nil
+func (image *Image) PutUploaded(imageId, sign string, uploaded bool) error {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+	} else {
+		image.Uploaded = uploaded
+
+		if e := image.Save(key); e != nil {
+			return e
+		}
+	}
+
+	return nil
 }
 
-func (image *Image) UpdateChecksum(checksum string) (bool, error) {
-	return true, nil
+func (image *Image) PutSize(imageId, sign string, size int64) error {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+	} else {
+		image.Size = size
+
+		if e := image.Save(key); e != nil {
+			return e
+		}
+	}
+
+	return nil
 }
 
-func (image *Image) UpdatePayload(payload string) (bool, error) {
-	return true, nil
+func (image *Image) PutChecksum(imageId, sign, checksum string) error {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+	} else {
+		image.Checksum = checksum
+
+		if e := image.Save(key); e != nil {
+			return e
+		}
+	}
+
+	return nil
 }
 
-func (image *Image) UpdateSize(size int64) (bool, error) {
-	return true, nil
+func (image *Image) PutPayload(imageId, sign, payload string) error {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+	} else {
+		image.Payload = payload
+
+		if e := image.Save(key); e != nil {
+			return e
+		}
+	}
+
+	return nil
 }
 
-func (image *Image) UpdateUploaded(uploaded bool) (bool, error) {
-	return true, nil
+func (image *Image) PutChecksumed(imageId, sign string, checksumed bool) error {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("更新 Image 数据时没有找到相应的记录")
+	} else {
+		image.CheckSumed = checksumed
+
+		if e := image.Save(key); e != nil {
+			return e
+		}
+	}
+
+	return nil
 }
 
-func (image *Image) UpdateChecksumed(checksumed bool) (bool, error) {
-	return true, nil
-}
-
-func (image *Image) UpdateParentJSON() (bool, error) {
-	return true, nil
+func (image *Image) PutParentJSON(imageId, sign string) error {
+	return nil
 }
 
 func (image *Image) Save(key []byte) error {

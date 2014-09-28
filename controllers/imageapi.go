@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 
@@ -195,7 +197,6 @@ func (this *ImageAPIController) GetImageJSON() {
 //向数据库写入 Layer 的 JSON 数据
 func (this *ImageAPIController) PutImageJson() {
 	if this.GetSession("access") == "write" {
-		//判断是否存在 image 的数据, 新建或更改 JSON 数据
 		imageId := this.Ctx.Input.Param(":image_id")
 
 		//初始化加密签名
@@ -218,20 +219,88 @@ func (this *ImageAPIController) PutImageJson() {
 
 		}
 
-		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.Ctx.Output.Context.Output.Body([]byte(""))
+
 	} else {
 		beego.Error("[API 用户] 查询 Image 时在 Session 中没有 write 的权限记录")
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有访问 Image 数据的写权限\"}"))
 		this.StopRun()
-
 	}
 }
 
 //向本地硬盘写入 Layer 的文件
 func (this *ImageAPIController) PutImageLayer() {
+	if this.GetSession("access") == "write" {
+		//查询是否存在 image 的数据库记录
+		imageId := string(this.Ctx.Input.Param(":image_id"))
+
+		//初始化加密签名
+		sign := ""
+		if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+			sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+		}
+
+		image := new(models.Image)
+
+		//TODO 保存文件的磁盘路径调度
+
+		//处理 Layer 文件保存的目录
+		basePath := beego.AppConfig.String("docker::BasePath")
+		imagePath := fmt.Sprintf("%v/images/%v", basePath, imageId)
+		layerfile := fmt.Sprintf("%v/images/%v/layer", basePath, imageId)
+
+		if len(sign) > 0 {
+			layerfile = fmt.Sprintf("%s-%s", layerfile, sign)
+		}
+
+		//如果目录不存在，就创建目录
+		if !utils.IsDirExists(imagePath) {
+			os.MkdirAll(imagePath, os.ModePerm)
+		}
+
+		//如果存在了文件就移除文件
+		if _, err := os.Stat(layerfile); err == nil {
+			os.Remove(layerfile)
+		}
+
+		//写入 Layer 文件
+		//TODO 超大的文件占内存，影响并发的情况。
+		data, _ := ioutil.ReadAll(this.Ctx.Request.Body)
+
+		if err := ioutil.WriteFile(layerfile, data, 0777); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] %s 文件写入磁盘错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"文件写入磁盘错误\"}"))
+			this.StopRun()
+		}
+
+		//更新 Image 记录的 Uploaded
+		if err := image.PutUploaded(imageId, sign, true); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] %s 更新 Image 上传完成标志错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"更新 Image 上传完成标志错误\"}"))
+			this.StopRun()
+		}
+
+		//更新 Image 的 Size
+		if err := image.PutSize(imageId, sign, int64(len(data))); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] %s 更新 Image Size 错误: %s ", imageId, err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"更新 Image Size 错误\"}"))
+			this.StopRun()
+		}
+
+		//成功则返回 200
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.Ctx.Output.Context.Output.Body([]byte(""))
+	} else {
+		beego.Error("[API 用户] 写入 Image Layer 时在 Session 中没有 write 的权限记录")
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有写入 Image Layer 文件的权限\"}"))
+		this.StopRun()
+	}
 
 }
 
