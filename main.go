@@ -1,10 +1,12 @@
 package main
 
 import (
+	"os"
+
 	"github.com/astaxie/beego"
 	"github.com/codegangsta/cli"
+
 	"github.com/dockercn/docker-bucket/cmd"
-	"os"
 )
 
 func main() {
@@ -15,6 +17,8 @@ func main() {
 
 	app.Commands = []cli.Command{
 		cmd.CmdWeb,
+		cmd.CmdVersion,
+		cmd.CmdAccount,
 	}
 
 	app.Flags = append(app.Flags, []cli.Flag{}...)
