@@ -42,9 +42,6 @@ LedisDB Key Conf
 @Username$Repository-?Sign // 用户加密私有仓库  
 #Organization$Repository-?Sign // 组织加密私有仓库
 
-@Username$Repository+(-)%Tag(?Sign) //  
-#Organization$Repository+(-)%Tag(?Sign)// 
-
 &Image+ //未加密，私有库和公有库未加密的 Image 共享
 &Image-?Sign //加密，只有私有库有加密支持，每个 Image 根据加密签名不同，可能存有多份儿。
 
