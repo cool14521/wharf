@@ -182,6 +182,9 @@ func (this *ImageAPIController) GetImageJSON() {
 				this.StopRun()
 			}
 
+			beego.Debug(fmt.Sprintf("[%s JSON] %s", imageId, json))
+			beego.Debug(fmt.Sprintf("[%s Checksum] %s", imageId, checksum))
+
 			this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Checksum", checksum)
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.Ctx.Output.Context.Output.Body(json)
@@ -395,6 +398,7 @@ func (this *ImageAPIController) GetImageAncestry() {
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Ancestry 数据错误\"}"))
 			this.StopRun()
 		} else {
+			beego.Debug(fmt.Sprintf("[%s Ancestry] %s", imageId, string(ancestry)))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.Ctx.Output.Context.Output.Body(ancestry)
 		}
@@ -425,7 +429,7 @@ func (this *ImageAPIController) GetImageLayer() {
 			this.StopRun()
 		} else {
 
-			beego.Debug("[Image 本地存储路径] " + fmt.Sprintf("File Location: %s ", layerfile))
+			beego.Debug(fmt.Sprintf("[Image 本地存储路径] %s ", layerfile))
 
 			if _, err := os.Stat(layerfile); err != nil {
 				beego.Error(fmt.Sprintf("[API 用户] %s 读取 Layer 文件状态错误：%s", imageId, err.Error()))
@@ -440,8 +444,13 @@ func (this *ImageAPIController) GetImageLayer() {
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Image Layer 文件错误\"}"))
 				this.StopRun()
 			} else {
+				beego.Debug(fmt.Sprintf("[Image 文件大小] %d", int64(len(file))))
 				//读取的文件放在 HTTP Body 中返回给 Docker 命令
+				//this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/x-tar")
 				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/octet-stream")
+				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Transfer-Encoding", "binary")
+				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Length", string(int64(len(file))))
+				this.Ctx.Output.Context.ResponseWriter.Header().Set("Accept-Ranges", "bytes")
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 				this.Ctx.Output.Context.Output.Body(file)
 			}

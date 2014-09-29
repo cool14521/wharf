@@ -323,6 +323,7 @@ func (image *Image) PutAncestry(imageId, sign string) error {
 	} else {
 		var imageJSONMap map[string]interface{}
 		var parents []string
+		var images []string
 
 		//从数据库中读取 JSON 数据
 		if imageJSON, err := LedisDB.HGet(key, []byte("JSON")); err != nil {
@@ -352,7 +353,8 @@ func (image *Image) PutAncestry(imageId, sign string) error {
 				}
 			}
 
-			parents = append(parents, imageId)
+			images = append(images, imageId)
+			parents = append(images, parents...)
 
 			parentJSON, _ := json.Marshal(parents)
 
