@@ -55,6 +55,8 @@ LedisDB Key Conf
 Nginx Conf
 ==========
 
+Nginx 配置文件的示例，注意 **client_max_body_size** 对上传文件大小的限制。 
+
 ```
 upstream hub_upstream {
   server 127.0.0.1:9911;
