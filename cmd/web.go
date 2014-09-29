@@ -7,6 +7,7 @@ import (
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/codegangsta/cli"
+
 	"github.com/dockercn/docker-bucket/models"
 	_ "github.com/dockercn/docker-bucket/routers"
 )
@@ -44,6 +45,9 @@ func runRegistry(c *cli.Context) {
 
 	models.InitSession()
 	models.InitDb()
+
+	//设定 HTTP 的静态文件处理地址
+	beego.SetStaticPath(beego.AppConfig.String("docker::StaticPath"), fmt.Sprintf("%s/images", beego.AppConfig.String("docker::BasePath")))
 
 	beego.Run(fmt.Sprintf("%v:%v", address, port))
 }

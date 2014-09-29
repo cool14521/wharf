@@ -402,7 +402,7 @@ func (repo *Repository) GetTags(username, repository, organization, sign string,
 			results := make(map[string]string)
 			tags := make([]Tag, 0)
 
-			if err := json.Unmarshal(tagsJSON, tags); err != nil {
+			if err := json.Unmarshal(tagsJSON, &tags); err != nil {
 				return []byte(""), err
 			}
 
