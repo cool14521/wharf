@@ -83,6 +83,9 @@ func (this *ImageAPIController) Prepare() {
 				this.StopRun()
 			}
 
+			this.Data["username"] = this.GetSession("username")
+			this.Data["org"] = this.GetSession("org")
+
 		} else {
 			//解码 Basic Auth 进行用户的判断
 			username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
@@ -421,6 +424,8 @@ func (this *ImageAPIController) GetImageLayer() {
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Image Layer 数据错误\"}"))
 			this.StopRun()
 		} else {
+
+			beego.Debug("[Image 本地存储路径] " + fmt.Sprintf("File Location: %s ", layerfile))
 
 			if _, err := os.Stat(layerfile); err != nil {
 				beego.Error(fmt.Sprintf("[API 用户] %s 读取 Layer 文件状态错误：%s", imageId, err.Error()))
