@@ -358,6 +358,22 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 JSON 数据错误\"}"))
 		this.StopRun()
 	} else {
+		//如果 Request 的 Header 中含有 X-Docker-Token 且为 True，需要在返回值设置 Token 值。
+		//否则客户端报错 Index response didn't contain an access token
+		if this.Ctx.Input.Header("X-Docker-Token") == "true" {
+			//创建 token 并保存
+			//需要加密的字符串为 UserName + UserPassword + 时间戳
+			token := utils.GeneralToken(username + repository)
+			this.SetSession("token", token)
+			//在返回值 Header 里面设置 Token
+			this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
+			this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
+		}
+
+		this.SetSession("username", username)
+		this.SetSession("org", org)
+		this.SetSession("namespace", namespace)
+		this.SetSession("repository", repository)
 		//在 SetSession 中增加读权限
 		this.SetSession("access", "read")
 		//操作正常的输出
