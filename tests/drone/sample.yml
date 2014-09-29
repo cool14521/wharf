@@ -1,0 +1,19 @@
+repo: http://github.com/arkors/update
+image: bradrydzewski/go:1.2 
+env:
+  - GOPATH=/var/cache/drone
+services:
+  - bradrydzewski/redis:2.6
+  - bradrydzewski/mysql:5.5
+script:
+  - go get -u github.com/hoisie/redis
+  - go get -u github.com/go-martini/martini
+  - go get -u github.com/martini-contrib/render
+  - go get -u github.com/go-sql-driver/mysql
+  - go get -u github.com/go-xorm/xorm
+  - git clone --depth=0 --recursive http://github.com/arkors/oauth.git /var/cache/drone/src/github.com/arkors/oauth
+  - git clone --depth=0 --recursive http://github.com/arkors/log.git /var/cache/drone/src/github.com/arkors/log
+  - mysql -u root -h127.0.0.1 -P 3306 -e 'create database arkors_update;'
+  - start redis
+  - sleep 10
+  - go build
