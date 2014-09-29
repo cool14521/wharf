@@ -94,7 +94,7 @@ func (this *RepositoryAPIController) Prepare() {
 			tokens := r.FindStringSubmatch(this.Ctx.Input.Header("Authorization"))
 			_, token := tokens[0], tokens[1]
 
-			beego.Debug("[Token in Header]" + token)
+			beego.Debug("[Token in Header] " + token)
 
 			t := this.GetSession("token")
 
@@ -104,6 +104,9 @@ func (this *RepositoryAPIController) Prepare() {
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"HTTP Header 中的 Token 和 Session 的 Token 不同\"}"))
 				this.StopRun()
 			}
+
+			this.Data["username"] = this.GetSession("username")
+			this.Data["org"] = this.GetSession("org")
 
 		} else {
 			//解码 Basic Auth 进行用户的判断
@@ -214,6 +217,8 @@ func (this *RepositoryAPIController) PutRepository() {
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
 	}
 
+	this.SetSession("username", username)
+	this.SetSession("org", org)
 	this.SetSession("namespace", namespace)
 	this.SetSession("repository", repository)
 	this.SetSession("access", "write")
@@ -291,6 +296,8 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 
 		beego.Debug("[Sign] " + sign)
 
+		beego.Debug("[Body] " + string(this.Ctx.Input.CopyBody()))
+
 		repo := new(models.Repository)
 		//设定 repository 的 Uploaded
 		if err := repo.PutUploaded(username, repository, org, sign, true); err != nil {
@@ -315,7 +322,7 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 		}
 
 		//操作正常的输出
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
 		this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 	} else {
 		beego.Error("[API 用户] 更新 Repository 的 Checksum 信息时在 Session 中没有 write 的权限记录")

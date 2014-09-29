@@ -279,11 +279,13 @@ func (this *ImageAPIController) PutImageLayer() {
 			this.StopRun()
 		}
 
+		beego.Debug(fmt.Sprintf("Image [%s] 文件本地存储全路径: %s", imageId, layerfile))
+
 		//更新 Image 的文件本地存储路径
 		if err := image.PutLocation(imageId, sign, layerfile); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户] %s 更新 Image Layer 本地存储路径标志错误: %s ", imageId, err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"更新 Image Layer 本地存储路径标志错误\"}"))
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"更新 Image Layer 本地存储路径错误\"}"))
 			this.StopRun()
 		}
 

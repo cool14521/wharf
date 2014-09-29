@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/astaxie/beego"
+
 	"github.com/dockercn/docker-bucket/utils"
 )
 
@@ -269,7 +271,8 @@ func (repo *Repository) PutTag(username, repository, organization, sign, tag, im
 		if ts, err := LedisDB.HGet(key, []byte("Tags")); err != nil {
 			return err
 		} else if ts != nil {
-			if err := json.Unmarshal(ts, tags); err != nil {
+			beego.Debug(fmt.Sprintf("[Tags] %s", string(ts)))
+			if err := json.Unmarshal(ts, &tags); err != nil {
 				return err
 			}
 		}

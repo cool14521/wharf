@@ -28,11 +28,11 @@ type Image struct {
 
 func (image *Image) Get(imageId, sign string) (bool, []byte, error) {
 	if len(sign) == 0 {
-
-		if exist, err := LedisDB.Exists([]byte(GetObjectKey("image", imageId))); err != nil {
+		//没有加密签名，所以根据公有 Image Key 定义查找 Key
+		if exist, err := LedisDB.Exists([]byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId)))); err != nil {
 			return false, []byte(""), err
 		} else if exist > 0 {
-			if key, e := LedisDB.Get([]byte(GetObjectKey("image", imageId))); e != nil {
+			if key, e := LedisDB.Get([]byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId)))); e != nil {
 				return false, []byte(""), e
 			} else {
 				return true, key, nil
