@@ -203,6 +203,8 @@ func (repo *Repository) PutJSON(username, repository, organization, sign, json s
 					}
 				}
 			}
+
+			//TODO 在 User 或者 Org 记录中加入 Repository 数据
 		}
 	}
 
