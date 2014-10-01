@@ -302,6 +302,11 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 		beego.Debug("[Body] " + string(this.Ctx.Input.CopyBody()))
 
 		repo := new(models.Repository)
+
+		//TODO 检查仓库所有镜像的 Tag 信息和上传的 Tag 信息是否一致。
+		//TODO 检查仓库所有镜像是否 Uploaded 为 True
+		//TODO 检查仓库所有镜像是否 Checksumed 为 True
+
 		//设定 repository 的 Uploaded
 		if err := repo.PutUploaded(username, repository, org, sign, true); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Uploaded 标志错误: %s", namespace, repository, err.Error()))
