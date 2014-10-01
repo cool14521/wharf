@@ -359,6 +359,8 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 
 	beego.Debug("[Sign] " + sign)
 
+	//TODO 私有镜像仓库权限判断
+
 	repo := new(models.Repository)
 	if json, err := repo.GetJSON(username, repository, org, sign, true, true); err != nil {
 		beego.Error(fmt.Sprintf("[API 用户] 读取 %s/%s 的 JSON 数据错误: %s", namespace, repository, err.Error()))
