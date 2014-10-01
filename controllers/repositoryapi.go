@@ -418,6 +418,7 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Tag 数据错误\"}"))
 			this.StopRun()
 		} else {
+			//TODO 私有镜像仓库权限判断
 			//操作正常的输出
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.Ctx.Output.Context.Output.Body(tags)
