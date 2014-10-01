@@ -450,7 +450,6 @@ func (this *ImageAPIController) GetImageLayer() {
 				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/octet-stream")
 				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Transfer-Encoding", "binary")
 				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Length", string(int64(len(file))))
-				this.Ctx.Output.Context.ResponseWriter.Header().Set("Accept-Ranges", "bytes")
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 				this.Ctx.Output.Context.Output.Body(file)
 			}
