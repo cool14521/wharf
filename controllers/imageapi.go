@@ -20,7 +20,7 @@ type ImageAPIController struct {
 
 func (i *ImageAPIController) URLMapping() {
 	i.Mapping("GetImageJSON", i.GetImageJSON)
-	i.Mapping("PutImageJson", i.PutImageJson)
+	i.Mapping("PutImageJSON", i.PutImageJSON)
 	i.Mapping("PutImageLayer", i.PutImageLayer)
 	i.Mapping("PutChecksum", i.PutChecksum)
 	i.Mapping("GetImageAncestry", i.GetImageAncestry)
@@ -30,7 +30,7 @@ func (i *ImageAPIController) URLMapping() {
 func (this *ImageAPIController) Prepare() {
 	beego.Debug(fmt.Sprintf("[%s] %s | %s", this.Ctx.Input.Host(), this.Ctx.Input.Request.Method, this.Ctx.Input.Request.RequestURI))
 
-	beego.Debug("[Header] ")
+	beego.Debug("[Header]")
 	beego.Debug(this.Ctx.Request.Header)
 
 	//相应 docker api 命令的 Controller 屏蔽 beego 的 XSRF ，避免错误。
@@ -205,7 +205,7 @@ func (this *ImageAPIController) GetImageJSON() {
 }
 
 //向数据库写入 Layer 的 JSON 数据
-func (this *ImageAPIController) PutImageJson() {
+func (this *ImageAPIController) PutImageJSON() {
 	if this.GetSession("access") == "write" {
 		imageId := this.Ctx.Input.Param(":image_id")
 

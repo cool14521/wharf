@@ -39,7 +39,7 @@ func init() {
 			beego.NSRouter("/:image_id/ancestry", &controllers.ImageAPIController{}, "get:GetImageAncestry"),
 			beego.NSRouter("/:image_id/json", &controllers.ImageAPIController{}, "get:GetImageJSON"),
 			beego.NSRouter("/:image_id/layer", &controllers.ImageAPIController{}, "get:GetImageLayer"),
-			beego.NSRouter("/:image_id/json", &controllers.ImageAPIController{}, "put:PutImageJson"),
+			beego.NSRouter("/:image_id/json", &controllers.ImageAPIController{}, "put:PutImageJSON"),
 			beego.NSRouter("/:image_id/layer", &controllers.ImageAPIController{}, "put:PutImageLayer"),
 			beego.NSRouter("/:image_id/checksum", &controllers.ImageAPIController{}, "put:PutChecksum"),
 		),
