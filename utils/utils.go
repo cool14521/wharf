@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/binary"
@@ -14,13 +15,15 @@ import (
 )
 
 func Int64ToBytes(i int64) []byte {
-	var buf = make([]byte, 8)
-	binary.BigEndian.PutUint64(buf, uint64(i))
-	return buf
+	b_buf := new(bytes.Buffer)
+	binary.Write(b_buf, binary.BigEndian, i)
+	return b_buf.Bytes()
 }
 
-func BytesToInt64(buf []byte) int64 {
-	return int64(binary.BigEndian.Uint64(buf))
+func BytesToInt64(b []byte) int64 {
+	b_buf := bytes.NewBuffer(b)
+	x, _ := binary.ReadVarint(b_buf)
+	return x
 }
 
 func NowToBytes() []byte {
@@ -33,14 +36,14 @@ func TimeToBytes(now time.Time) []byte {
 
 func BoolToBytes(boolean bool) []byte {
 	if boolean == true {
-		return Int64ToBytes(1)
-	} else {
 		return Int64ToBytes(0)
+	} else {
+		return Int64ToBytes(1)
 	}
 }
 
 func BytesToBool(value []byte) bool {
-	if BytesToInt64(value) == 0 {
+	if BytesToInt64(value) == 1 {
 		return false
 	} else {
 		return true

@@ -28,11 +28,11 @@ type Image struct {
 
 func (image *Image) Get(imageId, sign string) (bool, []byte, error) {
 	if len(sign) == 0 {
-
-		if exist, err := LedisDB.Exists([]byte(GetObjectKey("image", imageId))); err != nil {
+		//没有加密签名，所以根据公有 Image Key 定义查找 Key
+		if exist, err := LedisDB.Exists([]byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId)))); err != nil {
 			return false, []byte(""), err
 		} else if exist > 0 {
-			if key, e := LedisDB.Get([]byte(GetObjectKey("image", imageId))); e != nil {
+			if key, e := LedisDB.Get([]byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId)))); e != nil {
 				return false, []byte(""), e
 			} else {
 				return true, key, nil
@@ -323,6 +323,7 @@ func (image *Image) PutAncestry(imageId, sign string) error {
 	} else {
 		var imageJSONMap map[string]interface{}
 		var parents []string
+		var images []string
 
 		//从数据库中读取 JSON 数据
 		if imageJSON, err := LedisDB.HGet(key, []byte("JSON")); err != nil {
@@ -352,7 +353,8 @@ func (image *Image) PutAncestry(imageId, sign string) error {
 				}
 			}
 
-			parents = append(parents, imageId)
+			images = append(images, imageId)
+			parents = append(images, parents...)
 
 			parentJSON, _ := json.Marshal(parents)
 
@@ -393,6 +395,34 @@ func (image *Image) GetAncestry(imageId, sign string, uploaded, checksumed bool)
 	}
 
 	return []byte(""), nil
+}
+
+func (image *Image) GetSize(imageId, sign string, uploaded, checksumed bool) (int64, error) {
+	if has, key, err := image.Get(imageId, sign); err != nil {
+		return 0, err
+	} else if has == false {
+		return 0, fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
+	} else {
+		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("Size")); e != nil {
+			return 0, e
+		} else {
+			checksum := results[0]
+			upload := results[1]
+			size := results[2]
+
+			if utils.BytesToBool(checksum) != checksumed {
+				return 0, fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			if utils.BytesToBool(upload) != uploaded {
+				return 0, fmt.Errorf("没有找到 Image 的数据")
+			}
+
+			return utils.BytesToInt64(size), nil
+		}
+	}
+
+	return 0, nil
 }
 
 func (image *Image) Save(key []byte) error {

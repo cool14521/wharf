@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/astaxie/beego"
+
 	"github.com/dockercn/docker-bucket/utils"
 )
 
@@ -201,6 +203,8 @@ func (repo *Repository) PutJSON(username, repository, organization, sign, json s
 					}
 				}
 			}
+
+			//TODO 在 User 或者 Org 记录中加入 Repository 数据
 		}
 	}
 
@@ -269,7 +273,8 @@ func (repo *Repository) PutTag(username, repository, organization, sign, tag, im
 		if ts, err := LedisDB.HGet(key, []byte("Tags")); err != nil {
 			return err
 		} else if ts != nil {
-			if err := json.Unmarshal(ts, tags); err != nil {
+			beego.Debug(fmt.Sprintf("[Tags] %s", string(ts)))
+			if err := json.Unmarshal(ts, &tags); err != nil {
 				return err
 			}
 		}
@@ -399,7 +404,7 @@ func (repo *Repository) GetTags(username, repository, organization, sign string,
 			results := make(map[string]string)
 			tags := make([]Tag, 0)
 
-			if err := json.Unmarshal(tagsJSON, tags); err != nil {
+			if err := json.Unmarshal(tagsJSON, &tags); err != nil {
 				return []byte(""), err
 			}
 

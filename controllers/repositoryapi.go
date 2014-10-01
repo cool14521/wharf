@@ -94,7 +94,7 @@ func (this *RepositoryAPIController) Prepare() {
 			tokens := r.FindStringSubmatch(this.Ctx.Input.Header("Authorization"))
 			_, token := tokens[0], tokens[1]
 
-			beego.Debug("[Token in Header]" + token)
+			beego.Debug("[Token in Header] " + token)
 
 			t := this.GetSession("token")
 
@@ -104,6 +104,9 @@ func (this *RepositoryAPIController) Prepare() {
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"HTTP Header 中的 Token 和 Session 的 Token 不同\"}"))
 				this.StopRun()
 			}
+
+			this.Data["username"] = this.GetSession("username")
+			this.Data["org"] = this.GetSession("org")
 
 		} else {
 			//解码 Basic Auth 进行用户的判断
@@ -214,6 +217,8 @@ func (this *RepositoryAPIController) PutRepository() {
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
 	}
 
+	this.SetSession("username", username)
+	this.SetSession("org", org)
 	this.SetSession("namespace", namespace)
 	this.SetSession("repository", repository)
 	this.SetSession("access", "write")
@@ -291,6 +296,8 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 
 		beego.Debug("[Sign] " + sign)
 
+		beego.Debug("[Body] " + string(this.Ctx.Input.CopyBody()))
+
 		repo := new(models.Repository)
 		//设定 repository 的 Uploaded
 		if err := repo.PutUploaded(username, repository, org, sign, true); err != nil {
@@ -315,7 +322,7 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 		}
 
 		//操作正常的输出
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
 		this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 	} else {
 		beego.Error("[API 用户] 更新 Repository 的 Checksum 信息时在 Session 中没有 write 的权限记录")
@@ -351,6 +358,22 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 JSON 数据错误\"}"))
 		this.StopRun()
 	} else {
+		//如果 Request 的 Header 中含有 X-Docker-Token 且为 True，需要在返回值设置 Token 值。
+		//否则客户端报错 Index response didn't contain an access token
+		if this.Ctx.Input.Header("X-Docker-Token") == "true" {
+			//创建 token 并保存
+			//需要加密的字符串为 UserName + UserPassword + 时间戳
+			token := utils.GeneralToken(username + repository)
+			this.SetSession("token", token)
+			//在返回值 Header 里面设置 Token
+			this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
+			this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
+		}
+
+		this.SetSession("username", username)
+		this.SetSession("org", org)
+		this.SetSession("namespace", namespace)
+		this.SetSession("repository", repository)
 		//在 SetSession 中增加读权限
 		this.SetSession("access", "read")
 		//操作正常的输出
