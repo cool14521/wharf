@@ -1,8 +1,10 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"fmt"
 	"net/http"
+
+	"github.com/astaxie/beego"
 )
 
 type StaticController struct {
