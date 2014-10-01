@@ -76,9 +76,12 @@ func (this *RepositoryAPIController) Prepare() {
 		this.StopRun()
 
 	} else {
+
 		beego.Debug("[Authorization] " + this.Ctx.Input.Header("Authorization"))
+
 		//检查是否 Basic Auth
 		if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
+
 			//非 Basic Auth ，检查 Token
 			if strings.Index(this.Ctx.Input.Header("Authorization"), "Token") == -1 {
 				beego.Error("[API 用户] Docker 命令访问 HTTP API 的 Header 中没有 Basic Auth 和 Token 的信息 ")
@@ -194,7 +197,7 @@ func (this *RepositoryAPIController) PutRepository() {
 	if err := repo.PutJSON(username, repository, org, sign, string(this.Ctx.Input.CopyBody())); err != nil {
 		beego.Error(fmt.Sprintf("[API 用户] 更新/新建 repository 数据错误: %s", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新/新建 repository 数据错误\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新/新建镜像仓库数据错误\"}"))
 		this.StopRun()
 	}
 
