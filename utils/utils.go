@@ -36,17 +36,19 @@ func TimeToBytes(now time.Time) []byte {
 
 func BoolToBytes(boolean bool) []byte {
 	if boolean == true {
-		return Int64ToBytes(0)
+		return []byte("true")
 	} else {
-		return Int64ToBytes(1)
+		return []byte("false")
 	}
 }
 
 func BytesToBool(value []byte) bool {
-	if BytesToInt64(value) == 1 {
+	if boolean, _ := strconv.ParseBool(string(value)); boolean == true {
+		return true
+	} else if boolean == false {
 		return false
 	} else {
-		return true
+		return false
 	}
 }
 
