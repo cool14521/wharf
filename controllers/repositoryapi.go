@@ -50,20 +50,20 @@ func (r *RepositoryAPIController) URLMapping() {
 }
 
 func (this *RepositoryAPIController) Prepare() {
-	beego.Debug("[" + this.Ctx.Request.Method + "] " + this.Ctx.Request.URL.String())
+	beego.Debug(fmt.Sprintf("[%s] %s | %s", this.Ctx.Input.Host(), this.Ctx.Input.Request.Method, this.Ctx.Input.Request.RequestURI))
+
+	beego.Debug("[Headers]")
+	beego.Debug(this.Ctx.Input.Request.Header)
 
 	//相应 docker api 命令的 Controller 屏蔽 beego 的 XSRF ，避免错误。
 	this.EnableXSRF = false
 
 	//设置 Response 的 Header 信息，在处理函数中可以覆盖
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", beego.AppConfig.String("docker::Standalone"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
-
-	beego.Debug("[Header] ")
-	beego.Debug(this.Ctx.Request.Header)
 
 	//检查 Authorization 的 Header 信息是否存在。
 	if len(this.Ctx.Input.Header("Authorization")) == 0 {
@@ -76,9 +76,12 @@ func (this *RepositoryAPIController) Prepare() {
 		this.StopRun()
 
 	} else {
+
 		beego.Debug("[Authorization] " + this.Ctx.Input.Header("Authorization"))
+
 		//检查是否 Basic Auth
 		if strings.Index(this.Ctx.Input.Header("Authorization"), "Basic") == -1 {
+
 			//非 Basic Auth ，检查 Token
 			if strings.Index(this.Ctx.Input.Header("Authorization"), "Token") == -1 {
 				beego.Error("[API 用户] Docker 命令访问 HTTP API 的 Header 中没有 Basic Auth 和 Token 的信息 ")
@@ -194,7 +197,7 @@ func (this *RepositoryAPIController) PutRepository() {
 	if err := repo.PutJSON(username, repository, org, sign, string(this.Ctx.Input.CopyBody())); err != nil {
 		beego.Error(fmt.Sprintf("[API 用户] 更新/新建 repository 数据错误: %s", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新/新建 repository 数据错误\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新/新建镜像仓库数据错误\"}"))
 		this.StopRun()
 	}
 
@@ -299,6 +302,11 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 		beego.Debug("[Body] " + string(this.Ctx.Input.CopyBody()))
 
 		repo := new(models.Repository)
+
+		//TODO 检查仓库所有镜像的 Tag 信息和上传的 Tag 信息是否一致。
+		//TODO 检查仓库所有镜像是否 Uploaded 为 True
+		//TODO 检查仓库所有镜像是否 Checksumed 为 True
+
 		//设定 repository 的 Uploaded
 		if err := repo.PutUploaded(username, repository, org, sign, true); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Uploaded 标志错误: %s", namespace, repository, err.Error()))
@@ -350,6 +358,8 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 	}
 
 	beego.Debug("[Sign] " + sign)
+
+	//TODO 私有镜像仓库权限判断
 
 	repo := new(models.Repository)
 	if json, err := repo.GetJSON(username, repository, org, sign, true, true); err != nil {
@@ -408,6 +418,7 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Tag 数据错误\"}"))
 			this.StopRun()
 		} else {
+			//TODO 私有镜像仓库权限判断
 			//操作正常的输出
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.Ctx.Output.Context.Output.Body(tags)
