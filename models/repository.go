@@ -312,6 +312,9 @@ func (repo *Repository) PutTag(username, repository, organization, sign, tag, im
 }
 
 func (repo *Repository) PutUploaded(username, repository, organization, sign string, uploaded bool) error {
+	//TODO 循环检查 JSON 字符串中每一个 image 数据的 Uploaded 属性。
+	//解析保存的 JSON 字符串信息为一个 image 的数组，image 的格式包含 id 和 Tag 两项。
+	//{"id":"ffe35e09aeec0f3f9daf48ea9a949dea2b240137e24a374c47493a754a5b338b","Tag":"latest"}
 	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
 		return err
 	} else if has == false {
@@ -329,6 +332,9 @@ func (repo *Repository) PutUploaded(username, repository, organization, sign str
 }
 
 func (repo *Repository) PutChecksumed(username, repository, organization, sign string, checksumed bool) error {
+	//TODO 循环检查 JSON 字符串中每一个 image 数据的 Checksumed 属性。
+	//解析保存的 JSON 字符串信息为一个 image 的数组，image 的格式包含 id 和 Tag 两项。
+	//{"id":"ffe35e09aeec0f3f9daf48ea9a949dea2b240137e24a374c47493a754a5b338b","Tag":"latest"}
 	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
 		return err
 	} else if has == false {
@@ -346,6 +352,9 @@ func (repo *Repository) PutChecksumed(username, repository, organization, sign s
 }
 
 func (repo *Repository) PutSize(username, repository, organization, sign string) error {
+	//TODO 循环检查 JSON 字符串中每一个 image 数据的 Size 属性累加为 Repository 的 Size。
+	//解析保存的 JSON 字符串信息为一个 image 的数组，image 的格式包含 id 和 Tag 两项。
+	//{"id":"ffe35e09aeec0f3f9daf48ea9a949dea2b240137e24a374c47493a754a5b338b","Tag":"latest"}
 	//TODO 根据所有的 Image 的总和更新 Repository 的 Size 属性
 	return nil
 }
