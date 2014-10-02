@@ -165,6 +165,7 @@ func (repo *Repository) PutJSON(username, repository, organization, sign, json s
 
 		repo.Updated = time.Now().Unix()
 		repo.Created = time.Now().Unix()
+		repo.Size = 0
 
 		repo.Privated = false
 		repo.Checksumed = false
@@ -176,6 +177,9 @@ func (repo *Repository) PutJSON(username, repository, organization, sign, json s
 			repo.Sign = sign
 			repo.Encrypted = true
 		}
+
+		beego.Debug("[Repository Object]")
+		beego.Debug(repo)
 
 		if e := repo.Save(key); e != nil {
 			return e
@@ -211,39 +215,6 @@ func (repo *Repository) PutJSON(username, repository, organization, sign, json s
 	return nil
 }
 
-func (repo *Repository) Save(key []byte) error {
-	s := reflect.TypeOf(repo).Elem()
-
-	//循环处理 Struct 的每一个 Field
-	for i := 0; i < s.NumField(); i++ {
-		//获取 Field 的 Value
-		value := reflect.ValueOf(repo).Elem().Field(s.Field(i).Index[0])
-
-		//判断 Field 不为空
-		if utils.IsEmptyValue(value) == false {
-			switch value.Kind() {
-			case reflect.String:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(value.String())); err != nil {
-					return err
-				}
-			case reflect.Bool:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.BoolToBytes(value.Bool())); err != nil {
-					return err
-				}
-			case reflect.Int64:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
-					return err
-				}
-			default:
-				return fmt.Errorf("不支持的数据类型 %s:%s", s.Field(i).Name, value.Kind().String())
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (repo *Repository) PutAgent(username, repository, organization, sign, agent string) error {
 	if has, key, err := repo.Get(username, repository, organization, sign); err != nil {
 		return err
@@ -251,6 +222,7 @@ func (repo *Repository) PutAgent(username, repository, organization, sign, agent
 		return fmt.Errorf("没有在数据库中查询到要更新的 Repository 数据")
 	} else if has == true {
 		repo.Agent = agent
+		repo.Updated = time.Now().Unix()
 
 		if e := repo.Save(key); e != nil {
 			return e
@@ -302,6 +274,7 @@ func (repo *Repository) PutTag(username, repository, organization, sign, tag, im
 		tagJSON, _ := json.Marshal(tags)
 
 		repo.Tags = string(tagJSON)
+		repo.Updated = time.Now().Unix()
 
 		if e := repo.Save(key); e != nil {
 			return e
@@ -322,6 +295,7 @@ func (repo *Repository) PutUploaded(username, repository, organization, sign str
 	} else if has == true {
 		//TODO 循环检查所有的 Image 是不是 Uploaded
 		repo.Uploaded = uploaded
+		repo.Updated = time.Now().Unix()
 
 		if e := repo.Save(key); e != nil {
 			return e
@@ -342,6 +316,7 @@ func (repo *Repository) PutChecksumed(username, repository, organization, sign s
 	} else if has == true {
 		//TODO 循环检查所有的 Image 是不是 Checksumed
 		repo.Checksumed = checksumed
+		repo.Updated = time.Now().Unix()
 
 		if e := repo.Save(key); e != nil {
 			return e
@@ -365,19 +340,22 @@ func (repo *Repository) GetJSON(username, repository, organization, sign string,
 	} else if has == false {
 		return []byte(""), fmt.Errorf("没有在数据库中查询到 Repository 数据")
 	} else if has == true {
-		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("JSON")); e != nil {
+		if results, e := LedisDB.HMget(key, []byte("Checksumed"), []byte("Uploaded"), []byte("JSON")); e != nil {
 			return []byte(""), e
 		} else {
 			checksum := results[0]
 			upload := results[1]
 			json := results[2]
 
+			beego.Debug("[Checksumed] " + string(checksum))
+			beego.Debug("[Uploaded] " + string(upload))
+
 			if utils.BytesToBool(checksum) != checksumed {
-				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+				return []byte(""), fmt.Errorf("没有在数据库中查询到 Repository 数据")
 			}
 
 			if utils.BytesToBool(upload) != uploaded {
-				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
+				return []byte(""), fmt.Errorf("没有在数据库中查询到 Repository 数据")
 			}
 
 			return json, nil
@@ -394,7 +372,7 @@ func (repo *Repository) GetTags(username, repository, organization, sign string,
 	} else if has == false {
 		return []byte(""), fmt.Errorf("没有在数据库中查询到 Repository 数据")
 	} else if has == true {
-		if results, e := LedisDB.HMget(key, []byte("CheckSumed"), []byte("Uploaded"), []byte("Tags")); e != nil {
+		if results, e := LedisDB.HMget(key, []byte("Checksumed"), []byte("Uploaded"), []byte("Tags")); e != nil {
 			return []byte(""), e
 		} else {
 			checksum := results[0]
@@ -427,4 +405,37 @@ func (repo *Repository) GetTags(username, repository, organization, sign string,
 		}
 	}
 	return []byte(""), nil
+}
+
+func (repo *Repository) Save(key []byte) error {
+	s := reflect.TypeOf(repo).Elem()
+
+	//循环处理 Struct 的每一个 Field
+	for i := 0; i < s.NumField(); i++ {
+		//获取 Field 的 Value
+		value := reflect.ValueOf(repo).Elem().Field(s.Field(i).Index[0])
+
+		//判断 Field 不为空
+		if utils.IsEmptyValue(value) == false {
+			switch value.Kind() {
+			case reflect.String:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(value.String())); err != nil {
+					return err
+				}
+			case reflect.Bool:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.BoolToBytes(value.Bool())); err != nil {
+					return err
+				}
+			case reflect.Int64:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
+					return err
+				}
+			default:
+				return fmt.Errorf("不支持的数据类型 %s:%s", s.Field(i).Name, value.Kind().String())
+			}
+		}
+
+	}
+
+	return nil
 }
