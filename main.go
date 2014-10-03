@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	beego.SetLogger("file", fmt.Sprintf("{\"filename\":\"%s%s.log\"}", beego.AppConfig.String("log::FilePath"), beego.AppConfig.String("log::FileName")))
+	beego.SetLogger("file", fmt.Sprintf("{\"filename\":\"%s/%s.log\"}", beego.AppConfig.String("log::FilePath"), beego.AppConfig.String("log::FileName")))
 
 	app := cli.NewApp()
 	app.Name = beego.AppConfig.String("appname")

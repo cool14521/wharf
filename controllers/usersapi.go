@@ -72,7 +72,7 @@ func (this *UsersAPIController) PostUsers() {
 		}
 
 		user := new(models.User)
-		if err := user.Add(u["username"].(string), u["password"].(string), u["email"].(string)); err != nil {
+		if err := user.Put(u["username"].(string), u["password"].(string), u["email"].(string)); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户] 注册用户失败: %s", err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"注册用户失败\"}"))

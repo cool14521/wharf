@@ -33,7 +33,7 @@ func (user *User) Has(username string) (bool, error) {
 	}
 }
 
-func (user *User) Add(username string, passwd string, email string) error {
+func (user *User) Put(username string, passwd string, email string) error {
 	//检查用户的 Key 是否存在
 	if has, err := user.Has(username); err != nil {
 		return err
