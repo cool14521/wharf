@@ -52,7 +52,7 @@ func runWeb(c *cli.Context) {
 		port = strconv.Itoa(c.Int("port"))
 	}
 
-	confPath, _ := os.Getwd()
+	basePath, _ := os.Getwd()
 
 	//如果外部指定了配置文件就不读取 include::Bucket 指定的配置文件
 	//读取 Bucket 的单独配置
@@ -61,7 +61,7 @@ func runWeb(c *cli.Context) {
 			beego.Error("[Application] 读取配置文件错误: " + err.Error())
 		}
 	} else {
-		if global.BucketConfig, err = config.NewConfig("ini", fmt.Sprintf("%s/%s", confPath, beego.AppConfig.String("include::Bucket"))); err != nil {
+		if global.BucketConfig, err = config.NewConfig("ini", fmt.Sprintf("%s/%s", basePath, beego.AppConfig.String("include::Bucket"))); err != nil {
 			beego.Error("[Application] 读取配置文件错误: " + err.Error())
 		}
 	}

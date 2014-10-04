@@ -2,9 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/config"
 	"github.com/codegangsta/cli"
 
+	"github.com/dockercn/docker-bucket/global"
 	"github.com/dockercn/docker-bucket/models"
 )
 
@@ -34,11 +38,31 @@ var CmdAccount = cli.Command{
 			Value: "",
 			Usage: "账户初始密码",
 		},
+		cli.StringFlag{
+			Name:  "conf",
+			Value: "",
+			Usage: "Web 服务的配置文件路径",
+		},
 	},
 }
 
 func runAccount(c *cli.Context) {
 	var action, email, username, passwd string
+	var err error
+
+	basePath, _ := os.Getwd()
+
+	//如果外部指定了配置文件就不读取 include::Bucket 指定的配置文件
+	//读取 Bucket 的单独配置
+	if len(c.String("conf")) > 0 {
+		if global.BucketConfig, err = config.NewConfig("ini", c.String("conf")); err != nil {
+			beego.Error("[Application] 读取配置文件错误: " + err.Error())
+		}
+	} else {
+		if global.BucketConfig, err = config.NewConfig("ini", fmt.Sprintf("%s/%s", basePath, beego.AppConfig.String("include::Bucket"))); err != nil {
+			beego.Error("[Application] 读取配置文件错误: " + err.Error())
+		}
+	}
 
 	if len(c.String("action")) > 0 {
 		models.InitDb()
