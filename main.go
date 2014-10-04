@@ -20,7 +20,6 @@ func main() {
 
 	app.Commands = []cli.Command{
 		cmd.CmdWeb,
-		cmd.CmdVersion,
 		cmd.CmdAccount,
 	}
 

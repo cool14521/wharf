@@ -75,6 +75,34 @@ FileName = bucket-log // 日志文件的名称
 #Organization$Repository!Job //
 ```
 
+Bucket Conf
+==========
+
+```
+[docker]
+BasePath = /tmp/registry
+StaticPath = files
+Endpoints = 127.0.0.1
+Version = 0.8.0
+Config = prod
+Standalone = true
+OpenSignup = false
+Encrypt = true
+
+[ledisdb]
+DataDir = /tmp/ledisdb
+
+[email]
+Host = smtp.exmail.qq.com
+Port = 465
+User = demo@docker.cn
+Password = 123456
+
+[log]
+FilePath = /tmp/log
+FileName = bucket-log
+```
+
 Nginx Conf
 ==========
 

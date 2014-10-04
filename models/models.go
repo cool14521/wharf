@@ -7,6 +7,8 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/siddontang/ledisdb/config"
 	"github.com/siddontang/ledisdb/ledis"
+
+	"github.com/dockercn/docker-bucket/global"
 )
 
 const (
@@ -27,16 +29,7 @@ var (
 func setSessionEngine() {
 	beego.SessionProvider = beego.AppConfig.String("session::Provider")
 	beego.SessionSavePath = beego.AppConfig.String("session::SavePath")
-
-	switch beego.AppConfig.String("docker::RunMode") {
-	case "Bucket":
-		beego.SessionName = "Bucket"
-	case "Registry":
-		beego.SessionName = beego.AppConfig.String("docker::endpoint")
-	default:
-		beego.SessionName = "Bucket"
-	}
-
+	beego.SessionName = "bucket"
 	beego.SessionHashKey = "dwzemsxoltmv"
 }
 
@@ -48,8 +41,7 @@ func InitSession() {
 func InitDb() {
 	initLedisFunc := func() {
 		cfg := new(config.Config)
-		//cfg.DBName = "docker"
-		cfg.DataDir = beego.AppConfig.String("ledisdb::DataDir")
+		cfg.DataDir = global.BucketConfig.String("ledisdb::DataDir")
 
 		var err error
 		nowLedis, err = ledis.Open(cfg)
