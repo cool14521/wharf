@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/archive"
+	"github.com/docker/docker/pkg/archive"
 	//"github.com/docker/docker/utils"
 )
 
