@@ -50,8 +50,12 @@ func InitDb() {
 			panic(err)
 		}
 	}
+
 	ledisOnce.Do(initLedisFunc)
-	LedisDB, _ = nowLedis.Select(0)
+
+	db, _ := global.BucketConfig.Int("ledisdb::DB")
+
+	LedisDB, _ = nowLedis.Select(db)
 }
 
 func GetObjectKey(object string, id string) string {

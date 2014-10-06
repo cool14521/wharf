@@ -91,6 +91,7 @@ Encrypt = true
 
 [ledisdb]
 DataDir = /tmp/ledisdb
+DB = 8
 
 [email]
 Host = smtp.exmail.qq.com
