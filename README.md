@@ -1,94 +1,93 @@
 docker-bucket
 ===============
 
-The dockercn's [docker-bucket](https://github.com/dockercn/docker-hub) is a [Golang](http://golang.org) version what clone and beyond official [docker-registry](https://github.com/docker/docker-registry), and we add user manage, UI and more features. We will add more backend storage services support like [Qiniu](http://qiniu.com), [Aliyun OSS](http://www.aliyun.com/product/oss), [Baidu Storage](http://developer.baidu.com/cloud/stor), [Tencent COS](http://www.qcloud.com/product/product.php?item=cos) and [OpenStack Swift](http://docs.openstack.org/developer/swift).
+编译
+====
 
+代码 **clone** 到 `$GOPATH/src/githhub.com/src/dockercn` 目录下，然后执行以下命令
 
-What's Bucket?
+```
+go get github.com/astaxie/beego
+go get github.com/codegangsta/cli
+go get github.com/siddontang/ledisdb/ledis
+go get github.com/garyburd/redigo/redis
+go build
+```
+`TODO` 支持 **gopm** 编译程序
+
+`TODO` 支持 **Dockerfile**
+
+新建用户
+=======
+
+```
+./docker-bucket account --action add --username docker --passwd docker --email bucket@docker.cn
+```
+
+对象 Key 规则
 ================
 
-A bucket is a hosted service containing [repositories](http://docs.docker.io/en/latest/terms/repository/#repository-def) of [images](http://docs.docker.io/en/latest/terms/image/#image-def) which responds to the Registry API.
-
-
-What's FQIN?
-============
-
-A Fully Qualified Image Name (FQIN) can be made up of 3 parts:
+在 LedisDB 中对象的 Key 规则：
 
 ```
-[registry_hostname[:port]/][user_name/](repository_name[:version_tag])
+@Username // @用户名
+#Organization // #组织名
+
+@Username$Repository+ // 用户未加密公有仓库
+#Organization$Repository+ // 组织未加密公有仓库
+
+@Username$Repository- // 用户未加密私有仓库
+#Organization$Repository- // 组织未加密私公有仓库
+
+@Username$Repository-?Sign // 用户加密私有仓库  
+#Organization$Repository-?Sign // 组织加密私有仓库
+
+&Image+ //未加密，私有库和公有库未加密的 Image 共享
+&Image-?Sign //加密，只有私有库有加密支持，每个 Image 根据加密签名不同，可能存有多份儿。
+
+@Username$Repository*Template+(-) //  
+#Organization$Repository*Template+(-) //
+
+@Username$Repository!Job //  
+#Organization$Repository!Job //
 ```
 
-`version_tag` defaults to `latest`, `username` and `registry_hostname` default to an empty string. When `registry_hostname` is an empty string, then docker push will push to *index.docker.io:80*.
-
-
-Why image file named layer?
-===========================
-
-In Docker terminology, a read-only [Layer](http://docs.docker.io/en/latest/terms/layer/#layer-def) is called an image. An image never changes.
-
-
-How to build?
-=============
-
-The project build with [gopm](https://github.com/gpmgo/gopm).
-
-Install [gopm](https://github.com/gpmgo/gopm)
+Bucket Conf
+==========
 
 ```
-go get -u github.com/gpmgo/gopm
+[docker]
+BasePath = /tmp/registry
+StaticPath = files
+Endpoints = 127.0.0.1
+Version = 0.8.0
+Config = prod
+Standalone = true
+OpenSignup = false
+Encrypt = true
+
+[ledisdb]
+DataDir = /tmp/ledisdb
+DB = 8
+
+[email]
+Host = smtp.exmail.qq.com
+Port = 465
+User = demo@docker.cn
+Password = 123456
+
+[log]
+FilePath = /tmp/log
+FileName = bucket-log
 ```
-
-Build commands:
-
-```
-gopm build
-```
-
-
-
-LedisDB Key Conf
-================
-```
-@Username
-#Organization
-
-User 一对一 Profile
-User 一对多 History
-
-Organization多对多User
-
-Organization一对多Member
-
-$Repository@Username(用户的名字:@Namespace)
-$Repository#Organization(组织的名字#Namespace)
-
-%Tag$Repository@Username
-%Tag$Repository#Organization
-
-&Image(ImageID)
-
-//public
-&ImageId+(第一个加号公有)+(第二个加号加密)
-
-//private
-&ImageId-(第一个减号私有)-(第二个减号未加密)
-
-//Template
-*TemplateName
-
-//Job
-!JOBID(加YAML配置)
-```
-
-
-
 
 Nginx Conf
 ==========
 
+Nginx 配置文件的示例，注意 **client_max_body_size** 对上传文件大小的限制。
+
 ```
-upstream hub_upstream {
+upstream bucket_upstream {
   server 127.0.0.1:9911;
 }
 
@@ -123,7 +122,7 @@ server {
   proxy_http_version 1.1;
 
   location / {
-    proxy_pass         http://hub_upstream;
+    proxy_pass         http://bucket_upstream;
   }
 }
 ```

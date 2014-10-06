@@ -21,55 +21,71 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/astaxie/beego"
+
+	"github.com/dockercn/docker-bucket/global"
 	"github.com/dockercn/docker-bucket/models"
 	"github.com/dockercn/docker-bucket/utils"
-	"net/http"
 )
 
 type UsersAPIController struct {
 	beego.Controller
 }
 
-func (this *UsersAPIController) Prepare() {
-	this.EnableXSRF = false
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", beego.AppConfig.String("docker::Standalone"))
+func (u *UsersAPIController) URLMapping() {
+	u.Mapping("PostUsers", u.PostUsers)
+	u.Mapping("GetUsers", u.GetUsers)
 }
 
+func (this *UsersAPIController) Prepare() {
+	beego.Debug(fmt.Sprintf("[%s] %s | %s", this.Ctx.Input.Host(), this.Ctx.Input.Request.Method, this.Ctx.Input.Request.RequestURI))
+
+	beego.Debug("[Headers]")
+	beego.Debug(this.Ctx.Input.Request.Header)
+
+	//相应 docker api 命令的 Controller 屏蔽 beego 的 XSRF ，避免错误。
+	this.EnableXSRF = false
+
+	//设置 Response 的 Header 信息，在处理函数中可以覆盖
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", global.BucketConfig.String("docker::Standalone"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", global.BucketConfig.String("docker::Version"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", global.BucketConfig.String("docker::Config"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", global.BucketConfig.String("docker::Encrypt"))
+}
+
+//返回 401 错误会让 docker 命令行执行 GET /v1/users 的登录动作。
+//返回 400 和 403 会在 Docker 客户端抛出错误并终止。
+//如果支持 docker 命令行创建账户，在创建成功后返回 201 状态吗。
 func (this *UsersAPIController) PostUsers() {
-
-	beego.Trace("Authorization:" + this.Ctx.Input.Header("Authorization"))
-	//TODO 检查配置文件是否可以在命令行注册的设置进行不同的处理。
-	IsOpenUserSignUp, _ := beego.AppConfig.Bool("IsOpenUserSignUp")
-	if IsOpenUserSignUp {
-		//此处需要抓取允许注册时候的协议
-
+	//根据配置文件中得是否可以注册处理逻辑
+	open, _ := global.BucketConfig.Bool("docker::OpenSignup")
+	if open == true {
 		//获得用户提交的登陆(注册)信息
-		var createUserJson map[string]interface{}
-		json.Unmarshal(this.Ctx.Input.CopyBody(), &createUserJson)
+		var u map[string]interface{}
+		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] 解码用户注册发送的 JSON 数据失败: %s", err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码用户发送的 JSON 数据失败\"}"))
+			this.StopRun()
+		}
 
 		user := new(models.User)
-		//查看用户是否已经注册过：这里取出Username只是为了证明用户存在
-		userName, uerInfoErr := user.GetUserInfo(createUserJson["username"].(string), "Username")
-
-		if uerInfoErr == nil && len(userName) > 0 {
-			this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are not support create a account from cli.\"}"))
-			return
+		if err := user.Put(u["username"].(string), u["password"].(string), u["email"].(string)); err != nil {
+			beego.Error(fmt.Sprintf("[API 用户] 注册用户失败: %s", err.Error()))
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"注册用户失败\"}"))
+			this.StopRun()
 		} else {
-			user.CreateUser(createUserJson["username"].(string), createUserJson["password"].(string), createUserJson["email"].(string))
-			this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+			beego.Info(fmt.Sprintf("[API 用户] 注册用户成功: %s", u["username"].(string)))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusCreated)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"info\": \"create a account success.\"}"))
-			return
+			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("{\"信息\": \"用户 %s 注册成功\"}", u["username"].(string))))
 		}
 	} else {
-		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\": \"We are not support create a account from cli.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"不支持从 docker 命令行创建用户\"}"))
 	}
 }
 
@@ -77,37 +93,30 @@ func (this *UsersAPIController) GetUsers() {
 
 	username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
 	if err != nil {
-		beego.Error("[Decode Authoriztion Header] " + this.Ctx.Input.Header("Authorization") + " " + " error: " + err.Error())
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized) //根据 Specification ，解码 Basic Authorization 数据失败也认为是 401 错误。
-		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+		beego.Error(fmt.Sprintf("[API 用户] 用户登录的 Basic Auth 验证错误: %s", err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+		this.Ctx.Output.Body([]byte("{\"错误\":\"用户登录验证失败\"}"))
 		this.StopRun()
 	}
 
-	beego.Trace("username: " + username)
-	beego.Trace("password: " + passwd)
-
 	user := new(models.User)
-	has, err := user.Get(username, passwd, true)
+	has, err := user.Get(username, passwd)
 
 	if err != nil {
 		//查询用户数据失败，返回 401 错误
-		beego.Error("[Search User] " + username + " " + passwd + " has error: " + err.Error())
+		beego.Error(fmt.Sprintf("[API 用户] 查询用户错误： ", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.Ctx.Output.Body([]byte("{\"error\":\"Unauthorized\"}"))
+		this.Ctx.Output.Body([]byte("{\"错误\":\"用户登录验证失败\"}"))
 		this.StopRun()
 	}
 
 	if has == false {
 		//没有查询到用户数据
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"User is not exist or not actived.\"}"))
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户数据\"}"))
 		this.StopRun()
 	}
 
-	//这句没明白记录什么的
-	user.History(0, user.Id, fmt.Sprintf("%s %s %s", models.FROM_CLI, models.ACTION_SIGNIN, this.Ctx.Input.Header("X-Real-IP")))
-
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte("{\"OK\"}"))
+	this.Ctx.Output.Context.Output.Body([]byte("{\"登录成功\"}"))
 }

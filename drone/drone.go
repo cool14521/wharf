@@ -54,9 +54,8 @@ func run(path string) {
 	// here we should use githubapi to accplish this
 	//dir := filepath.Dir(path)
 	code := repo.Repo{
-		//Name:   filepath.Base(dir),
 		Name:   "test",
-		Branch: "HEAD", // should we do this?
+		Branch: "HEAD",
 		Path:   s.Repo,
 	}
 
