@@ -81,6 +81,10 @@ func (user *User) Put(username string, passwd string, email string) error {
 				return err
 			}
 
+			if _, err := LedisDB.HSet([]byte(GetServerKeys("user")), []byte(GetObjectKey("user", username)), key); err != nil {
+				return err
+			}
+
 			return nil
 		}
 	}
@@ -157,14 +161,17 @@ type Organization struct {
 	Updated      int64  //
 }
 
+//在全局 org 存储的的 Hash 中查询到 org 的 key，然后根据 key 再使用 Exists 方法查询是否存在数据
 func (org *Organization) Has(name string) (bool, error) {
-	if org, err := LedisDB.Exists([]byte(GetObjectKey("org", name))); err != nil {
+	if key, err := LedisDB.HGet([]byte(GetServerKeys("org")), []byte(GetObjectKey("org", name))); err != nil {
 		return false, err
-	} else if org > 0 {
-		return true, nil
+	} else {
+		if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
+			return false, err
+		} else {
+			return true, nil
+		}
 	}
-
-	return false, nil
 }
 
 func (org *Organization) Add(user, name, description string) error {
