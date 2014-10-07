@@ -13,8 +13,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dockercn/docker/pkg/term"
-	"github.com/dockercn/docker/utils"
+	"github.com/docker/docker/pkg/term"
+	"github.com/docker/docker/utils"
+	"github.com/dockercn/docker-bucket/drone/pkg/build/docker/stdcopy"
 )
 
 const (
@@ -191,7 +192,8 @@ func (c *Client) hijack(method, path string, setRawTerminal bool, out io.Writer)
 		if setRawTerminal {
 			_, err = io.Copy(out, br)
 		} else {
-			_, err = utils.StdCopy(out, out, br)
+			//_, err = utils.StdCopy(out, out, br)
+			_, err = stdcopy.StdCopy(out, out, br)
 		}
 
 		errStdout <- err
