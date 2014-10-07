@@ -131,7 +131,7 @@ func (user *User) Get(username, passwd string) (bool, error) {
 		var key []byte
 
 		//获取用户对象的 Key
-		if key, err = LedisDB.Get([]byte(GetObjectKey("user", username))); err != nil {
+		if key, err = LedisDB.HGet([]byte(GetServerKeys("user")), []byte(GetObjectKey("user", username))); err != nil {
 			return false, err
 		}
 
@@ -201,6 +201,10 @@ func (org *Organization) Add(user, name, description string) error {
 			return err
 		} else {
 			if err := LedisDB.Set([]byte(GetObjectKey("org", name)), key); err != nil {
+				return err
+			}
+
+			if _, err := LedisDB.HSet([]byte(GetServerKeys("org")), []byte(GetObjectKey("org", name)), key); err != nil {
 				return err
 			}
 
