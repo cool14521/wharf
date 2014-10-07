@@ -25,12 +25,18 @@ type User struct {
 	Updated       int64  //
 }
 
+//在全局 user 存储的的 Hash 中查询到 user 的 key，然后根据 key 再使用 Exists 方法查询是否存在数据
 func (user *User) Has(username string) (bool, error) {
-	if exist, err := LedisDB.Exists([]byte(GetObjectKey("user", username))); err != nil || exist == 0 {
+	if key, err := LedisDB.HGet([]byte(GetServerKeys("user")), []byte(GetObjectKey("user", username))); err != nil {
 		return false, err
 	} else {
-		return true, nil
+		if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
+			return false, err
+		} else {
+			return true, nil
+		}
 	}
+
 }
 
 func (user *User) Put(username string, passwd string, email string) error {
