@@ -117,7 +117,7 @@ func (this *ImageAPIController) Prepare() {
 				//根据 Namespace 查询组织数据
 				namespace := string(this.Ctx.Input.Param(":namespace"))
 				org := new(models.Organization)
-				if has, err := org.Has(namespace); err != nil {
+				if has, _, err := org.Has(namespace); err != nil {
 					beego.Error(fmt.Sprintf("[API 用户] 查询组织名称 %s 时错误 %s", namespace, err.Error()))
 					this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 					this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询组织数据报错。\"}"))

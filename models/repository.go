@@ -80,7 +80,7 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 	//查询 User 是否存在，如果不存在 User 的数据，直接返回错误信息。
 	//系统先创用户，在由用户创建组织，所以搜索到用户就直接报错。
 	user := new(User)
-	if has, err := user.Has(username); err != nil {
+	if has, _, err := user.Has(username); err != nil {
 		return false, []byte(""), err
 	} else if has == true && len(organization) == 0 {
 		//存在用户数据且组织数据为空
@@ -98,7 +98,7 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 		//存在用户数据且组织数据不为空
 		//查询组织数据是否存在
 		org := new(Organization)
-		if h, e := org.Has(organization); e != nil {
+		if h, _, e := org.Has(organization); e != nil {
 			return false, []byte(""), e
 		} else if h == false {
 			return false, []byte(""), fmt.Errorf("没有找到 %s 组织的数据", organization)
