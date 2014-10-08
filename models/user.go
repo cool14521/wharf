@@ -34,12 +34,14 @@ type User struct {
 func (user *User) Has(username string) (bool, []byte, error) {
 	if key, err := LedisDB.HGet([]byte(GetServerKeys("user")), []byte(GetObjectKey("user", username))); err != nil {
 		return false, []byte(""), err
-	} else {
+	} else if key != nil {
 		if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
 			return false, []byte(""), err
 		} else {
 			return true, key, nil
 		}
+	} else {
+		return false, []byte(""), err
 	}
 }
 
@@ -199,12 +201,14 @@ type Organization struct {
 func (org *Organization) Has(name string) (bool, []byte, error) {
 	if key, err := LedisDB.HGet([]byte(GetServerKeys("org")), []byte(GetObjectKey("org", name))); err != nil {
 		return false, []byte(""), err
-	} else {
+	} else if key != nil {
 		if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
 			return false, []byte(""), err
 		} else {
 			return true, key, nil
 		}
+	} else {
+		return false, []byte(""), nil
 	}
 }
 

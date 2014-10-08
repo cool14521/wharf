@@ -78,7 +78,7 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 	var keys [][]byte
 
 	//查询 User 是否存在，如果不存在 User 的数据，直接返回错误信息。
-	//系统先创用户，在由用户创建组织，所以搜索到用户就直接报错。
+	//系统先创建用户，再由用户创建组织，所以搜索不到用户就直接报错。
 	user := new(User)
 	if has, _, err := user.Has(username); err != nil {
 		return false, []byte(""), err
@@ -114,20 +114,20 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 				keys = append(keys, []byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("org", organization), GetObjectKey("repo", repository), sign)))
 			}
 		}
+	} else if has == false {
+		return false, []byte(""), fmt.Errorf("没有找到用户的数据")
 	}
 
 	//循环 keys 判断是否存在
 	for _, value := range keys {
-		if exist, err := LedisDB.Exists(value); err != nil {
+		if key, err := LedisDB.HGet([]byte(GetServerKeys("repo")), value); err != nil {
 			return false, []byte(""), err
-		} else if exist > 0 {
-			var key []byte
-
-			if key, err = LedisDB.Get([]byte(value)); err != nil {
-				return false, key, err
+		} else if key != nil {
+			if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
+				return false, []byte(""), err
+			} else {
+				return true, key, nil
 			}
-
-			return true, key, nil
 		}
 	}
 
