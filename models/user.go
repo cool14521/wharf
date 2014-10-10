@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -40,9 +41,8 @@ func (user *User) Has(username string) (bool, []byte, error) {
 		} else if name != nil {
 			//已经存在了用户的 Key，接着判断用户是否相同
 			if string(name) != username {
-				return true, key, fmt.Errorf("已经存在了 Key，但是用户名不相同")
+				return true, key, fmt.Errorf("已经存在了 Key，但是用户名不相同 %s ", name)
 			}
-
 			return true, key, nil
 		} else {
 			return false, []byte(""), nil
@@ -134,16 +134,6 @@ func (user *User) Get(username, passwd string) (bool, error) {
 	}
 }
 
-//用户创建镜像仓库后，在 user 的 Repositories 字段保存相应的记录
-func (user *User) AddRepository(username, repository, key string) error {
-	return nil
-}
-
-//用户删除镜像仓库后，在 user 的 Repositories 中删除相应的记录
-func (user *User) RemoveRepository(username, repository string) error {
-	return nil
-}
-
 //重置用户的密码
 func (user *User) ResetPasswd(username, password string) error {
 	//检查用户的 Key 是否存在
@@ -160,6 +150,47 @@ func (user *User) ResetPasswd(username, password string) error {
 		return fmt.Errorf("不存在用户 %s", username)
 	}
 
+	return nil
+}
+
+//用户创建镜像仓库后，在 user 的 Repositories 字段保存相应的记录
+func (user *User) AddRepository(username, repository, key string) error {
+	var userKey []byte
+	var has bool
+	var err error
+
+	repoMap := make(map[string]string, 0)
+
+	//检查用户的 Key 是否存在
+	if has, userKey, err = user.Has(username); err != nil {
+		return err
+	} else if has == true {
+		if repo, err := LedisDB.HGet(userKey, []byte("Repositories")); err != nil {
+			return err
+		} else if repo != nil {
+			if e := json.Unmarshal(repo, &repoMap); e != nil {
+				return nil
+			}
+			if value, exist := repoMap[repository]; exist == true && value == key {
+				return fmt.Errorf("已经存在了 Repository 数据")
+			}
+		}
+	}
+
+	//在 Map 中增加 repository 记录
+	repoMap[repository] = key
+	//JSON Marshall
+	repo, _ := json.Marshal(repoMap)
+
+	if _, err := LedisDB.HSet(userKey, []byte("Repositories"), repo); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//用户删除镜像仓库后，在 user 的 Repositories 中删除相应的记录
+func (user *User) RemoveRepository(username, repository string) error {
 	return nil
 }
 
