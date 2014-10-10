@@ -97,6 +97,7 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 	} else if has == true && len(organization) > 0 {
 		//存在用户数据且组织数据不为空
 		//查询组织数据是否存在
+		//不判断用户和组织之间的所属关系和镜像仓库权限
 		org := new(Organization)
 		if h, _, e := org.Has(organization); e != nil {
 			return false, []byte(""), e
@@ -105,12 +106,12 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 		} else if h == true {
 			if len(sign) == 0 {
 				//非加密数据库 Key 规则：
-				//公开库：@org$repository+
-				//私有库：@org$repository-
+				//公开库：#org$repository+
+				//私有库：#org$repository-
 				keys = append(keys, []byte(fmt.Sprintf("%s%s+", GetObjectKey("org", organization), GetObjectKey("repo", repository))))
 				keys = append(keys, []byte(fmt.Sprintf("%s%s-", GetObjectKey("org", organization), GetObjectKey("repo", repository))))
 			} else if len(sign) > 0 {
-				//加密数据库必须为私有库：@org$repository-?sign
+				//加密数据库必须为私有库：#org$repository-?sign
 				keys = append(keys, []byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("org", organization), GetObjectKey("repo", repository), sign)))
 			}
 		}
@@ -118,7 +119,7 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 		return false, []byte(""), fmt.Errorf("没有找到用户的数据")
 	}
 
-	//循环 keys 判断是否存在
+	//循环 keys 中的 key 数据， 在全局 repo 中判断是否存在这个 Key，如果存在 Key 则在数据库中判断 Key 是否存在
 	for _, value := range keys {
 		if key, err := LedisDB.HGet([]byte(GetServerKeys("repo")), value); err != nil {
 			return false, []byte(""), err

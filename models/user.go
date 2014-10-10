@@ -35,13 +35,20 @@ func (user *User) Has(username string) (bool, []byte, error) {
 	if key, err := LedisDB.HGet([]byte(GetServerKeys("user")), []byte(GetObjectKey("user", username))); err != nil {
 		return false, []byte(""), err
 	} else if key != nil {
-		if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
+		if name, err := LedisDB.HGet(key, []byte("Username")); err != nil {
 			return false, []byte(""), err
-		} else {
+		} else if name != nil {
+			//已经存在了用户的 Key，接着判断用户是否相同
+			if string(name) != username {
+				return true, key, fmt.Errorf("已经存在了 Key，但是用户名不相同")
+			}
+
 			return true, key, nil
+		} else {
+			return false, []byte(""), nil
 		}
 	} else {
-		return false, []byte(""), err
+		return false, []byte(""), nil
 	}
 }
 
@@ -113,7 +120,7 @@ func (user *User) Get(username, passwd string) (bool, error) {
 
 		//读取密码的值进行判断是否密码相同
 		if password, err := LedisDB.HGet(key, []byte("Password")); err != nil {
-			return ÓHfalse, err
+			return false, err
 		} else {
 			if string(password) != passwd {
 				return false, nil
@@ -145,7 +152,7 @@ func (user *User) ResetPasswd(username, password string) error {
 	} else if has == true {
 		user.Password = password
 
-		if err := user.Save(Key); err != nil {
+		if err := user.Save(key); err != nil {
 			return err
 		}
 	} else {
