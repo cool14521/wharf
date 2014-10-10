@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 
@@ -50,24 +51,49 @@ func InitDb() {
 			panic(err)
 		}
 	}
+
 	ledisOnce.Do(initLedisFunc)
-	LedisDB, _ = nowLedis.Select(0)
+
+	db, _ := global.BucketConfig.Int("ledisdb::DB")
+
+	LedisDB, _ = nowLedis.Select(db)
 }
 
+//获取服务器全局存储的 Key 值
+func GetServerKeys(object string) string {
+	switch strings.TrimSpace(object) {
+	case "user":
+		return fmt.Sprintf("%susers", USER_SYMBLE)
+	case "org":
+		return fmt.Sprintf("%sorgs", ORGANIZATION_SYMBLE)
+	case "repo":
+		return fmt.Sprintf("%srepos", REPOSITORY_SYMBLE)
+	case "image":
+		return fmt.Sprintf("%simages", IMAGE_SYMBLE)
+	case "template":
+		return fmt.Sprintf("%stemplates", TEMPLATE_SYMBLE)
+	case "job":
+		return fmt.Sprintf("%sjob", JOB_SYMBLE)
+	default:
+		return ""
+	}
+}
+
+//获取对象存储的 Key
 func GetObjectKey(object string, id string) string {
 	switch strings.TrimSpace(object) {
 	case "user":
-		return USER_SYMBLE + strings.TrimSpace(id)
+		return fmt.Sprintf("%s%s", USER_SYMBLE, strings.TrimSpace(id))
 	case "org":
-		return ORGANIZATION_SYMBLE + strings.TrimSpace(id)
+		return fmt.Sprintf("%s%s", ORGANIZATION_SYMBLE, strings.TrimSpace(id))
 	case "repo":
-		return REPOSITORY_SYMBLE + strings.TrimSpace(id)
+		return fmt.Sprintf("%s%s", REPOSITORY_SYMBLE, strings.TrimSpace(id))
 	case "image":
-		return IMAGE_SYMBLE + strings.TrimSpace(id)
+		return fmt.Sprintf("%s%s", IMAGE_SYMBLE, strings.TrimSpace(id))
 	case "template":
-		return TEMPLATE_SYMBLE + strings.TrimSpace(id)
+		return fmt.Sprintf("%s%s", TEMPLATE_SYMBLE, strings.TrimSpace(id))
 	case "job":
-		return JOB_SYMBLE + strings.TrimSpace(id)
+		return fmt.Sprintf("%s%s", JOB_SYMBLE, strings.TrimSpace(id))
 	default:
 		return ""
 	}
