@@ -113,7 +113,7 @@ func (user *User) Get(username, passwd string) (bool, error) {
 
 		//读取密码的值进行判断是否密码相同
 		if password, err := LedisDB.HGet(key, []byte("Password")); err != nil {
-			return false, err
+			return ÓHfalse, err
 		} else {
 			if string(password) != passwd {
 				return false, nil
@@ -139,6 +139,20 @@ func (user *User) RemoveRepository(username, repository string) error {
 
 //重置用户的密码
 func (user *User) ResetPasswd(username, password string) error {
+	//检查用户的 Key 是否存在
+	if has, key, err := user.Has(username); err != nil {
+		return err
+	} else if has == true {
+		user.Password = password
+
+		if err := user.Save(Key); err != nil {
+			return err
+		}
+	} else {
+		//没有用户的 Key 存在
+		return fmt.Errorf("不存在用户 %s", username)
+	}
+
 	return nil
 }
 
