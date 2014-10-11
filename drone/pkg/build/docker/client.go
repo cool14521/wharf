@@ -13,9 +13,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/docker/docker/pkg/term"
-	"github.com/docker/docker/utils"
 	"github.com/dockercn/docker-bucket/drone/pkg/build/docker/stdcopy"
+	"github.com/dockercn/docker-bucket/drone/pkg/build/docker/term"
+	"github.com/dockercn/docker-bucket/drone/pkg/build/docker/utils"
 )
 
 const (
