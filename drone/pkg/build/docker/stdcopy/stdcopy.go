@@ -3,9 +3,8 @@ package stdcopy
 import (
 	"encoding/binary"
 	"errors"
+	"github.com/dockercn/docker-bucket/drone/pkg/build/docker/log"
 	"io"
-
-	"github.com/docker/docker/pkg/log"
 )
 
 const (
