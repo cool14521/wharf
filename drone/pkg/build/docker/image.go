@@ -10,8 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/pkg/archive"
-	//"github.com/docker/docker/utils"
+	"github.com/dockercn/docker-bucket/drone/pkg/build/docker/archive"
 )
 
 type Images struct {
