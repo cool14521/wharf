@@ -28,26 +28,21 @@ type Image struct {
 }
 
 func (image *Image) Get(imageId, sign string) (bool, []byte, error) {
+	var k []byte
+
 	if len(sign) == 0 {
-		//没有加密签名，所以根据公有 Image Key 定义查找 Key
-		if exist, err := LedisDB.Exists([]byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId)))); err != nil {
-			return false, []byte(""), err
-		} else if exist > 0 {
-			if key, e := LedisDB.Get([]byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId)))); e != nil {
-				return false, []byte(""), e
-			} else {
-				return true, key, nil
-			}
-		}
+		k = []byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId)))
 	} else {
-		if exist, err := LedisDB.Exists([]byte(fmt.Sprintf("%s-?%s", []byte(GetObjectKey("image", imageId)), sign))); err != nil {
+		k = []byte(fmt.Sprintf("%s-?%s", GetObjectKey("image", imageId), sign))
+	}
+
+	if key, err := LedisDB.HGet([]byte(GetServerKeys("image")), k); err != nil {
+		return false, []byte(""), err
+	} else if key != nil {
+		if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
 			return false, []byte(""), err
-		} else if exist > 0 {
-			if key, e := LedisDB.Get([]byte(fmt.Sprintf("%s-?%s", []byte(GetObjectKey("image", imageId)), sign))); e != nil {
-				return false, []byte(""), e
-			} else {
-				return true, key, nil
-			}
+		} else {
+			return true, key, nil
 		}
 	}
 

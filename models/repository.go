@@ -78,9 +78,9 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 	var keys [][]byte
 
 	//查询 User 是否存在，如果不存在 User 的数据，直接返回错误信息。
-	//系统先创用户，在由用户创建组织，所以搜索到用户就直接报错。
+	//系统先创建用户，再由用户创建组织，所以搜索不到用户就直接报错。
 	user := new(User)
-	if has, err := user.Has(username); err != nil {
+	if has, _, err := user.Has(username); err != nil {
 		return false, []byte(""), err
 	} else if has == true && len(organization) == 0 {
 		//存在用户数据且组织数据为空
@@ -97,37 +97,38 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 	} else if has == true && len(organization) > 0 {
 		//存在用户数据且组织数据不为空
 		//查询组织数据是否存在
+		//不判断用户和组织之间的所属关系和镜像仓库权限
 		org := new(Organization)
-		if h, e := org.Has(organization); e != nil {
+		if h, _, e := org.Has(organization); e != nil {
 			return false, []byte(""), e
 		} else if h == false {
 			return false, []byte(""), fmt.Errorf("没有找到 %s 组织的数据", organization)
 		} else if h == true {
 			if len(sign) == 0 {
 				//非加密数据库 Key 规则：
-				//公开库：@org$repository+
-				//私有库：@org$repository-
+				//公开库：#org$repository+
+				//私有库：#org$repository-
 				keys = append(keys, []byte(fmt.Sprintf("%s%s+", GetObjectKey("org", organization), GetObjectKey("repo", repository))))
 				keys = append(keys, []byte(fmt.Sprintf("%s%s-", GetObjectKey("org", organization), GetObjectKey("repo", repository))))
 			} else if len(sign) > 0 {
-				//加密数据库必须为私有库：@org$repository-?sign
+				//加密数据库必须为私有库：#org$repository-?sign
 				keys = append(keys, []byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("org", organization), GetObjectKey("repo", repository), sign)))
 			}
 		}
+	} else if has == false {
+		return false, []byte(""), fmt.Errorf("没有找到用户的数据")
 	}
 
-	//循环 keys 判断是否存在
+	//循环 keys 中的 key 数据， 在全局 repo 中判断是否存在这个 Key，如果存在 Key 则在数据库中判断 Key 是否存在
 	for _, value := range keys {
-		if exist, err := LedisDB.Exists(value); err != nil {
+		if key, err := LedisDB.HGet([]byte(GetServerKeys("repo")), value); err != nil {
 			return false, []byte(""), err
-		} else if exist > 0 {
-			var key []byte
-
-			if key, err = LedisDB.Get([]byte(value)); err != nil {
-				return false, key, err
+		} else if key != nil {
+			if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
+				return false, []byte(""), err
+			} else {
+				return true, key, nil
 			}
-
-			return true, key, nil
 		}
 	}
 
