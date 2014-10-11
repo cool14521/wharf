@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/dockercn/docker-bucket/drone/pkg/build/docker/archive"
-	//"github.com/docker/docker/utils"
 )
 
 type Images struct {

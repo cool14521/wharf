@@ -13,7 +13,6 @@ package pools
 
 import (
 	"bufio"
-	"github.com/dockercn/docker-bucket/drone/pkg/build/docker/ioutils"
 	"io"
 	"sync"
 )
@@ -58,18 +57,6 @@ func (bufPool *BufioReaderPool) Put(b *bufio.Reader) {
 	bufPool.pool.Put(b)
 }
 
-// NewReadCloserWrapper returns a wrapper which puts the bufio.Reader back
-// into the pool and closes the reader if it's an io.ReadCloser.
-func (bufPool *BufioReaderPool) NewReadCloserWrapper(buf *bufio.Reader, r io.Reader) io.ReadCloser {
-	return ioutils.NewReadCloserWrapper(r, func() error {
-		if readCloser, ok := r.(io.ReadCloser); ok {
-			readCloser.Close()
-		}
-		bufPool.Put(buf)
-		return nil
-	})
-}
-
 type BufioWriterPool struct {
 	pool sync.Pool
 }
@@ -99,7 +86,7 @@ func (bufPool *BufioWriterPool) Put(b *bufio.Writer) {
 // NewWriteCloserWrapper returns a wrapper which puts the bufio.Writer back
 // into the pool and closes the writer if it's an io.Writecloser.
 func (bufPool *BufioWriterPool) NewWriteCloserWrapper(buf *bufio.Writer, w io.Writer) io.WriteCloser {
-	return ioutils.NewWriteCloserWrapper(w, func() error {
+	return NewWriteCloserWrapper(w, func() error {
 		buf.Flush()
 		if writeCloser, ok := w.(io.WriteCloser); ok {
 			writeCloser.Close()
@@ -107,4 +94,20 @@ func (bufPool *BufioWriterPool) NewWriteCloserWrapper(buf *bufio.Writer, w io.Wr
 		bufPool.Put(buf)
 		return nil
 	})
+}
+
+type writeCloserWrapper struct {
+	io.Writer
+	closer func() error
+}
+
+func (r *writeCloserWrapper) Close() error {
+	return r.closer()
+}
+
+func NewWriteCloserWrapper(r io.Writer, closer func() error) io.WriteCloser {
+	return &writeCloserWrapper{
+		Writer: r,
+		closer: closer,
+	}
 }
