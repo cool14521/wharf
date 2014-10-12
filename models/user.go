@@ -139,6 +139,7 @@ func (user *User) ResetPasswd(username, password string) error {
 		return err
 	} else if has == true {
 		user.Password = password
+		user.Updated = time.Now().Unix()
 
 		if err := user.Save(key); err != nil {
 			return err
@@ -185,7 +186,10 @@ func (user *User) AddRepository(username, repository, key string) error {
 	//JSON Marshall
 	repo, _ := json.Marshal(r)
 
-	if _, err := LedisDB.HSet(u, []byte("Repositories"), repo); err != nil {
+	user.Repositories = string(repo)
+	user.Updated = time.Now().Unix()
+
+	if err := user.Save(u); err != nil {
 		return err
 	}
 
@@ -225,7 +229,10 @@ func (user *User) RemoveRepository(username, repository string) error {
 	//JSON Marshall
 	repo, _ := json.Marshal(r)
 
-	if _, err := LedisDB.HSet(u, []byte("Repositories"), repo); err != nil {
+	user.Repositories = string(repo)
+	user.Updated = time.Now().Unix()
+
+	if err := user.Save(u); err != nil {
 		return err
 	}
 
@@ -265,8 +272,11 @@ func (user *User) AddOrganization(username, org, member string) error {
 
 	os, _ := json.Marshal(o)
 
-	if _, err := LedisDB.HSet(u, []byte("Organizations"), os); err != nil {
-		return nil
+	user.Organizations = string(os)
+	user.Updated = time.Now().Unix()
+
+	if err := user.Save(u); err != nil {
+		return err
 	}
 
 	return nil
@@ -303,8 +313,11 @@ func (user *User) RemoveOrganization(username, org string) error {
 
 	os, _ := json.Marshal(o)
 
-	if _, err := LedisDB.HSet(u, []byte("Organizations"), os); err != nil {
-		return nil
+	user.Organizations = string(os)
+	user.Updated = time.Now().Unix()
+
+	if err := user.Save(u); err != nil {
+		return err
 	}
 
 	return nil
@@ -387,19 +400,19 @@ func (org *Organization) Put(user, name, description string) error {
 		if has, _, err := u.Has(name); err != nil {
 			return err
 		} else if has == true {
-			return fmt.Errorf("已经存在相同的用户 %s", name)
+			return fmt.Errorf("已经存在相同名称的用户 %s", name)
 		}
 
 		//检查用户是否存在
 		if has, _, err := u.Has(user); err != nil {
 			return err
 		} else if has == false {
-			return fmt.Errorf("不存在用户数据")
+			return fmt.Errorf("不存在用户的数据 %s", user)
 		}
 
 		key := utils.GeneralKey(name)
 
-		//检查用户名合法性，参考实现标准：
+		//检查组织名合法性，参考实现标准：
 		//https://github.com/docker/docker/blob/28f09f06326848f4117baf633ec9fc542108f051/registry/registry.go#L27
 		validNamespace := regexp.MustCompile(`^([a-z0-9_]{4,30})$`)
 		if !validNamespace.MatchString(name) {
@@ -438,6 +451,50 @@ func (org *Organization) Put(user, name, description string) error {
 
 //向组织添加用户，member 参数的值为 [OWNER/MEMBER] 两种
 func (org *Organization) AddUser(name, user, member string) error {
+	var (
+		o   []byte
+		has bool
+		err error
+	)
+
+	users := make(map[string]string, 0)
+
+	if has, o, err = org.Has(name); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在组织的数据 %s", name)
+	}
+
+	u := new(User)
+	if has, _, err = u.Has(user); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在用户的数据 %S", user)
+	}
+
+	if us, err := LedisDB.HGet(o, []byte("Users")); err != nil {
+		return nil
+	} else if us != nil {
+		if e := json.Unmarshal(us, &users); e != nil {
+			return e
+		}
+
+		if value, exist := users[user]; exist == true && value == member {
+			return fmt.Errorf("已经存在了用户的数据")
+		}
+	}
+
+	users[user] = member
+
+	us, _ := json.Marshal(users)
+
+	org.Users = string(us)
+	org.Updated = time.Now().Unix()
+
+	if err = org.Save(o); err != nil {
+		return err
+	}
+
 	return nil
 }
 
