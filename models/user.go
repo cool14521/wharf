@@ -183,7 +183,7 @@ func (user *User) AddRepository(username, repository, key string) error {
 
 	//在 Map 中增加 repository 记录
 	r[repository] = key
-	//JSON Marshall
+	//JSON
 	repo, _ := json.Marshal(r)
 
 	user.Repositories = string(repo)
@@ -226,7 +226,7 @@ func (user *User) RemoveRepository(username, repository string) error {
 
 	//在 Map 中删除 repository 记录
 	delete(r, repository)
-	//JSON Marshall
+	//JSON
 	repo, _ := json.Marshal(r)
 
 	user.Repositories = string(repo)
@@ -522,7 +522,7 @@ func (org *Organization) RemoveUser(name, user string) error {
 	}
 
 	if us, err := LedisDB.HGet(o, []byte("Users")); err != nil {
-		return nil
+		return err
 	} else if us != nil {
 		if e := json.Unmarshal(us, &users); e != nil {
 			return e
@@ -549,6 +549,50 @@ func (org *Organization) RemoveUser(name, user string) error {
 
 //向组织添加镜像仓库
 func (org *Organization) AddRepository(name, repository, key string) error {
+	var (
+		o   []byte
+		has bool
+		err error
+	)
+
+	repos := make(map[string]string, 0)
+
+	if has, o, err = org.Has(name); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在组织的数据 %s", name)
+	}
+
+	repo := new(Repository)
+	if has, err = repo.Has(repository); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在镜像仓库的数据: %s", repository)
+	}
+
+	if r, err := LedisDB.HGet(o, []byte("Repositories")); err != nil {
+		return err
+	} else if r != nil {
+		if e := json.Unmarshal(r, &repos); e != nil {
+			return e
+		}
+
+		if value, exist := repos[repository]; exist == true && value == key {
+			return fmt.Errorf("在组织中已经存在要添加的镜像仓库数据")
+		}
+	}
+
+	repos[repository] = key
+
+	rs, _ := json.Marshal(repos)
+
+	org.Repositories = string(rs)
+	org.Updated = time.Now().Unix()
+
+	if err = org.Save(o); err != nil {
+		return err
+	}
+
 	return nil
 }
 
