@@ -160,7 +160,7 @@ func (user *User) AddRepository(username, repository, key string) error {
 		err error
 	)
 
-	repoMap := make(map[string]string, 0)
+	r := make(map[string]string, 0)
 
 	//检查用户的 Key 是否存在
 	if has, u, err = user.Has(username); err != nil {
@@ -169,11 +169,11 @@ func (user *User) AddRepository(username, repository, key string) error {
 		if repo, err := LedisDB.HGet(u, []byte("Repositories")); err != nil {
 			return err
 		} else if repo != nil {
-			if e := json.Unmarshal(repo, &repoMap); e != nil {
+			if e := json.Unmarshal(repo, &r); e != nil {
 				return nil
 			}
-			if value, exist := repoMap[repository]; exist == true && value == key {
-				return fmt.Errorf("已经存在了 Repository 数据")
+			if value, exist := r[repository]; exist == true && value == key {
+				return fmt.Errorf("已经存在了镜像仓库数据")
 			}
 		}
 	} else if has == false {
@@ -181,9 +181,9 @@ func (user *User) AddRepository(username, repository, key string) error {
 	}
 
 	//在 Map 中增加 repository 记录
-	repoMap[repository] = key
+	r[repository] = key
 	//JSON Marshall
-	repo, _ := json.Marshal(repoMap)
+	repo, _ := json.Marshal(r)
 
 	if _, err := LedisDB.HSet(u, []byte("Repositories"), repo); err != nil {
 		return err
@@ -194,6 +194,41 @@ func (user *User) AddRepository(username, repository, key string) error {
 
 //用户删除镜像仓库后，在 user 的 Repositories 中删除相应的记录
 func (user *User) RemoveRepository(username, repository string) error {
+	var (
+		u   []byte
+		has bool
+		err error
+	)
+
+	r := make(map[string]string, 0)
+
+	//检查用户的 Key 是否存在
+	if has, u, err = user.Has(username); err != nil {
+		return err
+	} else if has == true {
+		if repo, err := LedisDB.HGet(u, []byte("Repositories")); err != nil {
+			return err
+		} else if repo != nil {
+			if e := json.Unmarshal(repo, &r); e != nil {
+				return nil
+			}
+			if _, exist := r[repository]; exist == false {
+				return fmt.Errorf("不存在要删除的镜像仓库数据")
+			}
+		}
+	} else if has == false {
+		return fmt.Errorf("不存在 %s 的用户数据", username)
+	}
+
+	//在 Map 中删除 repository 记录
+	delete(r, repository)
+	//JSON Marshall
+	repo, _ := json.Marshal(r)
+
+	if _, err := LedisDB.HSet(u, []byte("Repositories"), repo); err != nil {
+		return err
+	}
+
 	return nil
 }
 
