@@ -304,7 +304,7 @@ func (user *User) RemoveOrganization(username, org string) error {
 				return e
 			}
 			if _, exist := o[org]; exist == false {
-				return fmt.Errorf("已经存在了组织的数据")
+				return fmt.Errorf("不存在要移除的用户数据")
 			}
 		}
 	}
@@ -500,6 +500,50 @@ func (org *Organization) AddUser(name, user, member string) error {
 
 //从组织移除用户
 func (org *Organization) RemoveUser(name, user string) error {
+	var (
+		o   []byte
+		has bool
+		err error
+	)
+
+	users := make(map[string]string, 0)
+
+	if has, o, err = org.Has(name); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在组织的数据 %s", name)
+	}
+
+	u := new(User)
+	if has, _, err = u.Has(user); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在用户的数据 %S", user)
+	}
+
+	if us, err := LedisDB.HGet(o, []byte("Users")); err != nil {
+		return nil
+	} else if us != nil {
+		if e := json.Unmarshal(us, &users); e != nil {
+			return e
+		}
+
+		if _, exist := users[user]; exist == false {
+			return fmt.Errorf("在组织中不存在要移除的用户数据")
+		}
+	}
+
+	delete(users, user)
+
+	us, _ := json.Marshal(users)
+
+	org.Users = string(us)
+	org.Updated = time.Now().Unix()
+
+	if err = org.Save(o); err != nil {
+		return err
+	}
+
 	return nil
 }
 
