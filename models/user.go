@@ -41,7 +41,7 @@ func (user *User) Has(username string) (bool, []byte, error) {
 		} else if name != nil {
 			//已经存在了用户的 Key，接着判断用户是否相同
 			if string(name) != username {
-				return true, key, fmt.Errorf("已经存在了 Key，但是用户名不相同 %s ", name)
+				return true, key, fmt.Errorf("已经存在了 Key，但是用户名不相同 %s ", string(name))
 			}
 			return true, key, nil
 		} else {
@@ -360,10 +360,15 @@ func (org *Organization) Has(name string) (bool, []byte, error) {
 	if key, err := LedisDB.HGet([]byte(GetServerKeys("org")), []byte(GetObjectKey("org", name))); err != nil {
 		return false, []byte(""), err
 	} else if key != nil {
-		if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
+		if n, err := LedisDB.HGet(key, []byte("Name")); err != nil {
 			return false, []byte(""), err
-		} else {
+		} else if n != nil {
+			if string(n) != name {
+				return true, key, fmt.Errorf("已经存在了 Key，但是组织名称不相同 %s", string(n))
+			}
 			return true, key, nil
+		} else {
+			return false, []byte(""), nil
 		}
 	} else {
 		return false, []byte(""), nil
