@@ -233,12 +233,80 @@ func (user *User) RemoveRepository(username, repository string) error {
 }
 
 //向用户添加 Organization 数据
+//member 的值为：	ORG_MEMBER 或 ORG_OWNER
 func (user *User) AddOrganization(username, org, member string) error {
+	var (
+		u   []byte
+		has bool
+		err error
+	)
+
+	o := make(map[string]string, 0)
+
+	if has, u, err = user.Has(username); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在 %s 的用户数据", username)
+	} else if has == true {
+		if organization, err := LedisDB.HGet(u, []byte("Organizations")); err != nil {
+			return nil
+		} else if organization != nil {
+			if e := json.Unmarshal(organization, &o); e != nil {
+				return e
+			}
+
+			if value, exist := o[org]; exist == true && value == member {
+				return fmt.Errorf("已经存在了组织的数据")
+			}
+		}
+	}
+
+	o[org] = member
+
+	os, _ := json.Marshal(o)
+
+	if _, err := LedisDB.HSet(u, []byte("Organizations"), os); err != nil {
+		return nil
+	}
+
 	return nil
 }
 
 //从用户中删除 Organization 数据
 func (user *User) RemoveOrganization(username, org string) error {
+	var (
+		u   []byte
+		has bool
+		err error
+	)
+
+	o := make(map[string]string, 0)
+
+	if has, u, err = user.Has(username); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在 %s 的用户数据", username)
+	} else if has == true {
+		if organization, err := LedisDB.HGet(u, []byte("Organizations")); err != nil {
+			return nil
+		} else if organization != nil {
+			if e := json.Unmarshal(organization, &o); e != nil {
+				return e
+			}
+			if _, exist := o[org]; exist == false {
+				return fmt.Errorf("已经存在了组织的数据")
+			}
+		}
+	}
+
+	delete(o, org)
+
+	os, _ := json.Marshal(o)
+
+	if _, err := LedisDB.HSet(u, []byte("Organizations"), os); err != nil {
+		return nil
+	}
+
 	return nil
 }
 
