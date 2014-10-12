@@ -74,6 +74,21 @@ type Tag struct {
 	Sign    string //
 }
 
+//根据 Repository 的 key 判断是否存在 Repository 数据
+func (repo *Repository) Has(key string) (bool, error) {
+	if key, err := LedisDB.HGet([]byte(GetServerKeys("repo")), []byte(key)); err != nil {
+		return false, err
+	} else if key != nil {
+		if repository, err := LedisDB.HGet(key, []byte("Repository")); err != nil {
+			return false, err
+		} else if repository != nil {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (repo *Repository) Get(username, repository, organization, sign string) (bool, []byte, error) {
 	var keys [][]byte
 
@@ -124,11 +139,16 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 		if key, err := LedisDB.HGet([]byte(GetServerKeys("repo")), value); err != nil {
 			return false, []byte(""), err
 		} else if key != nil {
-			if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
+			if repo, err := LedisDB.HGet(key, []byte("Repository")); err != nil {
 				return false, []byte(""), err
-			} else {
+			} else if repo != nil {
+				if string(repo) != repository {
+					return false, []byte(""), fmt.Errorf("已经存在了 Key ，但是镜像仓库名不相同 %s", string(repo))
+				}
 				return true, key, nil
 			}
+
+			return false, []byte(""), nil
 		}
 	}
 
