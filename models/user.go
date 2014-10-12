@@ -598,6 +598,50 @@ func (org *Organization) AddRepository(name, repository, key string) error {
 
 //从组织移除镜像仓库
 func (org *Organization) RemoveRepository(name, repository string) error {
+	var (
+		o   []byte
+		has bool
+		err error
+	)
+
+	repos := make(map[string]string, 0)
+
+	if has, o, err = org.Has(name); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在组织的数据 %s", name)
+	}
+
+	repo := new(Repository)
+	if has, err = repo.Has(repository); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在镜像仓库的数据: %s", repository)
+	}
+
+	if r, err := LedisDB.HGet(o, []byte("Repositories")); err != nil {
+		return err
+	} else if r != nil {
+		if e := json.Unmarshal(r, &repos); e != nil {
+			return e
+		}
+
+		if _, exist := repos[repository]; exist == false {
+			return fmt.Errorf("在组织中不存在要删除的仓库数据")
+		}
+	}
+
+	delete(repos, repository)
+
+	rs, _ := json.Marshal(repos)
+
+	org.Repositories = string(rs)
+	org.Updated = time.Now().Unix()
+
+	if err = org.Save(o); err != nil {
+		return err
+	}
+
 	return nil
 }
 
