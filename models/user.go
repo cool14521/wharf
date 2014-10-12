@@ -66,7 +66,7 @@ func (user *User) Put(username string, passwd string, email string) error {
 		if h, _, e := org.Has(username); e != nil {
 			return err
 		} else if h == true {
-			return fmt.Errorf("已经存在相同的组织 %s", username)
+			return fmt.Errorf("已经存在相同名称的组织 %s", username)
 		}
 
 		//检查用户名合法性，参考实现标准：
@@ -117,7 +117,6 @@ func (user *User) Get(username, passwd string) (bool, error) {
 	if has, key, err := user.Has(username); err != nil {
 		return false, err
 	} else if has == true {
-
 		//读取密码的值进行判断是否密码相同
 		if password, err := LedisDB.HGet(key, []byte("Password")); err != nil {
 			return false, err
@@ -125,12 +124,11 @@ func (user *User) Get(username, passwd string) (bool, error) {
 			if string(password) != passwd {
 				return false, nil
 			}
-
 			return true, nil
 		}
 	} else {
 		//没有用户的 Key 存在
-		return false, nil
+		return false, fmt.Errorf("不存在 %s 的用户数据", username)
 	}
 }
 
@@ -147,25 +145,28 @@ func (user *User) ResetPasswd(username, password string) error {
 		}
 	} else {
 		//没有用户的 Key 存在
-		return fmt.Errorf("不存在用户 %s", username)
+		return fmt.Errorf("不存在 %s 的用户数据", username)
 	}
 
 	return nil
 }
 
 //用户创建镜像仓库后，在 user 的 Repositories 字段保存相应的记录
+//repository 字段是 Repository 的全局 Key
 func (user *User) AddRepository(username, repository, key string) error {
-	var userKey []byte
-	var has bool
-	var err error
+	var (
+		u   []byte
+		has bool
+		err error
+	)
 
 	repoMap := make(map[string]string, 0)
 
 	//检查用户的 Key 是否存在
-	if has, userKey, err = user.Has(username); err != nil {
+	if has, u, err = user.Has(username); err != nil {
 		return err
 	} else if has == true {
-		if repo, err := LedisDB.HGet(userKey, []byte("Repositories")); err != nil {
+		if repo, err := LedisDB.HGet(u, []byte("Repositories")); err != nil {
 			return err
 		} else if repo != nil {
 			if e := json.Unmarshal(repo, &repoMap); e != nil {
@@ -175,6 +176,8 @@ func (user *User) AddRepository(username, repository, key string) error {
 				return fmt.Errorf("已经存在了 Repository 数据")
 			}
 		}
+	} else if has == false {
+		return fmt.Errorf("不存在 %s 的用户数据", username)
 	}
 
 	//在 Map 中增加 repository 记录
@@ -182,7 +185,7 @@ func (user *User) AddRepository(username, repository, key string) error {
 	//JSON Marshall
 	repo, _ := json.Marshal(repoMap)
 
-	if _, err := LedisDB.HSet(userKey, []byte("Repositories"), repo); err != nil {
+	if _, err := LedisDB.HSet(u, []byte("Repositories"), repo); err != nil {
 		return err
 	}
 
