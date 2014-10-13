@@ -178,6 +178,15 @@ func (this *RepositoryAPIController) PutRepository() {
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
+	//判断namespace和username的关系，处理权限的问题
+	//TODO：组织的镜像仓库权限判断
+	if namespace != username {
+		beego.Error(fmt.Sprintf("[API 用户] 更新/新建 repository 数据错误, 用户名和命名空间不相同。"))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新/新建镜像仓库数据错误\"}"))
+		this.StopRun()
+	}
+
 	//加密签名
 	sign := ""
 	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
@@ -352,6 +361,8 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
+	//TODO：私有和组织的镜像仓库权限判断问题
+
 	//加密签名
 	sign := ""
 	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
@@ -363,7 +374,7 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 	//TODO 私有镜像仓库权限判断
 
 	repo := new(models.Repository)
-	if json, err := repo.GetJSON(username, repository, org, sign, true, true); err != nil {
+	if json, err := repo.GetJSON(namespace, repository, org, sign, true, true); err != nil {
 		beego.Error(fmt.Sprintf("[API 用户] 读取 %s/%s 的 JSON 数据错误: %s", namespace, repository, err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 JSON 数据错误\"}"))
@@ -398,7 +409,7 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 		beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
 		beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
 
-		username := this.Data["username"].(string)
+		//username := this.Data["username"].(string)
 		org := this.Data["org"].(string)
 
 		namespace := this.Ctx.Input.Param(":namespace")
@@ -413,7 +424,7 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 		beego.Debug("[Sign] " + sign)
 
 		repo := new(models.Repository)
-		if tags, err := repo.GetTags(username, repository, org, sign, true, true); err != nil {
+		if tags, err := repo.GetTags(namespace, repository, org, sign, true, true); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户] 读取 %s/%s 的 Tags 数据错误: %s", namespace, repository, err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Tag 数据错误\"}"))
