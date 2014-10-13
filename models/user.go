@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"time"
 
 	"github.com/dockercn/docker-bucket/utils"
@@ -646,7 +647,62 @@ func (org *Organization) RemoveRepository(name, repository string) error {
 }
 
 //为用户@镜像仓库添加读写权限
-func (org *Organization) AddPrivilege(name, user, repository, key string) error {
+func (org *Organization) AddPrivilege(name, user, repository string) error {
+	var (
+		o   []byte
+		has bool
+		err error
+	)
+
+	privileges := make(map[string][]string, 0)
+
+	if has, o, err = org.Has(name); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在组织的数据 %s", name)
+	}
+
+	repo := new(Repository)
+	if has, err = repo.Has(repository); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在镜像仓库的数据: %s", repository)
+	}
+
+	u := new(User)
+	if has, _, err = u.Has(user); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("不存在用户的数据 %S", user)
+	}
+
+	if p, err := LedisDB.HGet(o, []byte("Privileges")); err != nil {
+		return err
+	} else if p != nil {
+		if e := json.Unmarshal(p, &privileges); e != nil {
+			return e
+		}
+
+		if value, exist := privileges[repository]; exist == true {
+			if sort.SearchStrings(value, user) > -1 {
+				return fmt.Errorf(" %s 镜像仓库已经存在了 % 的用户权限记录", repository, user)
+			}
+
+			value = append(value, user)
+			privileges[repository] = value
+
+			ps, _ := json.Marshal(privileges)
+
+			org.Privileges = string(ps)
+			org.Updated = time.Now().Unix()
+
+			if err = org.Save(o); err != nil {
+				return err
+			}
+
+		}
+	}
+
 	return nil
 }
 
