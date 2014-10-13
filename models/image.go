@@ -39,9 +39,12 @@ func (image *Image) Get(imageId, sign string) (bool, []byte, error) {
 	if key, err := LedisDB.HGet([]byte(GetServerKeys("image")), k); err != nil {
 		return false, []byte(""), err
 	} else if key != nil {
-		if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
+		if image, err := LedisDB.HGet(key, []byte("ImageId")); err != nil {
 			return false, []byte(""), err
-		} else {
+		} else if image != nil {
+			if string(image) != imageId {
+				return true, key, fmt.Errorf("存在 Image 数据，但是 ImageID 不相同: %s", string(image))
+			}
 			return true, key, nil
 		}
 	}
@@ -154,11 +157,11 @@ func (image *Image) PutJSON(imageId, sign, json string) error {
 			return e
 		} else {
 			if len(sign) == 0 {
-				if e := LedisDB.Set([]byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId))), key); e != nil {
+				if _, e := LedisDB.HSet([]byte(GetServerKeys("image")), []byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId))), key); e != nil {
 					return e
 				}
 			} else {
-				if e := LedisDB.Set([]byte(fmt.Sprintf("%s-?", GetObjectKey("image", imageId), sign)), key); e != nil {
+				if _, e := LedisDB.HSet([]byte(GetServerKeys("image")), []byte(fmt.Sprintf("%s-?", GetObjectKey("image", imageId), sign)), key); e != nil {
 					return e
 				}
 			}

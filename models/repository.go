@@ -74,6 +74,21 @@ type Tag struct {
 	Sign    string //
 }
 
+//根据 Repository 的 key 判断是否存在 Repository 数据
+func (repo *Repository) Has(key string) (bool, error) {
+	if key, err := LedisDB.HGet([]byte(GetServerKeys("repo")), []byte(key)); err != nil {
+		return false, err
+	} else if key != nil {
+		if repository, err := LedisDB.HGet(key, []byte("Repository")); err != nil {
+			return false, err
+		} else if repository != nil {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (repo *Repository) Get(username, repository, organization, sign string) (bool, []byte, error) {
 	var keys [][]byte
 
@@ -124,11 +139,16 @@ func (repo *Repository) Get(username, repository, organization, sign string) (bo
 		if key, err := LedisDB.HGet([]byte(GetServerKeys("repo")), value); err != nil {
 			return false, []byte(""), err
 		} else if key != nil {
-			if exist, err := LedisDB.Exists(key); err != nil || exist == 0 {
+			if repo, err := LedisDB.HGet(key, []byte("Repository")); err != nil {
 				return false, []byte(""), err
-			} else {
+			} else if repo != nil {
+				if string(repo) != repository {
+					return false, []byte(""), fmt.Errorf("已经存在了 Key ，但是镜像仓库名不相同 %s", string(repo))
+				}
 				return true, key, nil
 			}
+
+			return false, []byte(""), nil
 		}
 	}
 
@@ -188,22 +208,22 @@ func (repo *Repository) PutJSON(username, repository, organization, sign, json s
 			if len(organization) == 0 {
 				//没有 org 为空，根据 sign 的值判断是否为私有
 				if len(sign) == 0 {
-					if e := LedisDB.Set([]byte(fmt.Sprintf("%s%s+", GetObjectKey("user", username), GetObjectKey("repo", repository))), key); e != nil {
+					if _, e := LedisDB.HSet([]byte(GetServerKeys("repo")), []byte(fmt.Sprintf("%s%s+", GetObjectKey("user", username), GetObjectKey("repo", repository))), key); e != nil {
 						return e
 					}
 				} else {
-					if e := LedisDB.Set([]byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("user", username), GetObjectKey("repo", repository), sign)), key); e != nil {
+					if _, e := LedisDB.HSet([]byte(GetServerKeys("repo")), []byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("user", username), GetObjectKey("repo", repository), sign)), key); e != nil {
 						return e
 					}
 				}
 			} else {
 				//没有 org 不为空，根据 sign 的值判断是否为私有
 				if len(sign) == 0 {
-					if e := LedisDB.Set([]byte(fmt.Sprintf("%s%s+", GetObjectKey("org", organization), GetObjectKey("repo", repository))), key); e != nil {
+					if _, e := LedisDB.HSet([]byte(GetServerKeys("repo")), []byte(fmt.Sprintf("%s%s+", GetObjectKey("org", organization), GetObjectKey("repo", repository))), key); e != nil {
 						return e
 					}
 				} else {
-					if e := LedisDB.Set([]byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("org", organization), GetObjectKey("repo", repository), sign)), key); e != nil {
+					if _, e := LedisDB.HSet([]byte(GetServerKeys("repo")), []byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("org", organization), GetObjectKey("repo", repository), sign)), key); e != nil {
 						return e
 					}
 				}
