@@ -208,22 +208,22 @@ func (repo *Repository) PutJSON(username, repository, organization, sign, json s
 			if len(organization) == 0 {
 				//没有 org 为空，根据 sign 的值判断是否为私有
 				if len(sign) == 0 {
-					if e := LedisDB.Set([]byte(fmt.Sprintf("%s%s+", GetObjectKey("user", username), GetObjectKey("repo", repository))), key); e != nil {
+					if _, e := LedisDB.HSet([]byte(GetServerKeys("repo")), []byte(fmt.Sprintf("%s%s+", GetObjectKey("user", username), GetObjectKey("repo", repository))), key); e != nil {
 						return e
 					}
 				} else {
-					if e := LedisDB.Set([]byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("user", username), GetObjectKey("repo", repository), sign)), key); e != nil {
+					if _, e := LedisDB.HSet([]byte(GetServerKeys("repo")), []byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("user", username), GetObjectKey("repo", repository), sign)), key); e != nil {
 						return e
 					}
 				}
 			} else {
 				//没有 org 不为空，根据 sign 的值判断是否为私有
 				if len(sign) == 0 {
-					if e := LedisDB.Set([]byte(fmt.Sprintf("%s%s+", GetObjectKey("org", organization), GetObjectKey("repo", repository))), key); e != nil {
+					if _, e := LedisDB.HSet([]byte(GetServerKeys("repo")), []byte(fmt.Sprintf("%s%s+", GetObjectKey("org", organization), GetObjectKey("repo", repository))), key); e != nil {
 						return e
 					}
 				} else {
-					if e := LedisDB.Set([]byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("org", organization), GetObjectKey("repo", repository), sign)), key); e != nil {
+					if _, e := LedisDB.HSet([]byte(GetServerKeys("repo")), []byte(fmt.Sprintf("%s%s-?%s", GetObjectKey("org", organization), GetObjectKey("repo", repository), sign)), key); e != nil {
 						return e
 					}
 				}
