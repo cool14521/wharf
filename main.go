@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/astaxie/beego"
@@ -10,6 +11,8 @@ import (
 )
 
 func main() {
+	beego.SetLogger("file", fmt.Sprintf("{\"filename\":\"%s/%s.log\"}", beego.AppConfig.String("log::FilePath"), beego.AppConfig.String("log::FileName")))
+
 	app := cli.NewApp()
 	app.Name = beego.AppConfig.String("appname")
 	app.Usage = beego.AppConfig.String("usage")
@@ -17,7 +20,6 @@ func main() {
 
 	app.Commands = []cli.Command{
 		cmd.CmdWeb,
-		cmd.CmdVersion,
 		cmd.CmdAccount,
 	}
 

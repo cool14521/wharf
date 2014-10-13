@@ -10,6 +10,7 @@ import (
 
 	"github.com/astaxie/beego"
 
+	"github.com/dockercn/docker-bucket/global"
 	"github.com/dockercn/docker-bucket/models"
 	"github.com/dockercn/docker-bucket/utils"
 )
@@ -20,7 +21,7 @@ type ImageAPIController struct {
 
 func (i *ImageAPIController) URLMapping() {
 	i.Mapping("GetImageJSON", i.GetImageJSON)
-	i.Mapping("PutImageJson", i.PutImageJson)
+	i.Mapping("PutImageJSON", i.PutImageJSON)
 	i.Mapping("PutImageLayer", i.PutImageLayer)
 	i.Mapping("PutChecksum", i.PutChecksum)
 	i.Mapping("GetImageAncestry", i.GetImageAncestry)
@@ -28,20 +29,20 @@ func (i *ImageAPIController) URLMapping() {
 }
 
 func (this *ImageAPIController) Prepare() {
-	beego.Debug("[" + this.Ctx.Request.Method + "] " + this.Ctx.Request.URL.String())
+	beego.Debug(fmt.Sprintf("[%s] %s | %s", this.Ctx.Input.Host(), this.Ctx.Input.Request.Method, this.Ctx.Input.Request.RequestURI))
+
+	beego.Debug("[Header]")
+	beego.Debug(this.Ctx.Request.Header)
 
 	//相应 docker api 命令的 Controller 屏蔽 beego 的 XSRF ，避免错误。
 	this.EnableXSRF = false
 
 	//设置 Response 的 Header 信息，在处理函数中可以覆盖
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
-
-	beego.Debug("[Header] ")
-	beego.Debug(this.Ctx.Request.Header)
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", global.BucketConfig.String("docker::Standalone"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", global.BucketConfig.String("docker::Version"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", global.BucketConfig.String("docker::Config"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", global.BucketConfig.String("docker::Encrypt"))
 
 	//检查 Authorization 的 Header 信息是否存在。
 	if len(this.Ctx.Input.Header("Authorization")) == 0 {
@@ -116,7 +117,7 @@ func (this *ImageAPIController) Prepare() {
 				//根据 Namespace 查询组织数据
 				namespace := string(this.Ctx.Input.Param(":namespace"))
 				org := new(models.Organization)
-				if has, err := org.Has(namespace); err != nil {
+				if has, _, err := org.Has(namespace); err != nil {
 					beego.Error(fmt.Sprintf("[API 用户] 查询组织名称 %s 时错误 %s", namespace, err.Error()))
 					this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 					this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"查询组织数据报错。\"}"))
@@ -205,7 +206,7 @@ func (this *ImageAPIController) GetImageJSON() {
 }
 
 //向数据库写入 Layer 的 JSON 数据
-func (this *ImageAPIController) PutImageJson() {
+func (this *ImageAPIController) PutImageJSON() {
 	if this.GetSession("access") == "write" {
 		imageId := this.Ctx.Input.Param(":image_id")
 
@@ -256,7 +257,7 @@ func (this *ImageAPIController) PutImageLayer() {
 		//TODO 保存文件的磁盘路径调度
 
 		//处理 Layer 文件保存的目录
-		basePath := beego.AppConfig.String("docker::BasePath")
+		basePath := global.BucketConfig.String("docker::BasePath")
 		imagePath := fmt.Sprintf("%v/images/%v", basePath, imageId)
 		layerfile := fmt.Sprintf("%v/images/%v/layer", basePath, imageId)
 
@@ -288,7 +289,7 @@ func (this *ImageAPIController) PutImageLayer() {
 		beego.Debug(fmt.Sprintf("Image [%s] 文件本地存储全路径: %s", imageId, layerfile))
 
 		//更新 Image 的文件本地存储路径
-		if err := image.PutLocation(imageId, sign, layerfile); err != nil {
+		if err := image.PutPath(imageId, sign, layerfile); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户] %s 更新 Image Layer 本地存储路径标志错误: %s ", imageId, err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"更新 Image Layer 本地存储路径错误\"}"))
@@ -422,7 +423,7 @@ func (this *ImageAPIController) GetImageLayer() {
 
 		image := new(models.Image)
 
-		if layerfile, err := image.GetLocation(imageId, sign, true, true); err != nil {
+		if layerfile, err := image.GetPath(imageId, sign, true, true); err != nil {
 			beego.Error(fmt.Sprintf("[API 用户] %s 读取 Layer 数据错误: %s ", imageId, err.Error()))
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Image Layer 数据错误\"}"))
@@ -450,7 +451,6 @@ func (this *ImageAPIController) GetImageLayer() {
 				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/octet-stream")
 				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Transfer-Encoding", "binary")
 				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Length", string(int64(len(file))))
-				this.Ctx.Output.Context.ResponseWriter.Header().Set("Accept-Ranges", "bytes")
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 				this.Ctx.Output.Context.Output.Body(file)
 			}

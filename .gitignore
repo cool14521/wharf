@@ -23,3 +23,6 @@ _testmain.go
 
 docker-bucket
 .vendor/*
+nohup.out
+conf/bucket.conf
+var/*

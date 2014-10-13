@@ -36,17 +36,19 @@ func TimeToBytes(now time.Time) []byte {
 
 func BoolToBytes(boolean bool) []byte {
 	if boolean == true {
-		return Int64ToBytes(0)
+		return []byte("true")
 	} else {
-		return Int64ToBytes(1)
+		return []byte("false")
 	}
 }
 
 func BytesToBool(value []byte) bool {
-	if BytesToInt64(value) == 1 {
+	if boolean, _ := strconv.ParseBool(string(value)); boolean == true {
+		return true
+	} else if boolean == false {
 		return false
 	} else {
-		return true
+		return false
 	}
 }
 
@@ -84,14 +86,6 @@ func ToString(args ...interface{}) string {
 	return result
 }
 
-func SendActiveEmail(code string, email string, host string, port int, user string, password string) error {
-	return nil
-}
-
-func SendAddEmail(username string, passwd string, email string, host string, port int, user string, password string) error {
-	return nil
-}
-
 func GeneralKey(key string) []byte {
 	md5String := fmt.Sprintf("%v%v", key, string(time.Now().Unix()))
 	h := md5.New()
@@ -107,7 +101,7 @@ func GeneralToken(key string) string {
 }
 
 func EncodePassword(username string, password string) string {
-	md5String := fmt.Sprintf("%v%v%v", username, password, "docker.cn")
+	md5String := fmt.Sprintf("%s%s%s", username, password, "docker-bucket")
 	h := md5.New()
 	h.Write([]byte(md5String))
 
@@ -134,12 +128,14 @@ func DecodeBasicAuth(authorization string) (username string, password string, er
 	decoded := make([]byte, decLen)
 	authByte := []byte(basic[1])
 	n, err := base64.StdEncoding.Decode(decoded, authByte)
+
 	if err != nil {
 		return "", "", err
 	}
 	if n > decLen {
 		return "", "", fmt.Errorf("Something went wrong decoding auth config")
 	}
+
 	arr := strings.SplitN(string(decoded), ":", 2)
 	if len(arr) != 2 {
 		return "", "", fmt.Errorf("Invalid auth configuration file")
@@ -161,19 +157,4 @@ func IsDirExists(path string) bool {
 	}
 
 	panic("not reached")
-}
-
-func RemoveDuplicateString(s *[]string) {
-	found := make(map[string]bool)
-	j := 0
-
-	for i, val := range *s {
-		if _, ok := found[val]; !ok {
-			found[val] = true
-			(*s)[j] = (*s)[i]
-			j++
-		}
-	}
-
-	*s = (*s)[:j]
 }
