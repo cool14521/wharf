@@ -30,6 +30,16 @@ func init() {
 }
 
 func drone(yaml string) {
+	s, err := script.ParseBuildFile(yaml)
+	if err != nil {
+		log.Err(err.Error())
+		os.Exit(1)
+		return
+	}
+	fmt.Println(s.Dependencies)
+	for _, f := range s.Dependencies {
+		run("../tests/drone/" + f)
+	}
 	run(yaml)
 }
 
@@ -66,6 +76,7 @@ func run(path string) {
 	// track all build results
 	var builders []*build.Builder
 
+	//here we should parse all the builds, first the deps.
 	builds := []*script.Build{s}
 
 	// loop through and create builders

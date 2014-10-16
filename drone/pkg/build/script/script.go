@@ -74,6 +74,9 @@ type Build struct {
 	// linked to the build environment.
 	Services []string
 
+	// Dependencies specifies the dep of this image
+	Dependencies []string
+
 	//Deploy        *deploy.Deploy       `yaml:"deploy,omitempty"`
 	//Publish       *publish.Publish     `yaml:"publish,omitempty"`
 	//Notifications *notify.Notification `yaml:"notify,omitempty"`
