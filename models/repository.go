@@ -48,7 +48,6 @@ type Repository struct {
 	Organization string //如果是 Organization ，存 Organization 的 Key
 	Description  string //保存 Markdown 格式
 	JSON         string //Docker 客户端上传的 Images 信息，JSON 格式。
-	Data         string //包含的 Image 信息集合，由 Image 的 ID 组成。
 	Dockerfile   string //生产 Repository 的 Dockerfile 文件内容
 	Agent        string //docker 命令产生的 agent 信息
 	Links        string //保存 JSON 的信息，保存官方库的 Link，产生 repository 库的 Git 库地址
