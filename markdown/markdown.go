@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/toolbox"
@@ -41,7 +42,7 @@ func initDB(path string) {
 
 func InitTask() {
 	//初始化数据库连接
-	initDB(beego.AppConfig.String("ledis::SavePath"))
+	initDB(beego.AppConfig.String("ledisdb::DataDir"))
 
 	//初始化任务并执行
 	task := toolbox.NewTask("tk1", "0 0 */2 * * *", SyncData)
@@ -170,16 +171,7 @@ func DeteleArticle(typeArticle string, fileMap map[string]string) {
 }
 
 func ShowArticleList() {
-	/*cfg := new(config.Config)
-	cfg.DataDir = beego.AppConfig.String("ledis::SavePath")
-	var err error
-	nowLedis, err := ledis.Open(cfg)
-	conn, err = nowLedis.Select(1)
-
-	if err != nil {
-		println(err)
-	}
-	*/
+	time.Sleep(60 * time.Second)
 	fileNames, _ := conn.HKeys([]byte("A"))
 	i := 0
 	for _, fileName := range fileNames {
