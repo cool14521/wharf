@@ -79,6 +79,9 @@ Password = 123456
 [log]
 FilePath = /tmp/log
 FileName = bucket-log
+
+[markdown]
+DocsPath = test/docs
 ```
 
 Nginx Conf
