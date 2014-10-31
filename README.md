@@ -4,7 +4,7 @@ docker-bucket
 编译
 ====
 
-代码 **clone** 到 `$GOPATH/src/githhub.com/src/dockercn` 目录下，然后执行以下命令
+代码 **clone** 到 `$GOPATH/src/githhub.com/dockercn` 目录下，然后执行以下命令
 
 ```
 go get github.com/astaxie/beego
