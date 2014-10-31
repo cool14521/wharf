@@ -55,13 +55,13 @@ func InitTask() {
 func SyncData() error {
 	//每两个小时更新docs、documents目录
 	cmd := exec.Command("git", "pull")
-	cmd.Dir = beego.AppConfig.String("docker::DocsPath")
+	cmd.Dir = beego.AppConfig.String("markdown::Docs")
 	_, err := cmd.Output()
 	if err != nil {
 		beego.Error("cmd Error=", err)
 		return err
 	}
-	generateDict("A", beego.AppConfig.String("docker::DocsPath"))
+	generateDict("A", beego.AppConfig.String("markdown::Docs"))
 	return nil
 }
 
