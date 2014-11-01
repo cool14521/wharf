@@ -6,24 +6,27 @@ import (
 )
 
 func init() {
+	//Web Interface
 	beego.Router("/", &controllers.MainController{})
-	beego.Router("/_status", &controllers.StatusAPIController{})
-
-	beego.Router("/_ping", &controllers.PingAPIController{}, "get:GetPing")
+	beego.Router("/auth", &controllers.AuthController{})
 
 	//Static File
 	beego.Router("/favicon.ico", &controllers.StaticController{}, "get:GetFavicon")
+	//TODO sitemap/rss/robots.txt
 
+	//CI Service API
 	drone := beego.NewNamespace("/d1",
 		beego.NSRouter("/yaml", &controllers.DroneAPIController{}, "post:PostYAML"),
 	)
 
+	//Docker Registry API V1 remain
+	beego.Router("/_ping", &controllers.PingAPIController{}, "get:GetPing")
+	beego.Router("/_status", &controllers.StatusAPIController{})
+
+	//Docker Registry API V1
 	api := beego.NewNamespace("/v1",
-
 		beego.NSRouter("/_ping", &controllers.PingAPIController{}, "get:GetPing"),
-
 		beego.NSRouter("/_status", &controllers.StatusAPIController{}),
-
 		beego.NSRouter("/users", &controllers.UsersAPIController{}, "get:GetUsers"),
 		beego.NSRouter("/users", &controllers.UsersAPIController{}, "post:PostUsers"),
 

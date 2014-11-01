@@ -1,0 +1,11 @@
+/*
+ *  Document   : auth.css
+ *  Author     : Meaglith Ma <genedna@gmail.com> @twitter 
+ *  Description: The main stylesheet of the docker bucket auth page
+ *
+ */
+
+.title-logo {
+  width: 50%;
+  height: 50%;
+}
