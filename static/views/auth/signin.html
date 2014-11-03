@@ -1,10 +1,10 @@
 <!-- Login Form -->
-<form method="post" id="form-login" class="form-horizontal form-bordered form-control-borderless">
+<form method="POST" id="form-login" class="form-horizontal form-bordered form-control-borderless">
   <div class="form-group">
     <div class="col-xs-12">
       <div class="input-group">
         <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
-        <input type="text" id="login-email" name="login-email" class="form-control input-lg" placeholder="Email">
+        <input type="email" id="login-email" ng-model="user.email" class="form-control input-lg" placeholder="Email" required>
       </div>
     </div>
   </div>
@@ -12,13 +12,13 @@
     <div class="col-xs-12">
       <div class="input-group">
         <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
-        <input type="password" id="login-password" name="login-password" class="form-control input-lg" placeholder="Password">
+        <input type="password" id="login-password" ng-model="user.passwd" class="form-control input-lg" placeholder="Password" required>
       </div>
     </div>
   </div>
   <div class="form-group form-actions">
     <div class="col-xs-12 text-right">
-      <button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-sign-in fa-fw"></i> Login to Dashboard</button>
+      <button ng-click="login(user)" class="btn btn-sm btn-primary"><i class="fa fa-sign-in fa-fw"></i> Login to Dashboard</button>
     </div>
   </div>
   <div class="form-group">
