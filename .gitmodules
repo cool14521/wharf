@@ -1,4 +1,0 @@
-[submodule "test/docs"]
-    path = test/docs
-    url = http://github.com/dockboard/docs.git
-    ignore = dirty
