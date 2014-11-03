@@ -26,4 +26,3 @@ docker-bucket
 nohup.out
 conf/bucket.conf
 var/*
-tests/*
