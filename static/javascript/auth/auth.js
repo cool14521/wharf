@@ -5,12 +5,16 @@
  *
  */
 
+'use strict';
+
 //Auth Page Module
-angular.module('auth', ['ngRoute'])
+angular.module('auth', ['ngRoute', 'ngMessages'])
 //
 .controller('SigninCtrl', ['$scope', function ($scope) {
-  $scope.login = function (user) {
-    console.log(user)
+  $scope.submit = function () {
+    if($scope.loginForm.$valid) {
+      console.log($scope.user)
+    }
   // body...
   }
 }])
@@ -37,52 +41,16 @@ angular.module('auth', ['ngRoute'])
   });
 })
 //directive
-.directive('passwordCharactersValidator', function() {
-
-  var REQUIRED_PATTERNS = [
-    /\d+/,    //numeric values
-    /[a-z]+/, //lowercase values
-    /[A-Z]+/, //uppercase values
-    /\W+/,    //special characters
-    /^\S+$/   //no whitespace allowed
-  ];
+.directive('emailValidator', [function () {
+  var EMAIL_REGEXP = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
   return {
-    require : 'ngModel',
-    link : function($scope, element, attrs, ngModel) {
-      ngModel.$validators.passwordCharacters = function(value) {
-        var status = true;
-        angular.forEach(REQUIRED_PATTERNS, function(pattern) {
-          status = status && pattern.test(value);
-        });
-
-        return status;
-      }; 
-    }
-  }
-})
-.directive('usernameAvailableValidator', ['$http', function($http) {
-  return {
-    require : 'ngModel',
-    link : function($scope, element, attrs, ngModel) {
-      ngModel.$asyncValidators.usernameAvailable = function(username) {
-        return $http.get('/api/username-exists?u='+ username);
+    require: 'ngModel',
+    restrict: '',
+    link: function($scope, element, attrs, ngModel) {
+      ngModel.$validators.email = function(value) {
+        return EMAIL_REGEXP.test(value);
       };
     }
-  }
-}])
-.directive('compareToValidator', function() {
-  return {
-    require : 'ngModel',
-    link : function(scope, element, attrs, ngModel) {
-      scope.$watch(attrs.compareToValidator, function() {
-        ngModel.$validate();
-      });
-
-      ngModel.$validators.compareTo = function(value) {
-        var other = scope.$eval(attrs.compareToValidator);
-        return !value || !other || value == other;
-      }
-    }
-  }
-});
+  };
+}]);
