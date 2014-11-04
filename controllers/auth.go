@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"html/template"
 
 	"github.com/astaxie/beego"
 )
@@ -23,7 +22,6 @@ func (this *AuthController) Get() {
 
 	this.Data["description"] = ""
 	this.Data["author"] = ""
-	this.Data["xsrf"] = template.HTML(this.XsrfFormHtml())
 
 	this.Render()
 }

@@ -14,6 +14,10 @@ func init() {
 	beego.Router("/favicon.ico", &controllers.StaticController{}, "get:GetFavicon")
 	//TODO sitemap/rss/robots.txt
 
+	web := beego.NewNamespace("/w1",
+		beego.NSRouter("/signin", &controllers.AuthWebController{}, "post:Signin"),
+	)
+
 	//CI Service API
 	drone := beego.NewNamespace("/d1",
 		beego.NSRouter("/yaml", &controllers.DroneAPIController{}, "post:PostYAML"),
@@ -48,6 +52,7 @@ func init() {
 		),
 	)
 
+	beego.AddNamespace(web)
 	beego.AddNamespace(drone)
 	beego.AddNamespace(api)
 }

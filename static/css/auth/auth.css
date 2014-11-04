@@ -9,3 +9,7 @@
   width: 50%;
   height: 50%;
 }
+
+.ng-active {
+  color: red;
+}
