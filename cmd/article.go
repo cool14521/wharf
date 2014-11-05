@@ -17,8 +17,7 @@ var CmdArticle = cli.Command{
 }
 
 func runArticle(c *cli.Context) {
-	//设定 HTTP 的静态文件处理地址
-	markdown.InitTask()
+	markdown.GitAddress = "http://github.com/chliang2030598/docs1.git::data::A;http://github.com/chliang2030598/docs2.git::data::B"
+	markdown.Run()
 	markdown.ShowArticleList()
-
 }
