@@ -287,23 +287,16 @@ func DeteleArticle(tag string, fileMap map[string]*Item) {
 	}
 }
 
-func ShowArticleList() {
+func Show(tag string) {
+	initDB(DbAddress)
 	fmt.Println("进入展示数据")
-	fileNames, _ := conn.HKeys([]byte("A"))
+	fileNames, _ := conn.HKeys([]byte(tag))
 	i := 0
 	for _, fileName := range fileNames {
 		i = i + 1
 		fmt.Println("manage", i)
-		data, _ := conn.HGet([]byte("A"), []byte(string(fileName)))
-		fmt.Printf("%s\t%s\t%s\n", "B", string(fileName), string(data))
-	}
-	fileNames, _ = conn.HKeys([]byte("H"))
-	j := 0
-	for _, fileName := range fileNames {
-		j = j + 1
-		fmt.Println("manage2", j)
-		data, _ := conn.HGet([]byte("B"), []byte(string(fileName)))
-		fmt.Printf("%s\t%s\t%s\n", "B", string(fileName), string(data))
+		data, _ := conn.HGet([]byte(tag), []byte(string(fileName)))
+		fmt.Printf("%s\t%s\t%s\n", tag, string(fileName), string(data))
 	}
 }
 
