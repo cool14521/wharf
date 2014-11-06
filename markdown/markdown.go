@@ -17,8 +17,11 @@ import (
 )
 
 var conn *ledis.DB
-var GitAddress string
 var DbAddress string
+
+var GitAddress string
+var Local string
+var Tag string
 
 type Item struct {
 	Key        string
@@ -65,30 +68,25 @@ func initDB(DbAddress string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("....初始化数据库成功....")
+	fmt.Println("....初始化数据库成功")
 }
 
-func initGit(gitAddress string) []*GitSync {
-	if len(strings.TrimSpace(gitAddress)) == 0 {
-		panic("markdown git地址初始化异常")
+func initGit(gitAddress, local, tag string) *GitSync {
+	if len(strings.TrimSpace(gitAddress)) == 0 || len(strings.TrimSpace(gitAddress)) == 0 || len(strings.TrimSpace(gitAddress)) == 0 {
+		panic("....markdown git地址初始化异常")
 	}
-	gitAddressArr := strings.Split(strings.TrimSpace(GitAddress), ";")
-	gitSyncArr := make([]*GitSync, len(gitAddressArr))
 	//将git同步的对象初始化
-	for i, _ := range gitAddressArr {
-		gitSync := new(GitSync)
-		gitSync.remote = strings.Split(gitAddressArr[i], "::")[0]
-		gitSync.local = strings.Split(gitAddressArr[i], "::")[1]
-		gitSync.tag = strings.Split(gitAddressArr[i], "::")[2]
-		gitSyncArr[i] = gitSync
-	}
-	fmt.Println("....初始化git同步对象成功...", len(gitSyncArr))
-	fmt.Printf("%#v\n", gitSyncArr)
-	return gitSyncArr
+	gitSync := new(GitSync)
+	gitSync.remote = gitAddress
+	gitSync.local = local
+	gitSync.tag = tag
+
+	fmt.Println("....初始化git同步对象成功")
+	return gitSync
 }
 
 func gitClone(remote, local string) {
-	fmt.Println("..开始进行克隆操作", "remote=", remote, ";local=", local)
+	fmt.Println("....开始进行克隆操作", "remote=", remote, ";local=", local)
 	cmd := exec.Command("git", "clone", remote)
 	cmd.Dir = local
 	_, err := cmd.Output()
@@ -98,7 +96,7 @@ func gitClone(remote, local string) {
 }
 
 func gitPull(local string) {
-	fmt.Println("..开始进行pull操作local=", local)
+	fmt.Println("....开始进行pull操作local=", local)
 	cmd := exec.Command("git", "pull")
 	cmd.Dir = local
 	_, err := cmd.Output()
@@ -122,8 +120,8 @@ func createDir(path string) {
 	syscall.Umask(oldMask)
 }
 
-func generateDict(tag, path, remote string, syncChan chan string, j int) int {
-	fmt.Println(remote, "开始生成目录")
+func generateDict(tag, path, remote string) int {
+	fmt.Println("....开始在ledis中生成目录")
 	files, _ := ioutil.ReadDir(path)
 	//设定协程数量
 	fileMap := make(map[string]*Item, len(files))
@@ -146,10 +144,10 @@ func generateDict(tag, path, remote string, syncChan chan string, j int) int {
 		item.Key = strings.Split(file.Name(), ".")[0]
 		fileMap[item.Key] = item
 	}
-	fmt.Println("....目录在内存中生成完成", "仓库[", j, "]")
 	//删除数据库中多余的数据
 	DeteleArticle(tag, fileMap)
 	//定义线程处理文件插入article
+	endChan := make(chan string)
 	fileChan := make(chan bool, len(fileMap))
 	for i, _ := range fileMap {
 		go func(i string) {
@@ -159,79 +157,59 @@ func generateDict(tag, path, remote string, syncChan chan string, j int) int {
 	}
 	//
 	var i int
-	for {
-		select {
-		case <-fileChan:
-			i++
-		}
-		if i == len(fileMap) {
-			syncChan <- fmt.Sprint("....仓库[i", strconv.Itoa(j), "]=", remote, ";数据同步地址=", path, ";数据同步完成,共处理数据", len(fileMap), "条")
-			break
-		}
-	}
-	return len(fileMap)
-}
-
-func syncAndSave(gitSyncArr []*GitSync, syncChan chan string) {
-	fmt.Println("...开始同步git数据...", len(gitSyncArr), "git库的个数为：", gitSyncArr)
-	for i, _ := range gitSyncArr {
-		go func(ii int) {
-			//判断本地路径是否存在，不存在则创建
-			fmt.Println(gitSyncArr[ii])
-			if !isDirExist(gitSyncArr[ii].local) {
-				createDir(gitSyncArr[ii].local)
-				gitClone(gitSyncArr[ii].remote, gitSyncArr[ii].local)
-				varlength := len(strings.Split(gitSyncArr[ii].remote, "/"))
-				//重新复制本地路径local的值，定位到git对应的目录下
-				gitSyncArr[ii].local = gitSyncArr[ii].local + "/" + strings.Split(strings.Split(gitSyncArr[ii].remote, "/")[varlength-1], ".")[0]
-			} else {
-				//判断本地文件夹存在，是否包含所需要的git库
-				varlength := len(strings.Split(gitSyncArr[ii].remote, "/"))
-				githubRepo := strings.Split(strings.Split(gitSyncArr[ii].remote, "/")[varlength-1], ".")[0]
-				//库已经存在
-				if repoExist(githubRepo, gitSyncArr[ii].local) {
-					gitSyncArr[ii].local = gitSyncArr[ii].local + "/" + strings.Split(strings.Split(gitSyncArr[ii].remote, "/")[varlength-1], ".")[0]
-					gitPull(gitSyncArr[ii].local)
-				} else {
-					//库不存在
-					gitClone(gitSyncArr[ii].remote, gitSyncArr[ii].local)
-					gitSyncArr[ii].local = gitSyncArr[ii].local + "/" + strings.Split(strings.Split(gitSyncArr[ii].remote, "/")[varlength-1], ".")[0]
-				}
-			}
-			//数据同步完成，开始进行存储
-			fmt.Println("仓库[", ii, "]克隆完成")
-			generateDict(gitSyncArr[ii].tag, gitSyncArr[ii].local, gitSyncArr[ii].remote, syncChan, ii)
-		}(i)
-	}
-}
-
-func Run() {
-	//程序运行结束标志
-	end := make(chan bool)
-	//初始化ledis数据库连接
-	initDB(DbAddress)
-	//初始化git仓库
-	gitSyncArr := initGit(GitAddress)
-	//计数器
-	syncChan := make(chan string, len(gitSyncArr))
-	var i int
-	go func(git string) {
+	go func() {
 		for {
 			select {
-			case msg := <-syncChan:
-				fmt.Println(msg)
+			case <-fileChan:
 				i++
 			}
-			if i == len(gitSyncArr) {
-				fmt.Println("....所有仓库已经同步完成，并且已经 存入到ledis中....")
-				end <- true
+			if i == len(fileMap) {
+				endChan <- fmt.Sprint("....仓库[", remote, "]", "数据同步地址=", path, ";数据同步完成,共处理数据", len(fileMap), "条")
 				break
 			}
 		}
-	}("wait for syncChan finish")
+	}()
+	msg := <-endChan
+	fmt.Println(msg)
+	return len(fileMap)
+}
+
+func syncAndSave(gitSync *GitSync) {
+	fmt.Println("....开始同步git数据")
+	//判断本地路径是否存在，不存在则创建
+	if !isDirExist(gitSync.local) {
+		createDir(gitSync.local)
+		gitClone(gitSync.remote, gitSync.local)
+		varlength := len(strings.Split(gitSync.remote, "/"))
+		//重新复制本地路径local的值，定位到git对应的目录下
+		gitSync.local = gitSync.local + "/" + strings.Split(strings.Split(gitSync.remote, "/")[varlength-1], ".")[0]
+	} else {
+		//判断本地文件夹存在，是否包含所需要的git库
+		varlength := len(strings.Split(gitSync.remote, "/"))
+		githubRepo := strings.Split(strings.Split(gitSync.remote, "/")[varlength-1], ".")[0]
+		//库已经存在
+		if repoExist(githubRepo, gitSync.local) {
+			gitSync.local = gitSync.local + "/" + strings.Split(strings.Split(gitSync.remote, "/")[varlength-1], ".")[0]
+			gitPull(gitSync.local)
+		} else {
+			//库不存在
+			gitClone(gitSync.remote, gitSync.local)
+			gitSync.local = gitSync.local + "/" + strings.Split(strings.Split(gitSync.remote, "/")[varlength-1], ".")[0]
+		}
+	}
+	//数据同步完成，开始进行存储
+	fmt.Println("....仓库[", gitSync.remote, "]同步本地完成,准备插入数据到ledis中")
+	generateDict(gitSync.tag, gitSync.local, gitSync.remote)
+}
+
+func Run() {
+	//初始化ledis数据库连接
+	initDB(DbAddress)
+	//初始化git仓库
+	gitSync := initGit(GitAddress, Local, Tag)
+
 	//进行git库的同步操作
-	syncAndSave(gitSyncArr, syncChan)
-	<-end
+	syncAndSave(gitSync)
 }
 
 func FindDetail(path, fileName string) (string, string, string, string, string) {
