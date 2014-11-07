@@ -38,3 +38,11 @@ func (this *AuthWebController) Signin() {
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"登录成功\"}"))
 }
+
+func (this *AuthWebController) ResetPasswd() {
+
+}
+
+func (this *AuthWebController) Signup() {
+
+}
