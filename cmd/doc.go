@@ -11,11 +11,11 @@ import (
 	_ "github.com/dockercn/docker-bucket/routers"
 )
 
-var CmdLedis = cli.Command{
-	Name:        "ledis",
-	Usage:       "获取文章列表",
-	Description: "通过命令存取ledis中的数据",
-	Action:      runLedis,
+var CmdDoc = cli.Command{
+	Name:        "doc",
+	Usage:       "通过命令同步或者获取文档数据",
+	Description: "通过命令同步或者获取文档数据",
+	Action:      runDoc,
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "action",
@@ -38,37 +38,37 @@ var CmdLedis = cli.Command{
 			Usage: "输入远程库同步到本地的路径,例如：/root/data",
 		},
 		cli.StringFlag{
-			Name:  "tag",
+			Name:  "prefix",
 			Value: "",
-			Usage: "输入同步类型的分类",
+			Usage: "输入同步类型的前缀名",
 		},
 	},
 }
 
-func runLedis(c *cli.Context) {
+func runDoc(c *cli.Context) {
 	action := strings.TrimSpace(c.String("action"))
 	if len(action) == 0 {
-		fmt.Println(errors.New("启动ledis请输入action的值"))
+		fmt.Println(errors.New("文档操作请输入action的值"))
 		return
 	}
 	switch action {
 	case "save":
-		if len(strings.TrimSpace(c.String("gitAddress"))) == 0 || len(strings.TrimSpace(c.String("local"))) == 0 || len(strings.TrimSpace(c.String("tag"))) == 0 {
-			fmt.Println(errors.New("save必须输入gitAddress、local、tag的值"))
+		if len(strings.TrimSpace(c.String("gitAddress"))) == 0 || len(strings.TrimSpace(c.String("local"))) == 0 || len(strings.TrimSpace(c.String("prefix"))) == 0 {
+			fmt.Println(errors.New("save必须输入gitAddress、local、prefix的值"))
 			break
 		}
 		markdown.GitAddress = strings.TrimSpace(c.String("gitAddress"))
 		markdown.Local = strings.TrimSpace(c.String("local"))
-		markdown.Tag = strings.TrimSpace(c.String("tag"))
+		markdown.Prefix = strings.TrimSpace(c.String("prefix"))
 		markdown.DbAddress = strings.TrimSpace(c.String("dbaddress"))
 		markdown.Run()
 	case "show":
-		if len(strings.TrimSpace(c.String("tag"))) == 0 {
-			errors.New("请输入tag的值")
+		if len(strings.TrimSpace(c.String("prefix"))) == 0 {
+			errors.New("请输入prefix的值")
 			break
 		}
 		markdown.DbAddress = strings.TrimSpace(c.String("dbaddress"))
-		markdown.Show(strings.TrimSpace(c.String("tag")))
+		markdown.Show(strings.TrimSpace(c.String("prefix")))
 	default:
 		fmt.Println(errors.New("输入的action参数不存在"))
 	}

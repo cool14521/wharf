@@ -21,7 +21,7 @@ var DbAddress string
 
 var GitAddress string
 var Local string
-var Tag string
+var Prefix string
 
 type Item struct {
 	Key        string
@@ -33,10 +33,10 @@ type Item struct {
 	Tag        string
 }
 
-type GitSync struct {
+type Doc struct {
 	remote string
 	local  string
-	tag    string
+	prefix string
 }
 
 func initDB(DbAddress string) {
@@ -71,18 +71,18 @@ func initDB(DbAddress string) {
 	fmt.Println("....初始化数据库成功")
 }
 
-func initGit(gitAddress, local, tag string) *GitSync {
-	if len(strings.TrimSpace(gitAddress)) == 0 || len(strings.TrimSpace(gitAddress)) == 0 || len(strings.TrimSpace(gitAddress)) == 0 {
+func initGit(gitAddress, local, prefix string) *Doc {
+	if len(strings.TrimSpace(gitAddress)) == 0 || len(strings.TrimSpace(local)) == 0 || len(strings.TrimSpace(prefix)) == 0 {
 		panic("....markdown git地址初始化异常")
 	}
 	//将git同步的对象初始化
-	gitSync := new(GitSync)
-	gitSync.remote = gitAddress
-	gitSync.local = local
-	gitSync.tag = tag
+	doc := new(Doc)
+	doc.remote = gitAddress
+	doc.local = local
+	doc.prefix = prefix
 
 	fmt.Println("....初始化git同步对象成功")
-	return gitSync
+	return doc
 }
 
 func gitClone(remote, local string) {
@@ -120,7 +120,7 @@ func createDir(path string) {
 	syscall.Umask(oldMask)
 }
 
-func generateDict(tag, path, remote string) int {
+func generateDict(prefix, path, remote string) int {
 	fmt.Println("....开始在ledis中生成目录")
 	files, _ := ioutil.ReadDir(path)
 	//设定协程数量
@@ -145,13 +145,13 @@ func generateDict(tag, path, remote string) int {
 		fileMap[item.Key] = item
 	}
 	//删除数据库中多余的数据
-	DeteleArticle(tag, fileMap)
+	DeteleArticle(prefix, fileMap)
 	//定义线程处理文件插入article
 	endChan := make(chan string)
 	fileChan := make(chan bool, len(fileMap))
 	for i, _ := range fileMap {
 		go func(i string) {
-			fileMap[i].InsertLedis(tag, path, fileMap[i].Key)
+			fileMap[i].InsertLedis(prefix, path, fileMap[i].Key)
 			fileChan <- true
 		}(i)
 	}
@@ -174,42 +174,47 @@ func generateDict(tag, path, remote string) int {
 	return len(fileMap)
 }
 
-func syncAndSave(gitSync *GitSync) {
+func sync(doc *Doc) *Doc {
 	fmt.Println("....开始同步git数据")
 	//判断本地路径是否存在，不存在则创建
-	if !isDirExist(gitSync.local) {
-		createDir(gitSync.local)
-		gitClone(gitSync.remote, gitSync.local)
-		varlength := len(strings.Split(gitSync.remote, "/"))
+	if !isDirExist(doc.local) {
+		createDir(doc.local)
+		gitClone(doc.remote, doc.local)
+		varlength := len(strings.Split(doc.remote, "/"))
 		//重新复制本地路径local的值，定位到git对应的目录下
-		gitSync.local = gitSync.local + "/" + strings.Split(strings.Split(gitSync.remote, "/")[varlength-1], ".")[0]
+		doc.local = doc.local + "/" + strings.Split(strings.Split(doc.remote, "/")[varlength-1], ".")[0]
 	} else {
 		//判断本地文件夹存在，是否包含所需要的git库
-		varlength := len(strings.Split(gitSync.remote, "/"))
-		githubRepo := strings.Split(strings.Split(gitSync.remote, "/")[varlength-1], ".")[0]
+		varlength := len(strings.Split(doc.remote, "/"))
+		githubRepo := strings.Split(strings.Split(doc.remote, "/")[varlength-1], ".")[0]
 		//库已经存在
-		if repoExist(githubRepo, gitSync.local) {
-			gitSync.local = gitSync.local + "/" + strings.Split(strings.Split(gitSync.remote, "/")[varlength-1], ".")[0]
-			gitPull(gitSync.local)
+		if repoExist(githubRepo, doc.local) {
+			doc.local = doc.local + "/" + strings.Split(strings.Split(doc.remote, "/")[varlength-1], ".")[0]
+			gitPull(doc.local)
 		} else {
 			//库不存在
-			gitClone(gitSync.remote, gitSync.local)
-			gitSync.local = gitSync.local + "/" + strings.Split(strings.Split(gitSync.remote, "/")[varlength-1], ".")[0]
+			gitClone(doc.remote, doc.local)
+			doc.local = doc.local + "/" + strings.Split(strings.Split(doc.remote, "/")[varlength-1], ".")[0]
 		}
 	}
+	return doc
+}
+
+func save(doc *Doc) {
 	//数据同步完成，开始进行存储
-	fmt.Println("....仓库[", gitSync.remote, "]同步本地完成,准备插入数据到ledis中")
-	generateDict(gitSync.tag, gitSync.local, gitSync.remote)
+	fmt.Println("....仓库[", doc.remote, "]同步本地完成,准备插入数据到ledis中")
+	generateDict(doc.prefix, doc.local, doc.remote)
 }
 
 func Run() {
 	//初始化ledis数据库连接
 	initDB(DbAddress)
 	//初始化git仓库
-	gitSync := initGit(GitAddress, Local, Tag)
-
-	//进行git库的同步操作
-	syncAndSave(gitSync)
+	doc := initGit(GitAddress, Local, Prefix)
+	//进行git库的同步到本地
+	doc = sync(doc)
+	//存入ledis中
+	save(doc)
 }
 
 func FindDetail(path, fileName string) (string, string, string, string, string) {
@@ -222,7 +227,7 @@ func FindDetail(path, fileName string) (string, string, string, string, string) 
 	content := ""
 	title := ""
 	desc := ""
-	tag := ""
+	prefix := ""
 	keywords := ""
 	for {
 		line, err := buff.ReadString('\n')
@@ -241,33 +246,33 @@ func FindDetail(path, fileName string) (string, string, string, string, string) 
 			desc = strings.TrimRight(line, "\n")
 			desc = strings.Replace(title, "@desc:", "", 1)
 			continue
-		} else if strings.HasPrefix(line, "@tag:") {
-			tag = strings.TrimRight(line, "\n")
-			tag = strings.Replace(title, "@tag:", "", 1)
+		} else if strings.HasPrefix(line, "@prefix:") {
+			prefix = strings.TrimRight(line, "\n")
+			prefix = strings.Replace(title, "@prefix:", "", 1)
 			continue
 		}
 		content = content + line
 	}
-	return title, desc, keywords, content, tag
+	return title, desc, keywords, content, prefix
 }
 
-func (item *Item) InsertLedis(tag, path, fileName string) {
-	title, desc, keywords, content, tag := FindDetail(path, fileName)
+func (item *Item) InsertLedis(prefix, path, fileName string) {
+	title, desc, keywords, content, prefix := FindDetail(path, fileName)
 	item.Title = title
 	item.Keywords = keywords
 	item.Content = content
-	item.Tag = tag
+	item.Tag = prefix
 	item.Desc = desc
 	item.Key = strings.Split(fileName, ".")[0]
 
 	//插入ledis 目录
-	fmt.Println(tag, item.Key, item.Title+"|"+item.UpdateTime)
+	fmt.Println(prefix, item.Key, item.Title+"|"+item.UpdateTime)
 	fmt.Println(item.Key, "title", item.Title)
 	fmt.Println(item.Key, "desc", item.Desc)
 	fmt.Println(item.Key, "keywords", item.Keywords)
 	fmt.Println(item.Key, "content", item.Content)
 
-	conn.HSet([]byte(tag), []byte(item.Key), []byte(item.Title+"|"+item.UpdateTime))
+	conn.HSet([]byte(prefix), []byte(item.Key), []byte(item.Title+"|"+item.UpdateTime))
 	//插入文章内容
 	conn.HSet([]byte(item.Key), []byte("title"), []byte(item.Title))
 	conn.HSet([]byte(item.Key), []byte("desc"), []byte(item.Desc))
@@ -276,27 +281,27 @@ func (item *Item) InsertLedis(tag, path, fileName string) {
 }
 
 //删除掉目录中没有，但是数据库中存在的数据
-func DeteleArticle(tag string, fileMap map[string]*Item) {
-	fileNames, _ := conn.HKeys([]byte(tag))
+func DeteleArticle(prefix string, fileMap map[string]*Item) {
+	fileNames, _ := conn.HKeys([]byte(prefix))
 	for _, fileName := range fileNames {
 		if _, found := fileMap[string(fileName)]; !found {
 			//在目录中没有查到该文件，则进行删除
-			conn.HDel([]byte(tag), []byte(string(fileName)))
+			conn.HDel([]byte(prefix), []byte(string(fileName)))
 			conn.HDel([]byte(string(fileName)), []byte("title"), []byte("desc"), []byte("keywords"), []byte("content"))
 		}
 	}
 }
 
-func Show(tag string) {
+func Show(prefix string) {
 	initDB(DbAddress)
 	fmt.Println("进入展示数据")
-	fileNames, _ := conn.HKeys([]byte(tag))
+	fileNames, _ := conn.HKeys([]byte(prefix))
 	i := 0
 	for _, fileName := range fileNames {
 		i = i + 1
 		fmt.Println("manage", i)
-		data, _ := conn.HGet([]byte(tag), []byte(string(fileName)))
-		fmt.Printf("%s\t%s\t%s\n", tag, string(fileName), string(data))
+		data, _ := conn.HGet([]byte(prefix), []byte(string(fileName)))
+		fmt.Printf("%s\t%s\t%s\n", prefix, string(fileName), string(data))
 	}
 }
 
