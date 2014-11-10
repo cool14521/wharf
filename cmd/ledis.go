@@ -11,7 +11,7 @@ import (
 	_ "github.com/dockercn/docker-bucket/routers"
 )
 
-var CmdArticle = cli.Command{
+var CmdLedis = cli.Command{
 	Name:        "ledis",
 	Usage:       "获取文章列表",
 	Description: "通过命令存取ledis中的数据",
@@ -46,30 +46,30 @@ var CmdArticle = cli.Command{
 }
 
 func runLedis(c *cli.Context) {
-	if len(strings.TrimSpace(c.String("action"))) == 0 {
+	action := strings.TrimSpace(c.String("action"))
+	if len(action) == 0 {
 		fmt.Println(errors.New("启动ledis请输入action的值"))
 		return
-	} else if strings.TrimSpace(c.String("action")) == "save" {
+	}
+	switch action {
+	case "save":
 		if len(strings.TrimSpace(c.String("gitAddress"))) == 0 || len(strings.TrimSpace(c.String("local"))) == 0 || len(strings.TrimSpace(c.String("tag"))) == 0 {
 			fmt.Println(errors.New("save必须输入gitAddress、local、tag的值"))
-			return
+			break
 		}
 		markdown.GitAddress = strings.TrimSpace(c.String("gitAddress"))
 		markdown.Local = strings.TrimSpace(c.String("local"))
 		markdown.Tag = strings.TrimSpace(c.String("tag"))
 		markdown.DbAddress = strings.TrimSpace(c.String("dbaddress"))
 		markdown.Run()
-		return
-	} else if strings.TrimSpace(c.String("action")) == "show" {
+	case "show":
 		if len(strings.TrimSpace(c.String("tag"))) == 0 {
 			errors.New("请输入tag的值")
-			return
+			break
 		}
 		markdown.DbAddress = strings.TrimSpace(c.String("dbaddress"))
 		markdown.Show(strings.TrimSpace(c.String("tag")))
-		return
-	} else {
+	default:
 		fmt.Println(errors.New("输入的action参数不存在"))
-		return
 	}
 }
