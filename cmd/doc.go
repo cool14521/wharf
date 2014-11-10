@@ -29,8 +29,13 @@ var CmdDoc = cli.Command{
 		},
 		cli.StringFlag{
 			Name:  "dbaddress",
-			Value: "/data/ledis?select=1",
-			Usage: "输入ledis数据库所在路径,默认：/data/ledis?select=1",
+			Value: "/data/ledis",
+			Usage: "输入ledis数据库所在路径,默认：/data/ledis",
+		},
+		cli.IntFlag{
+			Name:  "dbnumber",
+			Value: 1,
+			Usage: "文档存储的数据库，默认：1",
 		},
 		cli.StringFlag{
 			Name:  "local",
@@ -61,6 +66,7 @@ func runDoc(c *cli.Context) {
 		markdown.Local = strings.TrimSpace(c.String("local"))
 		markdown.Prefix = strings.TrimSpace(c.String("prefix"))
 		markdown.DbAddress = strings.TrimSpace(c.String("dbaddress"))
+		markdown.Dbnumber = c.Int("dbnumber")
 		markdown.Run()
 	case "show":
 		if len(strings.TrimSpace(c.String("prefix"))) == 0 {
@@ -68,6 +74,7 @@ func runDoc(c *cli.Context) {
 			break
 		}
 		markdown.DbAddress = strings.TrimSpace(c.String("dbaddress"))
+		markdown.Dbnumber = c.Int("dbnumber")
 		markdown.Show(strings.TrimSpace(c.String("prefix")))
 	default:
 		fmt.Println(errors.New("输入的action参数不存在"))

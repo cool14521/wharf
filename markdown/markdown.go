@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"strconv"
 	"strings"
 	"syscall"
 
@@ -18,7 +17,7 @@ import (
 
 var conn *ledis.DB
 var DbAddress string
-
+var Dbnumber int
 var GitAddress string
 var Local string
 var Prefix string
@@ -39,32 +38,16 @@ type Doc struct {
 	prefix string
 }
 
-func initDB(DbAddress string) {
-	//初始化ledis数据库配置，默认为当前目录下的ledis文件夹中
-	var path string
-	var dbnumber int
-	if len(strings.TrimSpace(DbAddress)) == 0 {
-		path = "ledis"
-		dbnumber = 0
-		createDir(path)
-	} else {
-		//DbAddress example    /data/ledis?select=1
-		path = strings.Split(strings.TrimSpace(DbAddress), "?")[0]
-		//如果路径不存在，则创建路径
-		if !isDirExist(path) {
-			createDir(path)
-		}
-		var err error
-		dbnumber, err = strconv.Atoi(strings.Split(strings.Split(strings.TrimSpace(DbAddress), "?")[1], "=")[1])
-		if err != nil {
-			dbnumber = 0
-		}
+func initDB(DbAddress string, Dbnumber int) {
+	//如果路径不存在，则创建路径
+	if !isDirExist(DbAddress) {
+		createDir(DbAddress)
 	}
 	cfg := new(config.Config)
-	cfg.DataDir = path
+	cfg.DataDir = DbAddress
 	var err error
 	nowLedis, err := ledis.Open(cfg)
-	conn, err = nowLedis.Select(dbnumber)
+	conn, err = nowLedis.Select(Dbnumber)
 	if err != nil {
 		panic(err)
 	}
@@ -208,7 +191,7 @@ func save(doc *Doc) {
 
 func Run() {
 	//初始化ledis数据库连接
-	initDB(DbAddress)
+	initDB(DbAddress, Dbnumber)
 	//初始化git仓库
 	doc := initGit(GitAddress, Local, Prefix)
 	//进行git库的同步到本地
@@ -293,7 +276,7 @@ func DeteleArticle(prefix string, fileMap map[string]*Item) {
 }
 
 func Show(prefix string) {
-	initDB(DbAddress)
+	initDB(DbAddress, Dbnumber)
 	fmt.Println("进入展示数据")
 	fileNames, _ := conn.HKeys([]byte(prefix))
 	i := 0
