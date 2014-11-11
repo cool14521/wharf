@@ -17,8 +17,6 @@ import (
 	"github.com/siddontang/ledisdb/ledis"
 )
 
-var conn *ledis.DB
-
 type Item struct {
 	Key        string
 	Title      string
@@ -29,27 +27,25 @@ type Item struct {
 	Tag        string
 }
 
-type LedisDb struct {
+type Doc struct {
+	Remote  string
+	Local   string
+	Prefix  string
 	Storage string
 	Db      int
+	conn    *ledis.DB
 }
 
-type Doc struct {
-	Remote string
-	Local  string
-	Prefix string
-}
-
-func (ledisdb *LedisDb) initDB() {
+func (doc *Doc) initDB() {
 	//如果路径不存在，则创建路径
-	if !isDirExist(ledisdb.Storage) {
-		createDir(ledisdb.Storage)
+	if !isDirExist(doc.Storage) {
+		createDir(doc.Storage)
 	}
 	cfg := new(config.Config)
-	cfg.DataDir = ledisdb.Storage
+	cfg.DataDir = doc.Storage
 	var err error
 	nowLedis, err := ledis.Open(cfg)
-	conn, err = nowLedis.Select(ledisdb.Db)
+	doc.conn, err = nowLedis.Select(doc.Db)
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +93,7 @@ func createDir(path string) {
 	syscall.Umask(oldMask)
 }
 
-func generateDict(prefix, path, remote string) int {
+func generateDict(prefix, path, remote string, conn *ledis.DB) int {
 	fmt.Println("....开始在ledis中生成目录")
 	files, _ := ioutil.ReadDir(path)
 	//设定协程数量
@@ -122,13 +118,13 @@ func generateDict(prefix, path, remote string) int {
 		fileMap[item.Key] = item
 	}
 	//删除数据库中多余的数据
-	Detele(prefix, fileMap)
+	Delete(prefix, fileMap, conn)
 	//定义线程处理文件插入article
 	endChan := make(chan string)
 	fileChan := make(chan bool, len(fileMap))
 	for i, _ := range fileMap {
 		go func(i string) {
-			fileMap[i].InsertLedis(prefix, path, fileMap[i].Key)
+			fileMap[i].InsertLedis(prefix, path, fileMap[i].Key, conn)
 			fileChan <- true
 		}(i)
 	}
@@ -180,14 +176,14 @@ func (doc *Doc) sync() *Doc {
 func (doc *Doc) handle() {
 	//数据同步完成，开始进行存储
 	fmt.Println("....仓库[", doc.Remote, "]同步本地完成,准备插入数据到ledis中")
-	generateDict(doc.Prefix, doc.Local, doc.Remote)
+	generateDict(doc.Prefix, doc.Local, doc.Remote, doc.conn)
 }
 
-func (doc *Doc) Run(ledisdb *LedisDb) {
+func (doc *Doc) Run() {
 	//检验数据输入是否合法
 	doc.verify()
 	//初始化ledis数据库连接
-	ledisdb.initDB()
+	doc.initDB()
 	//进行git库的同步到本地
 	doc = doc.sync()
 	//存入ledis中
@@ -233,7 +229,7 @@ func FindDetail(path, fileName string) (string, string, string, string, string) 
 	return title, desc, keywords, content, prefix
 }
 
-func (item *Item) InsertLedis(prefix, path, fileName string) {
+func (item *Item) InsertLedis(prefix, path, fileName string, conn *ledis.DB) {
 	title, desc, keywords, content, prefix := FindDetail(path, fileName)
 	item.Title = title
 	item.Keywords = keywords
@@ -258,7 +254,7 @@ func (item *Item) InsertLedis(prefix, path, fileName string) {
 }
 
 //删除掉目录中没有，但是数据库中存在的数据
-func Detele(prefix string, fileMap map[string]*Item) {
+func Delete(prefix string, fileMap map[string]*Item, conn *ledis.DB) {
 	fileNames, _ := conn.HKeys([]byte(prefix))
 	for _, fileName := range fileNames {
 		if _, found := fileMap[string(fileName)]; !found {
@@ -269,16 +265,16 @@ func Detele(prefix string, fileMap map[string]*Item) {
 	}
 }
 
-func Show(prefix string, ledisdb *LedisDb) {
-	ledisdb.initDB()
+func (doc *Doc) Show() {
+	doc.initDB()
 	fmt.Println("进入展示数据")
-	fileNames, _ := conn.HKeys([]byte(prefix))
+	fileNames, _ := doc.conn.HKeys([]byte(doc.Prefix))
 	i := 0
 	for _, fileName := range fileNames {
 		i = i + 1
 		fmt.Println("manage", i)
-		data, _ := conn.HGet([]byte(prefix), []byte(string(fileName)))
-		fmt.Printf("%s\t%s\t%s\n", prefix, string(fileName), string(data))
+		data, _ := doc.conn.HGet([]byte(doc.Prefix), []byte(string(fileName)))
+		fmt.Printf("%s\t%s\t%s\n", doc.Prefix, string(fileName), string(data))
 	}
 }
 

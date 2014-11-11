@@ -20,12 +20,12 @@ var CmdDoc = cli.Command{
 		cli.StringFlag{
 			Name:  "action",
 			Value: "",
-			Usage: "输入操作的类型[save 存储;show 展示]",
+			Usage: "输入操作的类型[handle 处理;show 展示]",
 		},
 		cli.StringFlag{
 			Name:  "remote",
 			Value: "",
-			Usage: "输入同步远程库的地址,例如：http://github.com/xxx/xxx.git",
+			Usage: "输入同步远程库的地址,例如：https://github.com/xxx/xxx.git",
 		},
 		cli.StringFlag{
 			Name:  "storage",
@@ -57,21 +57,30 @@ func runDoc(c *cli.Context) {
 		return
 	}
 	switch action {
-	case "save":
+	case "handle":
 		if len(strings.TrimSpace(c.String("remote"))) == 0 || len(strings.TrimSpace(c.String("local"))) == 0 || len(strings.TrimSpace(c.String("prefix"))) == 0 {
-			fmt.Println(errors.New("save必须输入remote、local、prefix的值"))
+			fmt.Println(errors.New("handle必须输入remote、local、prefix的值"))
 			break
 		}
-		doc := &markdown.Doc{Remote: strings.TrimSpace(c.String("remote")), Local: strings.TrimSpace(c.String("local")), Prefix: strings.TrimSpace(c.String("prefix"))}
-		ledisdb := &markdown.LedisDb{Storage: strings.TrimSpace(c.String("storage")), Db: c.Int("db")}
-		doc.Run(ledisdb)
+		doc := &markdown.Doc{
+			Remote:  strings.TrimSpace(c.String("remote")),
+			Local:   strings.TrimSpace(c.String("local")),
+			Prefix:  strings.TrimSpace(c.String("prefix")),
+			Storage: strings.TrimSpace(c.String("storage")),
+			Db:      c.Int("db"),
+		}
+		doc.Run()
 	case "show":
 		if len(strings.TrimSpace(c.String("prefix"))) == 0 {
 			errors.New("请输入prefix的值")
 			break
 		}
-		ledisdb := &markdown.LedisDb{Storage: strings.TrimSpace(c.String("storage")), Db: c.Int("db")}
-		markdown.Show(strings.TrimSpace(c.String("prefix")), ledisdb)
+		doc := &markdown.Doc{
+			Prefix:  strings.TrimSpace(c.String("prefix")),
+			Storage: strings.TrimSpace(c.String("storage")),
+			Db:      c.Int("db"),
+		}
+		doc.Show()
 	default:
 		fmt.Println(errors.New("输入的action参数不存在"))
 	}
