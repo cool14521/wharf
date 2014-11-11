@@ -16,9 +16,9 @@ import (
 )
 
 var conn *ledis.DB
-var DbAddress string
-var Dbnumber int
-var GitAddress string
+var Storage string
+var Db int
+var Remote string
 var Local string
 var Prefix string
 
@@ -38,16 +38,16 @@ type Doc struct {
 	prefix string
 }
 
-func initDB(DbAddress string, Dbnumber int) {
+func initDB(Storage string, Db int) {
 	//如果路径不存在，则创建路径
-	if !isDirExist(DbAddress) {
-		createDir(DbAddress)
+	if !isDirExist(Storage) {
+		createDir(Storage)
 	}
 	cfg := new(config.Config)
-	cfg.DataDir = DbAddress
+	cfg.DataDir = Storage
 	var err error
 	nowLedis, err := ledis.Open(cfg)
-	conn, err = nowLedis.Select(Dbnumber)
+	conn, err = nowLedis.Select(Db)
 	if err != nil {
 		panic(err)
 	}
@@ -128,7 +128,7 @@ func generateDict(prefix, path, remote string) int {
 		fileMap[item.Key] = item
 	}
 	//删除数据库中多余的数据
-	DeteleArticle(prefix, fileMap)
+	Detele(prefix, fileMap)
 	//定义线程处理文件插入article
 	endChan := make(chan string)
 	fileChan := make(chan bool, len(fileMap))
@@ -191,9 +191,9 @@ func save(doc *Doc) {
 
 func Run() {
 	//初始化ledis数据库连接
-	initDB(DbAddress, Dbnumber)
+	initDB(Storage, Db)
 	//初始化git仓库
-	doc := initGit(GitAddress, Local, Prefix)
+	doc := initGit(Remote, Local, Prefix)
 	//进行git库的同步到本地
 	doc = sync(doc)
 	//存入ledis中
@@ -264,7 +264,7 @@ func (item *Item) InsertLedis(prefix, path, fileName string) {
 }
 
 //删除掉目录中没有，但是数据库中存在的数据
-func DeteleArticle(prefix string, fileMap map[string]*Item) {
+func Detele(prefix string, fileMap map[string]*Item) {
 	fileNames, _ := conn.HKeys([]byte(prefix))
 	for _, fileName := range fileNames {
 		if _, found := fileMap[string(fileName)]; !found {
@@ -276,7 +276,7 @@ func DeteleArticle(prefix string, fileMap map[string]*Item) {
 }
 
 func Show(prefix string) {
-	initDB(DbAddress, Dbnumber)
+	initDB(Storage, Db)
 	fmt.Println("进入展示数据")
 	fileNames, _ := conn.HKeys([]byte(prefix))
 	i := 0

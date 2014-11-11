@@ -23,17 +23,17 @@ var CmdDoc = cli.Command{
 			Usage: "输入操作的类型[save 存储;show 展示]",
 		},
 		cli.StringFlag{
-			Name:  "gitAddress",
+			Name:  "remote",
 			Value: "",
 			Usage: "输入同步远程库的地址,例如：http://github.com/chliang2030598/docs1.git",
 		},
 		cli.StringFlag{
-			Name:  "dbaddress",
+			Name:  "storage",
 			Value: "/data/ledis",
 			Usage: "输入ledis数据库所在路径,默认：/data/ledis",
 		},
 		cli.IntFlag{
-			Name:  "dbnumber",
+			Name:  "db",
 			Value: 1,
 			Usage: "文档存储的数据库，默认：1",
 		},
@@ -58,23 +58,23 @@ func runDoc(c *cli.Context) {
 	}
 	switch action {
 	case "save":
-		if len(strings.TrimSpace(c.String("gitAddress"))) == 0 || len(strings.TrimSpace(c.String("local"))) == 0 || len(strings.TrimSpace(c.String("prefix"))) == 0 {
-			fmt.Println(errors.New("save必须输入gitAddress、local、prefix的值"))
+		if len(strings.TrimSpace(c.String("remote"))) == 0 || len(strings.TrimSpace(c.String("local"))) == 0 || len(strings.TrimSpace(c.String("prefix"))) == 0 {
+			fmt.Println(errors.New("save必须输入remote、local、prefix的值"))
 			break
 		}
-		markdown.GitAddress = strings.TrimSpace(c.String("gitAddress"))
+		markdown.Remote = strings.TrimSpace(c.String("remote"))
 		markdown.Local = strings.TrimSpace(c.String("local"))
 		markdown.Prefix = strings.TrimSpace(c.String("prefix"))
-		markdown.DbAddress = strings.TrimSpace(c.String("dbaddress"))
-		markdown.Dbnumber = c.Int("dbnumber")
+		markdown.Storage = strings.TrimSpace(c.String("storage"))
+		markdown.Db = c.Int("db")
 		markdown.Run()
 	case "show":
 		if len(strings.TrimSpace(c.String("prefix"))) == 0 {
 			errors.New("请输入prefix的值")
 			break
 		}
-		markdown.DbAddress = strings.TrimSpace(c.String("dbaddress"))
-		markdown.Dbnumber = c.Int("dbnumber")
+		markdown.Storage = strings.TrimSpace(c.String("storage"))
+		markdown.Db = c.Int("db")
 		markdown.Show(strings.TrimSpace(c.String("prefix")))
 	default:
 		fmt.Println(errors.New("输入的action参数不存在"))
