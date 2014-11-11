@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	_ "github.com/astaxie/beego/session/redis"
 	"github.com/codegangsta/cli"
 	"github.com/dockercn/docker-bucket/markdown"
 	_ "github.com/dockercn/docker-bucket/routers"
