@@ -14,7 +14,7 @@ import (
 var CmdDoc = cli.Command{
 	Name:        "doc",
 	Usage:       "通过命令同步或者获取文档数据",
-	Description: "通过命令同步或者获取文档数据",
+	Description: "通过命令将远程Git库中存放的markdown文件同步到本地，并且将markdown格式转换成html后存入ledis中;通过命令可以查询同步之后的目录",
 	Action:      runDoc,
 	Flags: []cli.Flag{
 		cli.StringFlag{
@@ -25,7 +25,7 @@ var CmdDoc = cli.Command{
 		cli.StringFlag{
 			Name:  "remote",
 			Value: "",
-			Usage: "输入同步远程库的地址,例如：http://github.com/chliang2030598/docs1.git",
+			Usage: "输入同步远程库的地址,例如：http://github.com/xxx/xxx.git",
 		},
 		cli.StringFlag{
 			Name:  "storage",
@@ -62,20 +62,16 @@ func runDoc(c *cli.Context) {
 			fmt.Println(errors.New("save必须输入remote、local、prefix的值"))
 			break
 		}
-		markdown.Remote = strings.TrimSpace(c.String("remote"))
-		markdown.Local = strings.TrimSpace(c.String("local"))
-		markdown.Prefix = strings.TrimSpace(c.String("prefix"))
-		markdown.Storage = strings.TrimSpace(c.String("storage"))
-		markdown.Db = c.Int("db")
-		markdown.Run()
+		doc := &markdown.Doc{Remote: strings.TrimSpace(c.String("remote")), Local: strings.TrimSpace(c.String("local")), Prefix: strings.TrimSpace(c.String("prefix"))}
+		ledisdb := &markdown.LedisDb{Storage: strings.TrimSpace(c.String("storage")), Db: c.Int("db")}
+		doc.Run(ledisdb)
 	case "show":
 		if len(strings.TrimSpace(c.String("prefix"))) == 0 {
 			errors.New("请输入prefix的值")
 			break
 		}
-		markdown.Storage = strings.TrimSpace(c.String("storage"))
-		markdown.Db = c.Int("db")
-		markdown.Show(strings.TrimSpace(c.String("prefix")))
+		ledisdb := &markdown.LedisDb{Storage: strings.TrimSpace(c.String("storage")), Db: c.Int("db")}
+		markdown.Show(strings.TrimSpace(c.String("prefix")), ledisdb)
 	default:
 		fmt.Println(errors.New("输入的action参数不存在"))
 	}
