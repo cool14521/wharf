@@ -7,7 +7,6 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/dockercn/docker-bucket/markdown"
-	_ "github.com/dockercn/docker-bucket/routers"
 )
 
 var CmdDoc = cli.Command{
@@ -19,7 +18,7 @@ var CmdDoc = cli.Command{
 		cli.StringFlag{
 			Name:  "action",
 			Value: "",
-			Usage: "输入操作的类型[handle 处理;show 展示]",
+			Usage: "输入操作的类型[handle 处理;query 查询(输入doc的前缀值，可查询doc目录;如果查询具体文件，请使用key参数)]",
 		},
 		cli.StringFlag{
 			Name:  "remote",
@@ -46,6 +45,11 @@ var CmdDoc = cli.Command{
 			Value: "",
 			Usage: "输入同步类型的前缀名",
 		},
+		cli.StringFlag{
+			Name:  "key",
+			Value: "",
+			Usage: "输入查询文件的key值,例如：文件名xxx.md 则key值为xxx",
+		},
 	},
 }
 
@@ -69,17 +73,21 @@ func runDoc(c *cli.Context) {
 			Db:      c.Int("db"),
 		}
 		doc.Run()
-	case "show":
-		if len(strings.TrimSpace(c.String("prefix"))) == 0 {
-			errors.New("请输入prefix的值")
-			break
-		}
+	case "query":
 		doc := &markdown.Doc{
 			Prefix:  strings.TrimSpace(c.String("prefix")),
 			Storage: strings.TrimSpace(c.String("storage")),
 			Db:      c.Int("db"),
 		}
-		doc.Show()
+		if len(strings.TrimSpace(c.String("key"))) == 0 {
+			if len(strings.TrimSpace(c.String("prefix"))) == 0 {
+				errors.New("请输入prefix的值")
+				break
+			}
+			doc.Query(true, "")
+		} else {
+			doc.Query(false, strings.TrimSpace(c.String("key")))
+		}
 	default:
 		fmt.Println(errors.New("输入的action参数不存在"))
 	}
