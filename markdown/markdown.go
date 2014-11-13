@@ -2,6 +2,7 @@ package markdown
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -80,8 +81,8 @@ func (doc *Doc) Sync() {
 }
 
 //数据预处理
-func (doc *Doc) Transform() {
-	doc.verify("transform")
+func (doc *Doc) Render() {
+	doc.verify("render")
 	//生成item集合赋值给doc对象
 	//1 读取文件数据
 	//2 处理文件数据（生成完成Item数据）
@@ -132,7 +133,19 @@ func (doc *Doc) Transform() {
 
 	finish := <-handleEnd
 	if finish {
-		doc.itemMap = fileMap
+		//将fileMap存入到.render的文件中
+		bytes, _ := json.Marshal(fileMap)
+		if _, err := os.Stat(".render"); err == nil {
+			os.Remove(".render")
+		}
+		f, err := os.OpenFile(".render", os.O_CREATE|os.O_RDWR, 0660)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		w := bufio.NewWriter(f)
+		w.Write(bytes)
+		w.Flush()
 	}
 	fmt.Println("....文件预处理全部完成")
 }
@@ -170,6 +183,7 @@ func (doc *Doc) Query(isDict bool, key string) {
 
 func (doc *Doc) Save() {
 	doc.verify("save")
+	doc.load()
 	doc.initDB()
 	//清除掉数据库中多余的部分
 	var i int //记录删除记录数
@@ -196,13 +210,23 @@ func (doc *Doc) Save() {
 	fmt.Println("....插入或更新数据成功")
 }
 
+func (doc *Doc) load() {
+	//加载.render文件，对doc.itemmap赋值
+	bytes, _ := ioutil.ReadFile(".render")
+	err := json.Unmarshal(bytes, &doc.itemMap)
+	if err != nil {
+		panic("....加载缓存文件失败，请重新执行render操作")
+	}
+	fmt.Println("....加载缓存文件成功，开始进行数据库操作")
+}
+
 func (doc *Doc) verify(action string) {
 	switch action {
 	case "sync":
 		if len(strings.TrimSpace(doc.Remote)) == 0 || len(strings.TrimSpace(doc.Local)) == 0 {
 			panic("....markdown git地址初始化异常,请赋值remote和local")
 		}
-	case "transform":
+	case "render":
 		if !isDirExist(doc.Local) {
 			panic("....本地路径不存在,请执行sync操作")
 		} else {
@@ -211,8 +235,8 @@ func (doc *Doc) verify(action string) {
 			}
 		}
 	case "save":
-		if len(doc.itemMap) == 0 || len(strings.TrimSpace(doc.Prefix)) == 0 {
-			panic("....请确认是否值之前执行了sync、transform的操作")
+		if _, err := os.Stat(".render"); err != nil || len(strings.TrimSpace(doc.Prefix)) == 0 {
+			panic("....请确认是否值之前执行了sync、render的操作")
 		} else {
 			if len(strings.TrimSpace(doc.Storage)) == 0 {
 				panic("....请输入数据文件的存储路径")

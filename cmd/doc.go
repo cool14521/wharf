@@ -18,7 +18,7 @@ var CmdDoc = cli.Command{
 		cli.StringFlag{
 			Name:  "action",
 			Value: "",
-			Usage: "输入操作的类型[sync 远程同步数据到本地;transform 将文件数据处理后加入到缓存;save 将数据存入数据库中;query 查询(输入doc的前缀值，可查询doc目录;如果查询具体文件，请使用key参数)]",
+			Usage: "输入操作的类型[sync 远程同步数据到本地;render 将文件数据处理后加入到缓存;save 将数据存入数据库中;query 查询(输入doc的前缀值，可查询doc目录;如果查询具体文件，请使用key参数)]",
 		},
 		cli.StringFlag{
 			Name:  "remote",
@@ -69,8 +69,8 @@ func runDoc(c *cli.Context) {
 	switch action {
 	case "sync":
 		doc.Sync()
-	case "transform":
-		doc.Transform()
+	case "render":
+		doc.Render()
 	case "save":
 		doc.Save()
 	case "query":
