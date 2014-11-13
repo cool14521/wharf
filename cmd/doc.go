@@ -18,7 +18,7 @@ var CmdDoc = cli.Command{
 		cli.StringFlag{
 			Name:  "action",
 			Value: "",
-			Usage: "输入操作的类型[handle 处理;query 查询(输入doc的前缀值，可查询doc目录;如果查询具体文件，请使用key参数)]",
+			Usage: "输入操作的类型[sync 远程同步数据到本地;transform 将文件数据处理后加入到缓存;save 将数据存入数据库中;query 查询(输入doc的前缀值，可查询doc目录;如果查询具体文件，请使用key参数)]",
 		},
 		cli.StringFlag{
 			Name:  "remote",
@@ -59,26 +59,21 @@ func runDoc(c *cli.Context) {
 		fmt.Println(errors.New("文档操作请输入action的值"))
 		return
 	}
+	doc := &markdown.Doc{
+		Remote:  strings.TrimSpace(c.String("remote")),
+		Local:   strings.TrimSpace(c.String("local")),
+		Prefix:  strings.TrimSpace(c.String("prefix")),
+		Storage: strings.TrimSpace(c.String("storage")),
+		Db:      c.Int("db"),
+	}
 	switch action {
-	case "handle":
-		if len(strings.TrimSpace(c.String("remote"))) == 0 || len(strings.TrimSpace(c.String("local"))) == 0 || len(strings.TrimSpace(c.String("prefix"))) == 0 {
-			fmt.Println(errors.New("handle必须输入remote、local、prefix的值"))
-			break
-		}
-		doc := &markdown.Doc{
-			Remote:  strings.TrimSpace(c.String("remote")),
-			Local:   strings.TrimSpace(c.String("local")),
-			Prefix:  strings.TrimSpace(c.String("prefix")),
-			Storage: strings.TrimSpace(c.String("storage")),
-			Db:      c.Int("db"),
-		}
-		doc.Run()
+	case "sync":
+		doc.Sync()
+	case "transform":
+		doc.Transform()
+	case "save":
+		doc.Save()
 	case "query":
-		doc := &markdown.Doc{
-			Prefix:  strings.TrimSpace(c.String("prefix")),
-			Storage: strings.TrimSpace(c.String("storage")),
-			Db:      c.Int("db"),
-		}
 		if len(strings.TrimSpace(c.String("key"))) == 0 {
 			if len(strings.TrimSpace(c.String("prefix"))) == 0 {
 				errors.New("请输入prefix的值")

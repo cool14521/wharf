@@ -31,13 +31,13 @@ import (
 */
 
 type Doc struct {
-	Remote  string    //远程git库的地址
-	Local   string    //doc同步到本地的路径
-	Prefix  string    //doc的前缀名，和router关联，例如存入HSet(a xx.md time=20131112 12:00:00),可通过/a/xx来获取数据
-	Storage string    //doc处理后存入数据文件的路径
-	Db      int       //doc所在数据库
-	conn    *ledis.DB //操作doc的数据库连接
-	items   []*Item   //doc中的markdown文件
+	Remote  string           //远程git库的地址
+	Local   string           //doc同步到本地的路径
+	Prefix  string           //doc的前缀名，和router关联，例如存入HSet(a xx.md time=20131112 12:00:00),可通过/a/xx来获取数据
+	Storage string           //doc处理后存入数据文件的路径
+	Db      int              //doc所在数据库
+	itemMap map[string]*Item //doc中的文件集
+	conn    *ledis.DB        //操作doc的数据库连接
 }
 
 type Item struct {
@@ -51,16 +51,9 @@ type Item struct {
 	path     string //文件路径
 }
 
-//初始化doc结构体
-func (doc *Doc) init() {
-	//验证参数是否正常
-	doc.verify()
-	//初始化数据库连接
-	doc.initDB()
-}
-
 //远程同步的到本地的操作
-func (doc *Doc) sync() {
+func (doc *Doc) Sync() {
+	doc.verify("sync")
 	fmt.Println("....开始同步git数据")
 	//判断本地路径是否存在，不存在则创建
 	if !isDirExist(doc.Local) {
@@ -87,7 +80,8 @@ func (doc *Doc) sync() {
 }
 
 //数据预处理
-func (doc *Doc) handle() map[string]*Item {
+func (doc *Doc) Transform() {
+	doc.verify("transform")
 	//生成item集合赋值给doc对象
 	//1 读取文件数据
 	//2 处理文件数据（生成完成Item数据）
@@ -115,7 +109,6 @@ func (doc *Doc) handle() map[string]*Item {
 	}
 	handleEnd := make(chan bool)
 	itemChans := make(chan string, len(fileMap))
-	items := make([]*Item, len(fileMap))
 	go func() {
 		var i int
 		for {
@@ -131,19 +124,17 @@ func (doc *Doc) handle() map[string]*Item {
 	}()
 
 	for _, item := range fileMap {
-		go func(item *Item, itemArr []*Item, itemChan chan string) {
+		go func(item *Item, itemChan chan string) {
 			msg := item.generate()
-			itemArr = append(itemArr, item)
 			itemChan <- msg
-		}(item, items, itemChans)
+		}(item, itemChans)
 	}
 
 	finish := <-handleEnd
 	if finish {
-		doc.items = items
+		doc.itemMap = fileMap
 	}
-	fmt.Println("....文件预处理全部完成,开始执行数据库")
-	return fileMap
+	fmt.Println("....文件预处理全部完成")
 }
 
 //数据查询
@@ -177,27 +168,64 @@ func (doc *Doc) Query(isDict bool, key string) {
 	}
 }
 
-//用户执行操作
-func (doc *Doc) Run() {
-	doc.init()
-	doc.sync()
-	fileMap := doc.handle()
-	delete_count := doc.delete(fileMap)
-	insertOrUpdate_count := doc.insertOrUpdate()
-	fmt.Println("....本次删除数据", delete_count, "条，新增或更新数据", insertOrUpdate_count, "条")
+func (doc *Doc) Save() {
+	doc.verify("save")
+	doc.initDB()
+	//清除掉数据库中多余的部分
+	var i int //记录删除记录数
+	fileNames, _ := doc.conn.HKeys([]byte(doc.Prefix))
+	for _, fileName := range fileNames {
+		if _, found := doc.itemMap[string(fileName)]; !found {
+			//在目录中没有查到该文件，则进行删除
+			doc.conn.HDel([]byte(doc.Prefix), []byte(string(fileName)))
+			doc.conn.HDel([]byte(string(fileName)), []byte("title"), []byte("desc"), []byte("keywords"), []byte("content"), []byte("tags"))
+			i++
+		}
+	}
+	fmt.Println("....已经删除数据库中多余数据")
+	//插入或更新数据库
+	for _, item := range doc.itemMap {
+		doc.conn.HSet([]byte(doc.Prefix), []byte(item.key), []byte(item.title+"|"+item.updated))
+		//插入文章内容
+		doc.conn.HSet([]byte(item.key), []byte("title"), []byte(item.title))
+		doc.conn.HSet([]byte(item.key), []byte("desc"), []byte(item.desc))
+		doc.conn.HSet([]byte(item.key), []byte("keywords"), []byte(item.keywords))
+		doc.conn.HSet([]byte(item.key), []byte("content"), []byte(item.content))
+		doc.conn.HSet([]byte(item.key), []byte("tags"), []byte(item.tags))
+	}
+	fmt.Println("....插入或更新数据成功")
 }
 
-func (doc *Doc) verify() {
-	if len(strings.TrimSpace(doc.Remote)) == 0 || len(strings.TrimSpace(doc.Local)) == 0 || len(strings.TrimSpace(doc.Prefix)) == 0 {
-		panic("....markdown git地址初始化异常")
+func (doc *Doc) verify(action string) {
+	switch action {
+	case "sync":
+		if len(strings.TrimSpace(doc.Remote)) == 0 || len(strings.TrimSpace(doc.Local)) == 0 {
+			panic("....markdown git地址初始化异常,请赋值remote和local")
+		}
+	case "transform":
+		if !isDirExist(doc.Local) {
+			panic("....本地路径不存在,请执行sync操作")
+		} else {
+			if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
+				panic("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
+			}
+		}
+	case "save":
+		if len(doc.itemMap) == 0 || len(strings.TrimSpace(doc.Prefix)) == 0 {
+			panic("....请确认是否值之前执行了sync、transform的操作")
+		} else {
+			if len(strings.TrimSpace(doc.Storage)) == 0 {
+				panic("....请输入数据文件的存储路径")
+			}
+		}
+	case "query":
+		if len(strings.TrimSpace(doc.Storage)) == 0 {
+			panic("....请输入数据文件的存储路径")
+		}
 	}
 }
 
 func (doc *Doc) initDB() {
-	//验证存储路径和数据库是否合法
-	if len(strings.TrimSpace(doc.Storage)) == 0 {
-		panic("...Storage的值非法")
-	}
 	//如果存储路径不存在，则创建路径
 	if !isDirExist(doc.Storage) {
 		createDir(doc.Storage)
@@ -296,56 +324,6 @@ func markdown2html(content string) string {
 	output := github_flavored_markdown.Markdown([]byte(content))
 	body := template.HTML(output)
 	return (fmt.Sprint(body))
-}
-
-func (doc *Doc) delete(fileMap map[string]*Item) int {
-	var i int //记录删除记录数
-	fileNames, _ := doc.conn.HKeys([]byte(doc.Prefix))
-	for _, fileName := range fileNames {
-		if _, found := fileMap[string(fileName)]; !found {
-			//在目录中没有查到该文件，则进行删除
-			doc.conn.HDel([]byte(doc.Prefix), []byte(string(fileName)))
-			doc.conn.HDel([]byte(string(fileName)), []byte("title"), []byte("desc"), []byte("keywords"), []byte("content"), []byte("tags"))
-			i++
-		}
-	}
-	return i
-}
-
-func (doc *Doc) insertOrUpdate() int {
-	end := make(chan bool)
-	count := make(chan bool, len(doc.items))
-
-	go func() {
-		var i int
-		for {
-			select {
-			case <-count:
-				i++
-			}
-			if i == len(doc.items) {
-				end <- true
-			}
-		}
-	}()
-
-	for _, item := range doc.items {
-		go func(item *Item, itemChan chan bool) {
-			doc.conn.HSet([]byte(doc.Prefix), []byte(item.key), []byte(item.title+"|"+item.updated))
-			//插入文章内容
-			doc.conn.HSet([]byte(item.key), []byte("title"), []byte(item.title))
-			doc.conn.HSet([]byte(item.key), []byte("desc"), []byte(item.desc))
-			doc.conn.HSet([]byte(item.key), []byte("keywords"), []byte(item.keywords))
-			doc.conn.HSet([]byte(item.key), []byte("content"), []byte(item.content))
-			doc.conn.HSet([]byte(item.key), []byte("tags"), []byte(item.tags))
-			itemChan <- true
-		}(item, count)
-	}
-	finish := <-end
-	if finish {
-		fmt.Println("....插入或更新数据成功")
-	}
-	return len(doc.items)
 }
 
 func repoExist(namespace, path string) bool {
