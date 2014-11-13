@@ -106,47 +106,23 @@ func (doc *Doc) Render() {
 		item.updated = timeString
 		item.path = fmt.Sprint(doc.Local, "/", file.Name())
 		item.key = strings.Split(file.Name(), ".")[0]
+		item.generate()
 		fileMap[item.key] = item
 	}
-	handleEnd := make(chan bool)
-	itemChans := make(chan string, len(fileMap))
-	go func() {
-		var i int
-		for {
-			select {
-			case msg := <-itemChans:
-				fmt.Println(msg)
-				i++
-			}
-			if i == len(fileMap) {
-				handleEnd <- true
-			}
-		}
-	}()
 
-	for _, item := range fileMap {
-		go func(item *Item, itemChan chan string) {
-			msg := item.generate()
-			itemChan <- msg
-		}(item, itemChans)
+	//将fileMap存入到.render的文件中
+	bytes, _ := json.Marshal(fileMap)
+	if _, err := os.Stat(".render"); err == nil {
+		os.Remove(".render")
 	}
-
-	finish := <-handleEnd
-	if finish {
-		//将fileMap存入到.render的文件中
-		bytes, _ := json.Marshal(fileMap)
-		if _, err := os.Stat(".render"); err == nil {
-			os.Remove(".render")
-		}
-		f, err := os.OpenFile(".render", os.O_CREATE|os.O_RDWR, 0660)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-		w := bufio.NewWriter(f)
-		w.Write(bytes)
-		w.Flush()
+	f, err := os.OpenFile(".render", os.O_CREATE|os.O_RDWR, 0660)
+	if err != nil {
+		panic(err)
 	}
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	w.Write(bytes)
+	w.Flush()
 	fmt.Println("....文件预处理全部完成")
 }
 
@@ -300,10 +276,10 @@ func createDir(path string) {
 	syscall.Umask(oldMask)
 }
 
-func (item *Item) generate() string {
+func (item *Item) generate() {
 	f, err := os.Open(item.path)
 	if err != nil {
-		return fmt.Sprint(item.path, ";文件预处理失败;err=", err)
+		fmt.Sprint(item.path, ";文件预处理失败;err=", err)
 	}
 	defer f.Close()
 	buff := bufio.NewReader(f)
@@ -341,7 +317,7 @@ func (item *Item) generate() string {
 	item.tags = tags
 	item.desc = desc
 	item.content = markdown2html(content)
-	return fmt.Sprint("....", item.path, ";文件预处理完成;success")
+	fmt.Sprint("....", item.path, ";文件预处理完成;success")
 }
 
 func markdown2html(content string) string {

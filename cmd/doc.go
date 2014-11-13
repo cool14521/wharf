@@ -3,6 +3,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/codegangsta/cli"
@@ -68,12 +70,16 @@ func runDoc(c *cli.Context) {
 	}
 	switch action {
 	case "sync":
+		verify(doc, "sync")
 		doc.Sync()
 	case "render":
+		verify(doc, "render")
 		doc.Render()
 	case "save":
+		verify(doc, "save")
 		doc.Save()
 	case "query":
+		verify(doc, "query")
 		if len(strings.TrimSpace(c.String("key"))) == 0 {
 			if len(strings.TrimSpace(c.String("prefix"))) == 0 {
 				errors.New("请输入prefix的值")
@@ -85,5 +91,34 @@ func runDoc(c *cli.Context) {
 		}
 	default:
 		fmt.Println(errors.New("输入的action参数不存在"))
+	}
+}
+
+func verify(doc *markdown.Doc, action string) {
+	switch action {
+	case "sync":
+		if len(strings.TrimSpace(doc.Remote)) == 0 || len(strings.TrimSpace(doc.Local)) == 0 {
+			panic("....markdown git地址初始化异常,请赋值remote和local")
+		}
+	case "render":
+		if len(strings.TrimSpace(doc.Local)) == 0 {
+			panic("....请输入local的值")
+		} else {
+			if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
+				panic("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
+			}
+		}
+	case "save":
+		if _, err := os.Stat(".render"); err != nil || len(strings.TrimSpace(doc.Prefix)) == 0 {
+			panic("....请确认是否值之前执行了sync、render的操作")
+		} else {
+			if len(strings.TrimSpace(doc.Storage)) == 0 {
+				panic("....请输入数据文件的存储路径")
+			}
+		}
+	case "query":
+		if len(strings.TrimSpace(doc.Storage)) == 0 {
+			panic("....请输入数据文件的存储路径")
+		}
 	}
 }
