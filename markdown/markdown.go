@@ -55,7 +55,7 @@ type Item struct {
 
 //远程同步的到本地的操作
 func (doc *Doc) Sync() error {
-	if err := doc.verify("sync"); err != nil {
+	if err := doc.validate("sync"); err != nil {
 		return err
 	}
 	fmt.Println("....开始同步git数据")
@@ -89,7 +89,7 @@ func (doc *Doc) Sync() error {
 
 //数据预处理
 func (doc *Doc) Render() error {
-	if err := doc.verify("render"); err != nil {
+	if err := doc.validate("render"); err != nil {
 		return err
 	}
 	//生成item集合赋值给doc对象
@@ -136,7 +136,7 @@ func (doc *Doc) Render() error {
 //数据查询
 func (doc *Doc) Query(isDict bool, key string) error {
 	var err error
-	if err = doc.verify("query"); err != nil {
+	if err = doc.validate("query"); err != nil {
 		return err
 	}
 	doc.initDB()
@@ -171,7 +171,7 @@ func (doc *Doc) Query(isDict bool, key string) error {
 
 func (doc *Doc) Save() error {
 	var err error
-	if err = doc.verify("save"); err != nil {
+	if err = doc.validate("save"); err != nil {
 		return err
 	} else if err = doc.load(); err != nil {
 		return err
@@ -201,6 +201,7 @@ func (doc *Doc) Save() error {
 		doc.conn.HSet([]byte(item.key), []byte("tags"), []byte(item.tags))
 	}
 	fmt.Println("....插入或更新数据成功")
+	os.Remove(".render")
 	return nil
 }
 
@@ -215,32 +216,30 @@ func (doc *Doc) load() error {
 	return nil
 }
 
-func (doc *Doc) verify(action string) error {
-	var err error
+func (doc *Doc) validate(action string) error {
 	switch action {
 	case "sync":
 		if len(strings.TrimSpace(doc.Remote)) == 0 || len(strings.TrimSpace(doc.Local)) == 0 {
-			err = errors.New("....markdown git地址初始化异常,请赋值remote和local")
+			return errors.New("....markdown git地址初始化异常,请赋值remote和local")
 		}
 	case "render":
 		if !isDirExist(doc.Local) {
-			err = errors.New("....本地路径不存在,请执行sync操作")
-			break
+			return errors.New("....本地路径不存在,请执行sync操作")
 		} else if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
-			err = errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
+			return errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
 		}
 	case "save":
 		if _, err := os.Stat(".render"); err != nil || len(strings.TrimSpace(doc.Prefix)) == 0 {
-			err = errors.New("....请确认是否值之前执行了sync、render的操作")
+			return errors.New("....请确认是否值之前执行了sync、render的操作")
 		} else if len(strings.TrimSpace(doc.Storage)) == 0 {
-			err = errors.New("....请输入数据文件的存储路径")
+			return errors.New("....请输入数据文件的存储路径")
 		}
 	case "query":
 		if len(strings.TrimSpace(doc.Storage)) == 0 {
-			err = errors.New("....请输入数据文件的存储路径")
+			return errors.New("....请输入数据文件的存储路径")
 		}
 	}
-	return err
+	return nil
 }
 
 func (doc *Doc) initDB() error {

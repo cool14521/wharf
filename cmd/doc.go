@@ -42,7 +42,7 @@ func runDoc(c *cli.Context) {
 	}
 	switch action {
 	case "sync":
-		if err := verify(doc, "sync"); err != nil {
+		if err := validate(doc, "sync"); err != nil {
 			fmt.Println(err)
 			return
 		} else if err := doc.Sync(); err != nil {
@@ -50,7 +50,7 @@ func runDoc(c *cli.Context) {
 			return
 		}
 	case "render":
-		if err := verify(doc, "render"); err != nil {
+		if err := validate(doc, "render"); err != nil {
 			fmt.Println(err)
 			return
 		} else if err := doc.Render(); err != nil {
@@ -58,7 +58,7 @@ func runDoc(c *cli.Context) {
 			return
 		}
 	case "save":
-		if err := verify(doc, "save"); err != nil {
+		if err := validate(doc, "save"); err != nil {
 			fmt.Println(err)
 			return
 		} else if err := doc.Save(); err != nil {
@@ -66,7 +66,7 @@ func runDoc(c *cli.Context) {
 			return
 		}
 	case "query":
-		if err := verify(doc, "query"); err != nil {
+		if err := validate(doc, "query"); err != nil {
 			fmt.Println(err)
 			return
 		}
@@ -85,35 +85,30 @@ func runDoc(c *cli.Context) {
 	}
 }
 
-func verify(doc *markdown.Doc, action string) error {
-	var err error
+func validate(doc *markdown.Doc, action string) error {
 	switch action {
 	case "sync":
 		if len(strings.TrimSpace(doc.Remote)) == 0 || len(strings.TrimSpace(doc.Local)) == 0 {
-			err = errors.New("....markdown git地址初始化异常,请赋值remote和local")
+			return errors.New("....markdown git地址初始化异常,请赋值remote和local")
 		}
 	case "render":
 		if len(strings.TrimSpace(doc.Local)) == 0 {
-			err = errors.New("....请输入local的值")
-			break
-		} else {
-			if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
-				err = errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
-			}
+			return errors.New("....请输入local的值")
+		} else if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
+			return errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
 		}
 	case "save":
 		if _, err := os.Stat(".render"); err != nil || len(strings.TrimSpace(doc.Prefix)) == 0 {
-			err = errors.New("....请确认是否值之前执行了sync、render的操作")
-			break
+			return errors.New("....请确认是否值之前执行了sync、render的操作;检查prefix的值")
 		} else {
 			if len(strings.TrimSpace(doc.Storage)) == 0 {
-				err = errors.New("....请输入数据文件的存储路径")
+				return errors.New("....请输入数据文件的存储路径")
 			}
 		}
 	case "query":
 		if len(strings.TrimSpace(doc.Storage)) == 0 {
-			err = errors.New("....请输入数据文件的存储路径")
+			return errors.New("....请输入数据文件的存储路径")
 		}
 	}
-	return err
+	return nil
 }
