@@ -54,15 +54,17 @@ type Item struct {
 }
 
 //远程同步的到本地的操作
-func (doc *Doc) Sync() {
+func (doc *Doc) Sync() error {
 	if err := doc.verify("sync"); err != nil {
-		panic(err)
+		return err
 	}
 	fmt.Println("....开始同步git数据")
 	//判断本地路径是否存在，不存在则创建
 	if !isDirExist(doc.Local) {
 		createDir(doc.Local)
-		doc.clone()
+		if err := doc.clone(); err != nil {
+			return err
+		}
 		varlength := len(strings.Split(doc.Remote, "/"))
 		//重新复制本地路径local的值，定位到git对应的目录下
 		doc.Local = doc.Local + "/" + strings.Split(strings.Split(doc.Remote, "/")[varlength-1], ".")[0]
@@ -73,20 +75,22 @@ func (doc *Doc) Sync() {
 		//库已经存在
 		if repoExist(githubRepo, doc.Local) {
 			doc.Local = doc.Local + "/" + strings.Split(strings.Split(doc.Remote, "/")[varlength-1], ".")[0]
-			doc.pull()
-		} else {
-			//库不存在
-			doc.clone()
-			doc.Local = doc.Local + "/" + strings.Split(strings.Split(doc.Remote, "/")[varlength-1], ".")[0]
+			if err := doc.pull(); err != nil {
+				return err
+			}
+		} else if err := doc.clone(); err != nil {
+			return err
 		}
+		doc.Local = doc.Local + "/" + strings.Split(strings.Split(doc.Remote, "/")[varlength-1], ".")[0]
 	}
 	fmt.Println("....仓库[", doc.Remote, "]同步本地完成")
+	return nil
 }
 
 //数据预处理
-func (doc *Doc) Render() {
+func (doc *Doc) Render() error {
 	if err := doc.verify("render"); err != nil {
-		panic(err)
+		return err
 	}
 	//生成item集合赋值给doc对象
 	//1 读取文件数据
@@ -111,7 +115,10 @@ func (doc *Doc) Render() {
 		item.updated = timeString
 		item.path = fmt.Sprint(doc.Local, "/", file.Name())
 		item.key = strings.Split(file.Name(), ".")[0]
-		item.generate()
+		if err := item.generate(); err != nil {
+			fmt.Println(err)
+			continue
+		}
 		fileMap[item.key] = item
 	}
 
@@ -119,29 +126,25 @@ func (doc *Doc) Render() {
 	bytes, _ := json.Marshal(fileMap)
 	if _, err := os.Stat(".render"); err == nil {
 		os.Remove(".render")
+	} else if err := ioutil.WriteFile(".render", bytes, 0660); err != nil {
+		return err
 	}
-	f, err := os.OpenFile(".render", os.O_CREATE|os.O_RDWR, 0660)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	w.Write(bytes)
-	w.Flush()
 	fmt.Println("....文件预处理全部完成")
+	return nil
 }
 
 //数据查询
-func (doc *Doc) Query(isDict bool, key string) {
-	if err := doc.verify("query"); err != nil {
-		panic(err)
+func (doc *Doc) Query(isDict bool, key string) error {
+	var err error
+	if err = doc.verify("query"); err != nil {
+		return err
 	}
 	doc.initDB()
 	switch isDict {
 	case true:
 		//展示doc的目录数据
 		if len(strings.TrimSpace(doc.Prefix)) == 0 {
-			fmt.Println("...请输入查询目录doc的前缀值")
+			err = errors.New("...请输入查询目录doc的前缀值")
 			break
 		}
 		fileNames, _ := doc.conn.HKeys([]byte(doc.Prefix))
@@ -154,7 +157,7 @@ func (doc *Doc) Query(isDict bool, key string) {
 		}
 	case false:
 		if len(strings.TrimSpace(key)) == 0 {
-			fmt.Println("...请输入查询markdown文件的key值")
+			err = errors.New("...请输入查询markdown文件的key值")
 			break
 		}
 		attrs, _ := doc.conn.HKeys([]byte(key))
@@ -163,14 +166,18 @@ func (doc *Doc) Query(isDict bool, key string) {
 			fmt.Printf("%s\t%s\t%s\n", key, string(attr), string(data))
 		}
 	}
+	return err
 }
 
-func (doc *Doc) Save() {
-	if err := doc.verify("save"); err != nil {
-		panic(err)
+func (doc *Doc) Save() error {
+	var err error
+	if err = doc.verify("save"); err != nil {
+		return err
+	} else if err = doc.load(); err != nil {
+		return err
+	} else if err = doc.initDB(); err != nil {
+		return err
 	}
-	doc.load()
-	doc.initDB()
 	//清除掉数据库中多余的部分
 	var i int //记录删除记录数
 	fileNames, _ := doc.conn.HKeys([]byte(doc.Prefix))
@@ -194,16 +201,18 @@ func (doc *Doc) Save() {
 		doc.conn.HSet([]byte(item.key), []byte("tags"), []byte(item.tags))
 	}
 	fmt.Println("....插入或更新数据成功")
+	return nil
 }
 
-func (doc *Doc) load() {
+func (doc *Doc) load() error {
 	//加载.render文件，对doc.itemmap赋值
 	bytes, _ := ioutil.ReadFile(".render")
 	err := json.Unmarshal(bytes, &doc.itemMap)
 	if err != nil {
-		panic("....加载缓存文件失败，请重新执行render操作")
+		return errors.New("....加载缓存文件失败，请重新执行render操作")
 	}
 	fmt.Println("....加载缓存文件成功，开始进行数据库操作")
+	return nil
 }
 
 func (doc *Doc) verify(action string) error {
@@ -217,18 +226,14 @@ func (doc *Doc) verify(action string) error {
 		if !isDirExist(doc.Local) {
 			err = errors.New("....本地路径不存在,请执行sync操作")
 			break
-		} else {
-			if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
-				err = errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
-			}
+		} else if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
+			err = errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
 		}
 	case "save":
 		if _, err := os.Stat(".render"); err != nil || len(strings.TrimSpace(doc.Prefix)) == 0 {
 			err = errors.New("....请确认是否值之前执行了sync、render的操作")
-		} else {
-			if len(strings.TrimSpace(doc.Storage)) == 0 {
-				err = errors.New("....请输入数据文件的存储路径")
-			}
+		} else if len(strings.TrimSpace(doc.Storage)) == 0 {
+			err = errors.New("....请输入数据文件的存储路径")
 		}
 	case "query":
 		if len(strings.TrimSpace(doc.Storage)) == 0 {
@@ -238,7 +243,7 @@ func (doc *Doc) verify(action string) error {
 	return err
 }
 
-func (doc *Doc) initDB() {
+func (doc *Doc) initDB() error {
 	//如果存储路径不存在，则创建路径
 	if !isDirExist(doc.Storage) {
 		createDir(doc.Storage)
@@ -249,29 +254,32 @@ func (doc *Doc) initDB() {
 	nowLedis, err := ledis.Open(cfg)
 	doc.conn, err = nowLedis.Select(doc.Db)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	fmt.Println("....初始化数据库成功")
+	return nil
 }
 
-func (doc *Doc) clone() {
+func (doc *Doc) clone() error {
 	fmt.Println("....开始进行克隆操作", "remote=", doc.Remote, ";local=", doc.Local)
 	cmd := exec.Command("git", "clone", doc.Remote)
 	cmd.Dir = doc.Local
 	_, err := cmd.Output()
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
-func (doc *Doc) pull() {
+func (doc *Doc) pull() error {
 	fmt.Println("....开始进行pull操作local=", doc.Local)
 	cmd := exec.Command("git", "pull")
 	cmd.Dir = doc.Local
 	_, err := cmd.Output()
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 func isDirExist(path string) bool {
@@ -289,48 +297,41 @@ func createDir(path string) {
 	syscall.Umask(oldMask)
 }
 
-func (item *Item) generate() {
+func (item *Item) generate() error {
 	f, err := os.Open(item.path)
 	if err != nil {
-		fmt.Sprint(item.path, ";文件预处理失败;err=", err)
+		return errors.New(fmt.Sprint(item.path, ";文件预处理失败;err=", err))
 	}
 	defer f.Close()
 	buff := bufio.NewReader(f)
-	content := ""
-	title := ""
-	desc := ""
-	tags := ""
-	keywords := ""
+
 	for {
 		line, err := buff.ReadString('\n')
 		if err != nil || io.EOF == err {
 			break
 		}
 		if strings.HasPrefix(line, "@title:") {
-			title = strings.TrimRight(line, "\n")
-			title = strings.Replace(title, "@title", "", 1)
+			item.title = strings.TrimRight(line, "\n")
+			item.title = strings.Replace(item.title, "@title", "", 1)
 			continue
 		} else if strings.HasPrefix(line, "@keywords:") {
-			keywords = strings.TrimRight(line, "\n")
-			keywords = strings.Replace(title, "@keywords:", "", 1)
+			item.keywords = strings.TrimRight(line, "\n")
+			item.keywords = strings.Replace(item.keywords, "@keywords:", "", 1)
 			continue
 		} else if strings.HasPrefix(line, "@desc:") {
-			desc = strings.TrimRight(line, "\n")
-			desc = strings.Replace(title, "@desc:", "", 1)
+			item.desc = strings.TrimRight(line, "\n")
+			item.desc = strings.Replace(item.desc, "@desc:", "", 1)
 			continue
 		} else if strings.HasPrefix(line, "@tags:") {
-			tags = strings.TrimRight(line, "\n")
-			tags = strings.Replace(title, "@tags:", "", 1)
+			item.tags = strings.TrimRight(line, "\n")
+			item.tags = strings.Replace(item.tags, "@tags:", "", 1)
 			continue
 		}
-		content = content + line
+		item.content = item.content + line
 	}
-	item.title = title
-	item.keywords = keywords
-	item.tags = tags
-	item.desc = desc
-	item.content = markdown2html(content)
-	fmt.Sprint("....", item.path, ";文件预处理完成;success")
+	item.content = markdown2html(item.content)
+	fmt.Println("....", item.path, ";文件预处理完成;success")
+	return nil
 }
 
 func markdown2html(content string) string {
