@@ -3,6 +3,7 @@ package markdown
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -54,7 +55,9 @@ type Item struct {
 
 //远程同步的到本地的操作
 func (doc *Doc) Sync() {
-	doc.verify("sync")
+	if err := doc.verify("sync"); err != nil {
+		panic(err)
+	}
 	fmt.Println("....开始同步git数据")
 	//判断本地路径是否存在，不存在则创建
 	if !isDirExist(doc.Local) {
@@ -82,7 +85,9 @@ func (doc *Doc) Sync() {
 
 //数据预处理
 func (doc *Doc) Render() {
-	doc.verify("render")
+	if err := doc.verify("render"); err != nil {
+		panic(err)
+	}
 	//生成item集合赋值给doc对象
 	//1 读取文件数据
 	//2 处理文件数据（生成完成Item数据）
@@ -128,6 +133,9 @@ func (doc *Doc) Render() {
 
 //数据查询
 func (doc *Doc) Query(isDict bool, key string) {
+	if err := doc.verify("query"); err != nil {
+		panic(err)
+	}
 	doc.initDB()
 	switch isDict {
 	case true:
@@ -158,7 +166,9 @@ func (doc *Doc) Query(isDict bool, key string) {
 }
 
 func (doc *Doc) Save() {
-	doc.verify("save")
+	if err := doc.verify("save"); err != nil {
+		panic(err)
+	}
 	doc.load()
 	doc.initDB()
 	//清除掉数据库中多余的部分
@@ -196,33 +206,36 @@ func (doc *Doc) load() {
 	fmt.Println("....加载缓存文件成功，开始进行数据库操作")
 }
 
-func (doc *Doc) verify(action string) {
+func (doc *Doc) verify(action string) error {
+	var err error
 	switch action {
 	case "sync":
 		if len(strings.TrimSpace(doc.Remote)) == 0 || len(strings.TrimSpace(doc.Local)) == 0 {
-			panic("....markdown git地址初始化异常,请赋值remote和local")
+			err = errors.New("....markdown git地址初始化异常,请赋值remote和local")
 		}
 	case "render":
 		if !isDirExist(doc.Local) {
-			panic("....本地路径不存在,请执行sync操作")
+			err = errors.New("....本地路径不存在,请执行sync操作")
+			break
 		} else {
 			if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
-				panic("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
+				err = errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
 			}
 		}
 	case "save":
 		if _, err := os.Stat(".render"); err != nil || len(strings.TrimSpace(doc.Prefix)) == 0 {
-			panic("....请确认是否值之前执行了sync、render的操作")
+			err = errors.New("....请确认是否值之前执行了sync、render的操作")
 		} else {
 			if len(strings.TrimSpace(doc.Storage)) == 0 {
-				panic("....请输入数据文件的存储路径")
+				err = errors.New("....请输入数据文件的存储路径")
 			}
 		}
 	case "query":
 		if len(strings.TrimSpace(doc.Storage)) == 0 {
-			panic("....请输入数据文件的存储路径")
+			err = errors.New("....请输入数据文件的存储路径")
 		}
 	}
+	return err
 }
 
 func (doc *Doc) initDB() {

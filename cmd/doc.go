@@ -70,16 +70,24 @@ func runDoc(c *cli.Context) {
 	}
 	switch action {
 	case "sync":
-		verify(doc, "sync")
+		if err := verify(doc, "sync"); err != nil {
+			panic(err)
+		}
 		doc.Sync()
 	case "render":
-		verify(doc, "render")
+		if err := verify(doc, "render"); err != nil {
+			panic(err)
+		}
 		doc.Render()
 	case "save":
-		verify(doc, "save")
+		if err := verify(doc, "save"); err != nil {
+			panic(err)
+		}
 		doc.Save()
 	case "query":
-		verify(doc, "query")
+		if err := verify(doc, "query"); err != nil {
+			panic(err)
+		}
 		if len(strings.TrimSpace(c.String("key"))) == 0 {
 			if len(strings.TrimSpace(c.String("prefix"))) == 0 {
 				errors.New("请输入prefix的值")
@@ -94,31 +102,35 @@ func runDoc(c *cli.Context) {
 	}
 }
 
-func verify(doc *markdown.Doc, action string) {
+func verify(doc *markdown.Doc, action string) error {
+	var err error
 	switch action {
 	case "sync":
 		if len(strings.TrimSpace(doc.Remote)) == 0 || len(strings.TrimSpace(doc.Local)) == 0 {
-			panic("....markdown git地址初始化异常,请赋值remote和local")
+			err = errors.New("....markdown git地址初始化异常,请赋值remote和local")
 		}
 	case "render":
 		if len(strings.TrimSpace(doc.Local)) == 0 {
-			panic("....请输入local的值")
+			err = errors.New("....请输入local的值")
+			break
 		} else {
 			if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
-				panic("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
+				err = errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
 			}
 		}
 	case "save":
 		if _, err := os.Stat(".render"); err != nil || len(strings.TrimSpace(doc.Prefix)) == 0 {
-			panic("....请确认是否值之前执行了sync、render的操作")
+			err = errors.New("....请确认是否值之前执行了sync、render的操作")
+			break
 		} else {
 			if len(strings.TrimSpace(doc.Storage)) == 0 {
-				panic("....请输入数据文件的存储路径")
+				err = errors.New("....请输入数据文件的存储路径")
 			}
 		}
 	case "query":
 		if len(strings.TrimSpace(doc.Storage)) == 0 {
-			panic("....请输入数据文件的存储路径")
+			err = errors.New("....请输入数据文件的存储路径")
 		}
 	}
+	return err
 }
