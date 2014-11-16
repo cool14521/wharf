@@ -8,9 +8,9 @@
 'use strict';
 
 //Auth Page Module
-angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies'])
-//
-.controller('SigninCtrl', ['$scope', '$cookies', '$http', function ($scope, $cookies, $http) {
+angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
+//Controllers
+.controller('SigninCtrl', ['$scope', '$cookies', '$http', 'growl', function ($scope, $cookies, $http, growl) {
   $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
 
   $scope.submitting = false;
@@ -19,15 +19,14 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies'])
     if($scope.loginForm.$valid) {
       $scope.submitting = true;
 
-      console.log($scope.user);
-
       $http.post('/w1/signin', $scope.user)
         .success(function(data, status, headers, config) {
           $scope.submitting = false;
-          console.log(data);
+           growl.info(data.message);
         })
         .error(function(data, status, headers, config) {
           $scope.submitting = false;
+          growl.error(data.message);
         });
     }
   }

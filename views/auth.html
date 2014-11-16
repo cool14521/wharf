@@ -28,30 +28,34 @@
     
     <link rel="stylesheet" href="static/bower_components/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/bower_components/font-awesome/css/font-awesome.min.css">    
+    <link rel="stylesheet" href="static/bower_components/angular-growl-v2/build/angular-growl.min.css">    
     <link rel="stylesheet" href="static/css/bucket.css">    
     <link rel="stylesheet" href="static/css/auth/auth.css">    
   </head>
   <body ng-app="auth">
     <img src="static/images/auth/bg.jpg" alt="Auth Full Background" class="full-bg animation-pulseSlow">
 
-    <!-- Login Container  -->
+    <!-- Auth Container  -->
     <div id="login-container" class="animation-fadeIn">
 
-      <!-- Login Title -->
+      <!-- Auth Title -->
       <div class="login-title text-center">
         <img src="static/images/logo-white.png" alt="Docker Bucket" class="title-logo">
       </div>
-      <!-- END Login Title -->
+      <!-- END Auth Title -->
 
       <div class="block push-bit" ng-view></div>
-
+      <div growl></div>
+      
     </div>
 
     <script src="static/bower_components/angular/angular.min.js"></script>
     <script src="static/bower_components/angular-route/angular-route.min.js"></script>
     <script src="static/bower_components/angular-messages/angular-messages.min.js"></script>
     <script src="static/bower_components/angular-cookies/angular-cookies.min.js"></script>
-    <script src="static/bower_components/angular-animate/angular-animate.min.js"></script>
+    <script src="static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="static/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
+    <script src="static/bower_components/angular-growl-v2/build/angular-growl.min.js"></script>
     
     <script src="static/javascript/auth/auth.js"></script>
     
