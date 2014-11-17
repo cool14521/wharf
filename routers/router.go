@@ -16,6 +16,8 @@ func init() {
 
 	web := beego.NewNamespace("/w1",
 		beego.NSRouter("/signin", &controllers.AuthWebController{}, "post:Signin"),
+		beego.NSRouter("/reset", &controllers.AuthWebController{}, "post:ResetPasswd"),
+		beego.NSRouter("/signup", &controllers.AuthWebController{}, "post:Signup"),
 	)
 
 	//CI Service API

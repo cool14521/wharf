@@ -32,17 +32,39 @@ func (this *AuthWebController) Signin() {
 		this.StopRun()
 	}
 
-	beego.Debug(fmt.Sprintf("[Web 用户] 用户登陆数据: %s", string(this.Ctx.Input.CopyBody())))
-	beego.Debug(fmt.Sprintf("[Web 用户] 用户登陆数据: %s", u["email"].(string)))
+	beego.Debug(fmt.Sprintf("[Web 用户] 用户登陆: %s", string(this.Ctx.Input.CopyBody())))
+	beego.Debug(fmt.Sprintf("[Web 用户] 用户登陆: %s", u["email"].(string)))
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"登录成功\"}"))
 }
 
 func (this *AuthWebController) ResetPasswd() {
+	var u map[string]interface{}
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
+		beego.Error(fmt.Sprintf("[API 用户] 解码用户重置密码发送的 JSON 数据失败: %s", err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码用户发送的 JSON 数据失败\"}"))
+		this.StopRun()
+	}
 
+	beego.Debug(fmt.Sprintf("[Web 用户] 用户重置密码: %s", string(this.Ctx.Input.CopyBody())))
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"发送重置密码邮件成功\"}"))
 }
 
 func (this *AuthWebController) Signup() {
+	var u map[string]interface{}
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
+		beego.Error(fmt.Sprintf("[API 用户] 解码用户注册发送的 JSON 数据失败: %s", err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码用户发送的 JSON 数据失败\"}"))
+		this.StopRun()
+	}
 
+	beego.Debug(fmt.Sprintf("[Web 用户] 用户注册: %s", string(this.Ctx.Input.CopyBody())))
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户注册成功\"}"))
 }

@@ -1,21 +1,26 @@
 <!-- Register Form -->
-<form method="post" id="form-register" class="form-horizontal form-bordered form-control-borderless">
+<form method="POST" name="signupForm" class="form-horizontal form-bordered form-control-borderless" novalidate ng-submit="submit()">
   <div class="form-group">
-    <div class="col-xs-6">
+    <div class="col-xs-12">
       <div class="input-group">
         <span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
-        <input type="text" id="register-firstname" name="register-firstname" class="form-control input-lg" placeholder="Firstname">
+        <input type="text" name="username" ng-model="user.username" class="form-control input-lg" placeholder="Username" required username-validator>
+        <div ng-messages="signupForm.username.$error" ng-if="signupForm.username.$dirty">
+          <div ng-message="required">请输入 Username</div>
+          <div ng-message="usernames">用户名由 a-z，0-9 和下划线组成，6-30 个字符组成</div>
+        </div>
       </div>
-    </div>
-    <div class="col-xs-6">
-      <input type="text" id="register-lastname" name="register-lastname" class="form-control input-lg" placeholder="Lastname">
     </div>
   </div>
   <div class="form-group">
     <div class="col-xs-12">
       <div class="input-group">
         <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
-        <input type="text" id="register-email" name="register-email" class="form-control input-lg" placeholder="Email">
+        <input type="email" name="email" ng-model="user.email" class="form-control input-lg" placeholder="Email" required email-validator>
+        <div class="error-message" ng-messages="signupForm.email.$error" ng-if="signupForm.email.$dirty">
+          <div ng-message="required">请输入 Email</div>
+          <div ng-message="emails">请输入正确的 Email 格式</div>
+        </div>
       </div>
     </div>
   </div>
@@ -23,7 +28,13 @@
     <div class="col-xs-12">
       <div class="input-group">
         <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
-        <input type="password" id="register-password" name="register-password" class="form-control input-lg" placeholder="Password">
+        <input type="password" name="password" ng-model="user.password" class="form-control input-lg" placeholder="Password" ng-minlength="5" ng-maxlength="30" required passwd-validator>
+        <div ng-messages="signupForm.password.$error" ng-if="signupForm.password.$dirty">
+          <div ng-message="required">请输入密码</div>
+          <div ng-message="minlength">密码不能少于 5 位</div>
+          <div ng-message="maxlength">密码不能多余 30 位</div>
+          <div ng-message="passwd">密码必须包含数字和字母</div>
+        </div>
       </div>
     </div>
   </div>
@@ -31,20 +42,24 @@
     <div class="col-xs-12">
       <div class="input-group">
         <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
-        <input type="password" id="register-password-verify" name="register-password-verify" class="form-control input-lg" placeholder="Verify Password">
+        <input type="password" name="password_confirm" ng-model="user.password_confirm" class="form-control input-lg" placeholder="Repeate Password" required confirm-data="user.password" confirm-validator>
+        <div ng-messages="signupForm.password_confirm.$error" ng-if="signupForm.password_confirm.$dirty">
+          <div ng-message="required">请输入密码</div>
+          <div ng-message="repeat">请输入相同的密码</div>
+        </div>
       </div>
     </div>
   </div>
   <div class="form-group form-actions">
     <div class="col-xs-6">
-      <a href="/terms" data-toggle="modal" class="register-terms">Terms</a>
+      <a href="#terms" class="register-terms">Terms</a>
       <label class="switch switch-primary" data-toggle="tooltip" title="Agree to the terms">
-        <input type="checkbox" id="register-terms" name="register-terms">
+        <input type="checkbox" ng-model="termed">
         <span></span>
       </label>
     </div>
     <div class="col-xs-6 text-right">
-      <button type="submit" class="btn btn-sm btn-success"><i class="fa fa-plus-square"></i> Register Account</button>
+      <button class="btn btn-sm btn-primary" ng-disabled="!termed"><i class="fa fa-sign-in fa-fw" ng-show="!submitting"></i><i class="fa fa-refresh fa-spin" ng-show="submitting"></i> Register Account</button>
     </div>
   </div>
   <div class="form-group">
