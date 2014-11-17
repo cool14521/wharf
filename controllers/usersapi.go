@@ -118,5 +118,5 @@ func (this *UsersAPIController) GetUsers() {
 	}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte("{\"登录成功\"}"))
+	this.Ctx.Output.Context.Output.Body([]byte("{\"状态\":\"登录成功\"}"))
 }
