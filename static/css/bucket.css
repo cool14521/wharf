@@ -89,7 +89,8 @@ body {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: #394263;
     font-size: 13px;
-    background-color: #222222;
+    /*background-color: #222222;*/
+    background-color: rgb(248, 247, 247);
 }
 
 #page-container,
