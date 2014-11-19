@@ -1,0 +1,103 @@
+.navbar-inner {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: #F5F5F5;
+}
+
+.navbar-inner .logo {
+  padding-top: 5px;
+  width: 15%;
+  height: 15%;
+  float: left;
+}
+
+.navbar-inner .search-form {
+  float: left;
+}
+
+.navbar-inner .search-form .search-input {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
+  margin-top: 8px;
+  margin-left: 15px;
+  margin-right: 18px;
+  width: 300px;
+  height: 30px;
+  color: #333;
+  cursor: auto;
+}
+
+::-webkit-input-placeholder {
+  padding-left: 2px;
+}
+
+:-moz-placeholder { /* Firefox 18- */
+  padding-left: 2px;
+}
+
+::-moz-placeholder {  /* Firefox 19+ */
+  padding-left: 2px;
+}
+
+:-ms-input-placeholder {  
+  padding-left: 2px;
+}
+
+.nav.navbar-nav-fa {
+    float: left;
+    margin: 0;
+}
+
+.nav.navbar-nav-fa > li {
+    min-height: 50px;
+    float: left;
+}
+
+.nav.navbar-nav-fa > li > a {
+    min-width: 20px;
+    padding: 3px 8px;
+    line-height: 40px;
+    text-align: center;
+    color: #394263;
+    position: relative;
+    font-size: 14px;
+}
+
+.nav.navbar-nav-fa > li > a .gi,
+.nav.navbar-nav-fa > li > a .hi,
+.nav.navbar-nav-fa > li > a .si,
+.nav.navbar-nav-fa > li > a .fi {
+    margin-top: -3px;
+}
+
+.nav.navbar-nav-fa > li > a .label-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-radius: 0;
+    font-weight: 600;
+}
+
+.navbar-fixed-bottom .nav.navbar-nav-fa > li > a .label-indicator {
+    top: auto;
+    bottom: 0;
+}
+
+.navbar-inverse .nav.navbar-nav-fa > li > a {
+    color: #ffffff;
+}
+
+.nav.navbar-nav-fa > li.open > a,
+.nav.navbar-nav-fa > li > a:hover,
+.nav.navbar-nav-fa > li > a:focus {
+    color: #1bbae1;
+    background-color: #F5F5F5;
+}
+
+.nav.navbar-nav-fa > li > i {
+    padding-top: 17px;
+    font-size: 16px;
+}
+

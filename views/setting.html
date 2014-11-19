@@ -10,7 +10,7 @@
     
     <meta name="description" content="<<<.description>>>">
     <meta name="author" content="<<<.author>>>">
-    <meta name="robots" content="noindex, nofollow">
+    <meta name="robots" content="noindex, noflilow">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0">
 
     <!-- Icons -->
@@ -34,6 +34,62 @@
   </head>
   <body ng-app="setting">
 
+    <div id="main-container">
+      <div class="navbar-inner">
+        <div class="container">
+          <div class="">
+            <!-- Logo -->
+            <a href="/"><img src="static/images/logo.png" class="logo"></a>
+            <!-- End Logo -->
+ 
+            <!-- Search Form -->
+            <form method="POST" class="search-form">
+              <div class="form-group">
+                <input type="text" class="search-input" placeholder="搜索" autocapitalize="off">
+              </div>
+            </form>
+            <!-- END Search Form -->
+          </div>
+
+          <div class="nav-clilapse pull-left">
+            <ul class="nav navbar-nav-custom">
+              <li>
+                <a href="/">镜像仓库</a>
+              </li>
+              <li>
+                <a href="/job">任务模版</a>
+              </li>
+              <li>
+                <a href="/blog">文章</a>
+              </li>
+              <li>
+                <a href="/help">帮助</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="pull-right">
+            <ul class="nav navbar-nav-fa">
+              <li>
+                <a href="/genedna" class="icon"><i class="fa fa-user fa-3x"></i></a>
+              </li>
+              <li>
+                <a href="/genedna">genedna</a>
+              </li>
+              <li>
+                <a href="/"> <i class="fa fa-plus fa-3x"></i></a>
+              </li>
+              <li>
+                <a href="/"> <i class="fa fa-gear fa-3x"></i></a>
+              </li>
+              <li>
+                <a href="/"> <i class="fa fa-sign-out fa-3x"></i></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script src="static/javascript/utils.js"></script>
     <script src="static/bower_components/angular/angular.min.js"></script>
