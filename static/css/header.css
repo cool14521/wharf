@@ -1,6 +1,6 @@
 .navbar-inner {
   padding-top: 10px;
-  padding-bottom: 10px;
+  padding-bottom: 0px;
   background-color: #F5F5F5;
 }
 
@@ -100,4 +100,3 @@
     padding-top: 17px;
     font-size: 16px;
 }
-
