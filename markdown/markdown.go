@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -60,8 +61,8 @@ func (doc *Doc) Sync() error {
 	}
 	fmt.Println("....开始同步git数据")
 	//判断本地路径是否存在，不存在则创建
-	if !isDirExist(doc.Local) {
-		createDir(doc.Local)
+	if !IsDirExist(doc.Local) {
+		CreateDir(doc.Local)
 		if err := doc.clone(); err != nil {
 			return err
 		}
@@ -223,7 +224,7 @@ func (doc *Doc) validate(action string) error {
 			return errors.New("....markdown git地址初始化异常,请赋值remote和local")
 		}
 	case "render":
-		if !isDirExist(doc.Local) {
+		if !IsDirExist(doc.Local) {
 			return errors.New("....本地路径不存在,请执行sync操作")
 		} else if files, _ := ioutil.ReadDir(doc.Local); len(files) == 0 {
 			return errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
@@ -244,8 +245,8 @@ func (doc *Doc) validate(action string) error {
 
 func (doc *Doc) initDB() error {
 	//如果存储路径不存在，则创建路径
-	if !isDirExist(doc.Storage) {
-		createDir(doc.Storage)
+	if !IsDirExist(doc.Storage) {
+		CreateDir(doc.Storage)
 	}
 	cfg := new(config.Config)
 	cfg.DataDir = doc.Storage
@@ -255,7 +256,7 @@ func (doc *Doc) initDB() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("....初始化数据库成功")
+	log.Println("....初始化数据库成功")
 	return nil
 }
 
@@ -281,7 +282,7 @@ func (doc *Doc) pull() error {
 	return nil
 }
 
-func isDirExist(path string) bool {
+func IsDirExist(path string) bool {
 	fi, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -290,7 +291,7 @@ func isDirExist(path string) bool {
 	return fi.IsDir()
 }
 
-func createDir(path string) {
+func CreateDir(path string) {
 	oldMask := syscall.Umask(0)
 	os.Mkdir(path, os.ModePerm)
 	syscall.Umask(oldMask)

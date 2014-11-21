@@ -22,6 +22,7 @@ func main() {
 		cmd.CmdWeb,
 		cmd.CmdAccount,
 		cmd.CmdDoc,
+		cmd.CmdEmail,
 	}
 
 	app.Flags = append(app.Flags, []cli.Flag{}...)
