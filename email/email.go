@@ -13,7 +13,7 @@ import (
 
 //默认5分钟发一次
 func MailService() {
-	log.Println("..........邮件服务已经正常启动..........")
+	models.InitDB4Email()
 	go func() {
 		for {
 			//加载模板列表去到prefix的集合，再去prefix对应的message
@@ -23,9 +23,10 @@ func MailService() {
 				msg := new(models.Message)
 				msgs := msg.Query(tmpls[i].Prefix)
 				for j, _ := range msgs {
-					mailServer := new(model.MailServer)
+					fmt.Printf("%#v\n", msgs[j])
+					mailServer := new(models.MailServer)
 					server := mailServer.Query(msgs[j].Host)
-					isSend, err := Send(server[0], msgs[j])
+					isSend, _ := Send(server[0], msgs[j])
 					if isSend {
 						msgs[j].Update()
 					}
@@ -48,7 +49,7 @@ func Send(mailServer *models.MailServer, msg *models.Message) (bool, error) {
 	header["From"] = msg.From
 	header["To"] = msg.To
 	header["Subject"] = msg.Subject
-	header["Content-Type"] = msg.Type
+	header["Content-Type"] = msg.ContentType
 	content := ""
 	for k, v := range header {
 		content += fmt.Sprintf("%s: %s\r\n", k, v)

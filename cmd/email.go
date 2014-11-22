@@ -21,7 +21,7 @@ var CmdEmail = cli.Command{
 	Description: "通过命令可以管理邮件服务器设置，邮件模板设置，邮件内容设置",
 	Action:      runEmail,
 	Flags: []cli.Flag{
-		cli.StringFlag{"object", "", "选择设置的对象[server 邮件服务器;templete 邮件模板; message 邮件信息", ""},
+		cli.StringFlag{"object", "", "选择设置的对象[server 邮件服务器;template 邮件模板; message 邮件信息", ""},
 		cli.StringFlag{"action", "", "选择操作类型[add 添加;del 删除;update 更新;query 查询] 注：message只提供add和query操作", ""},
 		cli.StringFlag{"host", "", "输入邮件服务器的地址", ""},
 		cli.IntFlag{"port", 0, "输入邮件服务器的端口", ""},
@@ -33,7 +33,7 @@ var CmdEmail = cli.Command{
 		cli.StringFlag{"from", "", "发件人", ""},
 		cli.StringFlag{"subject", "", "主题", ""},
 		cli.StringFlag{"body", "", "邮件内容", ""},
-		cli.StringFlag{"type", "", "邮件内容类型[例如：text/html;charset=UTF-8]", ""},
+		cli.StringFlag{"type", "", "邮件内容类型[注：html代表html类型 text代表文本类型]", ""},
 	},
 }
 
@@ -146,7 +146,7 @@ func runEmail(c *cli.Context) {
 			}
 			msg := new(models.Message)
 			user := &User{Username: "xxx"}
-			if err := msg.Add(c.String("to"), c.String("from"), c.String("subject"), c.String("body"), c.String("type"), c.String("prefix"), c.String("host"), user); err != nil {
+			if err := msg.Add(c.String("to"), c.String("from"), "测试中文主题", c.String("body"), c.String("type"), c.String("prefix"), c.String("host"), user); err != nil {
 				log.Fatalln(err)
 			}
 			log.Println("信息添加成功")

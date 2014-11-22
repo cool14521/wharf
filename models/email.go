@@ -187,7 +187,7 @@ func (msg *Message) Add(to, from, subject, body, contentType, prefix, host strin
 	} else if len(strings.TrimSpace(from)) == 0 {
 		log.Println("发件人的邮箱为空值")
 		return errors.New("发件人的邮箱不能为空值")
-	} else if len(strings.TrimSpace(body)) == 0 && strings.TrimSpace(contentType) != "text/html;charset=UTF-8" {
+	} else if len(strings.TrimSpace(body)) == 0 && strings.TrimSpace(contentType) != "html" {
 		log.Println("发送内容为空值")
 		return errors.New("发送内容不能为空")
 	} else if len(strings.TrimSpace(contentType)) == 0 {
@@ -211,16 +211,17 @@ func (msg *Message) Add(to, from, subject, body, contentType, prefix, host strin
 	msg.Subject = subject
 	msg.Prefix = prefix
 	//判断类型，如果是html类型的邮件则对其进行渲染 对msg.Body渲染赋值
-	if strings.TrimSpace(contentType) == "text/html;charset=UTF-8" {
+	if strings.TrimSpace(contentType) == "html" {
+		msg.ContentType = "text/html; charset=UTF-8"
 		err := msg.Render(model[0])
 		if err != nil {
 			return err
 		}
 	} else {
+		msg.ContentType = contentType
 		msg.Body = body
 	}
 	msg.Host = host
-	msg.ContentType = contentType
 	msg.Status = "I"
 	msg.Count = 0
 	//存储的结构为prefix md5(to) msg4json
