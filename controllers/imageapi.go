@@ -10,7 +10,6 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"github.com/dockercn/docker-bucket/global"
 	"github.com/dockercn/docker-bucket/models"
 	"github.com/dockercn/docker-bucket/utils"
 )
@@ -39,10 +38,10 @@ func (this *ImageAPIController) Prepare() {
 
 	//设置 Response 的 Header 信息，在处理函数中可以覆盖
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", global.BucketConfig.String("docker::Standalone"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", global.BucketConfig.String("docker::Version"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", global.BucketConfig.String("docker::Config"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", global.BucketConfig.String("docker::Encrypt"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", beego.AppConfig.String("docker::Standalone"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
 
 	//检查 Authorization 的 Header 信息是否存在。
 	if len(this.Ctx.Input.Header("Authorization")) == 0 {
@@ -257,7 +256,7 @@ func (this *ImageAPIController) PutImageLayer() {
 		//TODO 保存文件的磁盘路径调度
 
 		//处理 Layer 文件保存的目录
-		basePath := global.BucketConfig.String("docker::BasePath")
+		basePath := beego.AppConfig.String("docker::BasePath")
 		imagePath := fmt.Sprintf("%v/images/%v", basePath, imageId)
 		layerfile := fmt.Sprintf("%v/images/%v/layer", basePath, imageId)
 
