@@ -86,7 +86,9 @@ body.page-loading #page-container {
 
 /* Main Structure */
 body {
-    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: AvenirNext-Regular, 'proxima-nova', 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 100;
     color: #394263;
     font-size: 13px;
     /*background-color: #222222;*/
