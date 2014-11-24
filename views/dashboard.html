@@ -31,9 +31,9 @@
     <link rel="stylesheet" href="static/bower_components/angular-growl-v2/build/angular-growl.min.css">    
     <link rel="stylesheet" href="static/css/bucket.css">
     <link rel="stylesheet" href="static/css/header.css">    
-    <link rel="stylesheet" href="static/css/setting/setting.css">    
+    <link rel="stylesheet" href="static/css/dashboard/dashboard.css">    
   </head>
-  <body ng-app="setting">
+  <body ng-app="dashboard">
 
     <div id="main-container">
       <<<template "header.html" .>>>
@@ -42,30 +42,24 @@
         <!-- Left Bar -->
         <div class="row">
           <div class="col-md-3">
-            <!-- Personal List Group --> 
+            <!-- Repository List Group --> 
             <div class="block left-nav">
               <div class="block-title">
                 <h2><strong>
-                  个人设置
+                  镜像仓库
                 </strong></h2>
               </div>
               <div class="list-group">
-                <span class="list-group-item"><a href="#"><i class="fa fa-user fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;个人信息</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-key fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;账户设置</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-envelope-o fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;Email 设置</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-bell-o fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;通知设置</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-btc fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;账单设置</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-gear fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;应用绑定</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-bar-chart fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;数据统计</a></span>
+                <span class="list-group-item"><a href="#"><i class="fa fa-database fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;镜像仓库</a></span>
               </div>
             </div>
             <!-- End Personal List Group -->
 
-            <!-- Org List Group -->
+            <!-- Job List Group -->
             <div class="block left-nav">
               <div class="block-title">
                 <h2><strong>
-                  组织设置
+                  任务模版
                 </strong></h2>
               </div>
             </div>
@@ -86,7 +80,7 @@
     <script src="static/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
     <script src="static/bower_components/angular-growl-v2/build/angular-growl.min.js"></script>
     
-    <script src="static/javascript/setting/setting.js"></script>
+    <script src="static/javascript/dashboard/dashboard.js"></script>
     
   </body>
 </html>
