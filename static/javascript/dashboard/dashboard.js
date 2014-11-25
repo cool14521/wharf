@@ -8,7 +8,7 @@
 'use strict';
 
 //Auth Page Module
-angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
+angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
 .directive('namespaceValidator', [function (){
   var NAMESPACE_REGEXP = /^([a-z0-9_]{6,30})$/;
 

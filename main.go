@@ -21,6 +21,7 @@ func main() {
 	app.Commands = []cli.Command{
 		cmd.CmdWeb,
 		cmd.CmdAccount,
+		cmd.CmdDoc,
 	}
 
 	app.Flags = append(app.Flags, []cli.Flag{}...)

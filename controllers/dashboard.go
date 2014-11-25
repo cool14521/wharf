@@ -25,3 +25,12 @@ func (this *DashboardController) GetSetting() {
 
 	this.Render()
 }
+
+func (this *DashboardController) GetDashboard() {
+	this.TplNames = "dashboard.html"
+
+	this.Data["description"] = ""
+	this.Data["author"] = ""
+
+	this.Render()
+}

@@ -4,7 +4,7 @@ docker-bucket
 编译
 ====
 
-代码 **clone** 到 `$GOPATH/src/githhub.com/src/dockercn` 目录下，然后执行以下命令
+代码 **clone** 到 `$GOPATH/src/githhub.com/dockercn` 目录下，然后执行以下命令
 
 ```
 go get github.com/astaxie/beego
@@ -24,6 +24,7 @@ go build
 ./docker-bucket account --action add --username docker --passwd docker --email bucket@docker.cn
 ```
 
+
 对象 Key 规则
 ================
 
@@ -33,14 +34,18 @@ go build
 @Username // @用户名
 #Organization // #组织名
 
+
 @Username$Repository+ // 用户未加密公有仓库
 #Organization$Repository+ // 组织未加密公有仓库
+
 
 @Username$Repository- // 用户未加密私有仓库
 #Organization$Repository- // 组织未加密私公有仓库
 
+
 @Username$Repository-?Sign // 用户加密私有仓库  
 #Organization$Repository-?Sign // 组织加密私有仓库
+
 
 &Image+ //未加密，私有库和公有库未加密的 Image 共享
 &Image-?Sign //加密，只有私有库有加密支持，每个 Image 根据加密签名不同，可能存有多份儿。
@@ -48,9 +53,12 @@ go build
 @Username$Repository*Template+(-) //  
 #Organization$Repository*Template+(-) //
 
+
 @Username$Repository!Job //  
 #Organization$Repository!Job //
+
 ```
+
 
 Bucket Conf
 ==========
@@ -79,6 +87,9 @@ Password = 123456
 [log]
 FilePath = /tmp/log
 FileName = bucket-log
+
+[markdown]
+Docs = test/docs
 ```
 
 Nginx Conf
