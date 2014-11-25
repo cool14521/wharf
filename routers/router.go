@@ -9,6 +9,9 @@ func init() {
 	//Web Interface
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/auth", &controllers.AuthController{}, "get:Get")
+	beego.Router("/setting", &controllers.DashboardController{}, "get:GetSetting")
+	beego.Router("/dashboard", &controllers.DashboardController{}, "get:GetDashboard")
+	beego.Router("/admin", &controllers.AdminController{}, "get:GetAdmin")
 
 	//Static File
 	beego.Router("/favicon.ico", &controllers.StaticController{}, "get:GetFavicon")
