@@ -1,0 +1,45 @@
+<!-- Login Form -->
+<form method="POST" name="loginForm" class="form-horizontal form-bordered form-control-borderless" novalidate ng-submit="submit()">
+  <div class="form-group">
+    <div class="col-xs-12">
+      <div class="input-group">
+        <!-- Email Input -->
+        <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
+        <input type="email" name="email" ng-model="user.email" class="form-control input-lg" placeholder="Email" required email-validator>
+        <div class="error-message" ng-messages="loginForm.email.$error" ng-if="loginForm.email.$dirty">
+          <div ng-message="required">请输入 Email</div>
+          <div ng-message="emails">请输入正确的 Email 格式</div>
+        </div>
+        <!-- End Email Input -->
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-xs-12">
+      <div class="input-group">
+        <!-- Password Input -->
+        <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
+        <input type="password" name="passwd" ng-model="user.passwd" class="form-control input-lg" placeholder="Password" ng-minlength="5" ng-maxlength="30" required passwd-validator>
+        <div ng-messages="loginForm.passwd.$error" ng-if="loginForm.passwd.$dirty">
+          <div ng-message="required">请输入密码</div>
+          <div ng-message="minlength">密码不能少于 5 位</div>
+          <div ng-message="maxlength">密码不能多余 30 位</div>
+          <div ng-message="passwd">密码必须包含数字和字母</div>
+        </div>
+        <!-- End Password Input -->
+      </div>
+    </div>
+  </div>
+  <div class="form-group form-actions">
+    <div class="col-xs-12 text-right">
+      <button class="btn btn-sm btn-primary"><i class="fa fa-sign-in fa-fw" ng-show="!submitting"></i><i class="fa fa-refresh fa-spin" ng-show="submitting"></i>  Login to Dashboard</button>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-xs-12 text-center">
+      <a href="#forgot"><small>Forgot password?</small></a> -
+      <a href="#signup"><small>Create a new account</small></a>
+    </div>
+  </div>
+</form>
+<!-- END Login Form -->

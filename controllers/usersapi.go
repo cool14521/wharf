@@ -25,7 +25,6 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"github.com/dockercn/docker-bucket/global"
 	"github.com/dockercn/docker-bucket/models"
 	"github.com/dockercn/docker-bucket/utils"
 )
@@ -50,10 +49,10 @@ func (this *UsersAPIController) Prepare() {
 
 	//设置 Response 的 Header 信息，在处理函数中可以覆盖
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", global.BucketConfig.String("docker::Standalone"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", global.BucketConfig.String("docker::Version"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", global.BucketConfig.String("docker::Config"))
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", global.BucketConfig.String("docker::Encrypt"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Standalone", beego.AppConfig.String("docker::Standalone"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
 }
 
 //返回 401 错误会让 docker 命令行执行 GET /v1/users 的登录动作。
@@ -61,7 +60,7 @@ func (this *UsersAPIController) Prepare() {
 //如果支持 docker 命令行创建账户，在创建成功后返回 201 状态吗。
 func (this *UsersAPIController) PostUsers() {
 	//根据配置文件中得是否可以注册处理逻辑
-	open, _ := global.BucketConfig.Bool("docker::OpenSignup")
+	open, _ := beego.AppConfig.Bool("docker::OpenSignup")
 	if open == true {
 		//获得用户提交的登陆(注册)信息
 		var u map[string]interface{}
@@ -118,5 +117,5 @@ func (this *UsersAPIController) GetUsers() {
 	}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte("{\"登录成功\"}"))
+	this.Ctx.Output.Context.Output.Body([]byte("{\"状态\":\"登录成功\"}"))
 }
