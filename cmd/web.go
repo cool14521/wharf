@@ -25,8 +25,8 @@ var CmdWeb = cli.Command{
 		},
 		cli.IntFlag{
 			Name:  "port",
-			Value: 9911,
-			Usage: "Web 服务监听的端口，默认 9911",
+			Value: 80,
+			Usage: "Web 服务监听的端口，默认 80",
 		},
 		cli.StringFlag{
 			Name:  "conf",
