@@ -45,6 +45,7 @@ func runEmail(c *cli.Context) {
 	} else if len(action) == 0 {
 		log.Fatalln("未选择对象操作类型，请输入action的值")
 	}
+	models.InitDb()
 	switch object {
 	case "server":
 		switch action {
@@ -141,12 +142,14 @@ func runEmail(c *cli.Context) {
 	case "message":
 		switch action {
 		case "add":
+			cc := []string{"chen.liang@crenolab.com"}
+			bcc := []string{"allen@docker.cn"}
 			if err := validate4email(c.String("to"), c.String("from"), c.String("type"), c.String("host"), c.String("prefix")); err != nil {
 				log.Fatalln(err)
 			}
 			msg := new(models.Message)
-			user := &User{Username: "xxx"}
-			if err := msg.Add(c.String("to"), c.String("from"), "测试中文主题", c.String("body"), c.String("type"), c.String("prefix"), c.String("host"), user); err != nil {
+			user := &User{Username: "测试中文内容"}
+			if err := msg.Add(c.String("to"), c.String("from"), "测试中文主题", c.String("body"), c.String("type"), c.String("prefix"), c.String("host"), cc, bcc, user); err != nil {
 				log.Fatalln(err)
 			}
 			log.Println("信息添加成功")
