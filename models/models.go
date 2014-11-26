@@ -28,7 +28,6 @@ var (
 func setSessionEngine() {
 	beego.SessionProvider = beego.AppConfig.String("session::Provider")
 	beego.SessionSavePath = beego.AppConfig.String("session::SavePath")
-	beego.SessionName = "bucket"
 }
 
 func InitSession() {
