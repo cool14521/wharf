@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego"
-	_ "github.com/astaxie/beego/session/redis"
+	_ "github.com/astaxie/beego/session/ledis"
 	"github.com/codegangsta/cli"
 
 	"github.com/dockercn/docker-bucket/models"
