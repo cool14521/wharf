@@ -25,7 +25,6 @@ const (
 
 //默认5分钟发一次
 func MailService() {
-	models.InitDb()
 	go func() {
 		for {
 			//加载模板列表去到prefix的集合，再去prefix对应的message
@@ -38,7 +37,7 @@ func MailService() {
 					fmt.Printf("%#v\n", msgs[j])
 					mailServer := new(models.MailServer)
 					server := mailServer.Query(msgs[j].Host)
-					isSend, err := Send(server[0], msgs[j])
+					isSend, _ := Send(server[0], msgs[j])
 					if isSend {
 						msgs[j].Update()
 					}
@@ -69,7 +68,6 @@ func Send(mailServer *models.MailServer, msg *models.Message) (bool, error) {
 		return false, err
 	}
 	raw, err := msg2bytes(msg)
-	fmt.Println(string(raw))
 	if err != nil {
 		return false, err
 	}

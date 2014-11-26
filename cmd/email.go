@@ -10,11 +10,6 @@ import (
 	"github.com/dockercn/docker-bucket/models"
 )
 
-//测试渲染模板结构体
-type User struct {
-	Username string
-}
-
 var CmdEmail = cli.Command{
 	Name:        "email",
 	Usage:       "通过命令完成邮件模块的初始化",
@@ -30,6 +25,8 @@ var CmdEmail = cli.Command{
 		cli.StringFlag{"prefix", "", "邮件模板的前缀名", ""},
 		cli.StringFlag{"path", "", "前缀模板的路径", ""},
 		cli.StringFlag{"to", "", "收件人", ""},
+		cli.StringFlag{"cc", "", "抄送", ""},
+		cli.StringFlag{"bcc", "", "密送", ""},
 		cli.StringFlag{"from", "", "发件人", ""},
 		cli.StringFlag{"subject", "", "主题", ""},
 		cli.StringFlag{"body", "", "邮件内容", ""},
@@ -142,14 +139,13 @@ func runEmail(c *cli.Context) {
 	case "message":
 		switch action {
 		case "add":
-			cc := []string{"chen.liang@crenolab.com"}
-			bcc := []string{"allen@docker.cn"}
+			cc := strings.Split(c.String("cc"), ",")
+			bcc := strings.Split(c.String("bcc"), ",")
 			if err := validate4email(c.String("to"), c.String("from"), c.String("type"), c.String("host"), c.String("prefix")); err != nil {
 				log.Fatalln(err)
 			}
 			msg := new(models.Message)
-			user := &User{Username: "测试中文内容"}
-			if err := msg.Add(c.String("to"), c.String("from"), "测试中文主题", c.String("body"), c.String("type"), c.String("prefix"), c.String("host"), cc, bcc, user); err != nil {
+			if err := msg.Add(c.String("to"), c.String("from"), "测试中文主题", c.String("body"), c.String("type"), c.String("prefix"), c.String("host"), cc, bcc); err != nil {
 				log.Fatalln(err)
 			}
 			log.Println("信息添加成功")
