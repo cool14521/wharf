@@ -8,9 +8,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"mime"
+	"net/textproto"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 )
@@ -18,14 +23,18 @@ import (
 //邮件信息定义
 type Message struct {
 	To          string
+	Cc          []string
+	Bcc         []string
 	From        string
 	Subject     string
 	Body        string
-	ContentType string
-	Prefix      string //邮件的前缀名称，用来匹配prefix的模板
-	Host        string //mailServer的标志字段
-	Status      string //记录发送状态 'I待发送 A发送成功 X发送失败'
-	Count       int    //记录发送次数
+	Type        string
+	Headers     textproto.MIMEHeader
+	Attachments []*Attachment //附件
+	Prefix      string        //邮件的前缀名称，用来匹配prefix的模板
+	Host        string        //mailServer的标志字段
+	Status      string        //记录发送状态 'I待发送 A发送成功 X发送失败'
+	Count       int           //记录发送次数
 }
 
 type TemplateHtml struct {
@@ -39,6 +48,70 @@ type MailServer struct {
 	Port     int
 	User     string
 	Password string
+}
+
+//附件结构体
+type Attachment struct {
+	Filename string
+	Header   textproto.MIMEHeader
+	Content  []byte
+}
+
+//给信息添加附件
+func (msg *Message) AttachFile(args ...string) (a *Attachment, err error) {
+	if len(args) < 1 && len(args) > 2 {
+		err = errors.New("Must specify a file name and number of parameters can not exceed at least two")
+		return
+	}
+	filename := args[0]
+	id := ""
+	if len(args) > 1 {
+		id = args[1]
+	}
+	f, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	ct := mime.TypeByExtension(filepath.Ext(filename))
+	basename := path.Base(filename)
+	return msg.Attach(f, basename, ct, id)
+}
+
+func (msg *Message) Attach(r io.Reader, filename string, args ...string) (a *Attachment, err error) {
+	if len(args) < 1 && len(args) > 2 {
+		err = errors.New("Must specify the file type and number of parameters can not exceed at least two")
+		return
+	}
+	c := args[0] //Content-Type
+	id := ""
+	if len(args) > 1 {
+		id = args[1] //Content-ID
+	}
+	var buffer bytes.Buffer
+	if _, err = io.Copy(&buffer, r); err != nil {
+		return
+	}
+	at := &Attachment{
+		Filename: filename,
+		Header:   textproto.MIMEHeader{},
+		Content:  buffer.Bytes(),
+	}
+	// Get the Content-Type to be used in the MIMEHeader
+	if c != "" {
+		at.Header.Set("Content-Type", c)
+	} else {
+		// If the Content-Type is blank, set the Content-Type to "application/octet-stream"
+		at.Header.Set("Content-Type", "application/octet-stream")
+	}
+	if id != "" {
+		at.Header.Set("Content-Disposition", fmt.Sprintf("inline;\r\n filename=\"%s\"", filename))
+		at.Header.Set("Content-ID", fmt.Sprintf("<%s>", id))
+	} else {
+		at.Header.Set("Content-Disposition", fmt.Sprintf("attachment;\r\n filename=\"%s\"", filename))
+	}
+	at.Header.Set("Content-Transfer-Encoding", "base64")
+	msg.Attachments = append(msg.Attachments, at)
+	return at, nil
 }
 
 func (tpl *TemplateHtml) Add(prefix, filePath string) error {
@@ -179,7 +252,7 @@ func IsFileExist(filePath string) (error, bool) {
 	return nil, true
 }
 
-func (msg *Message) Add(to, from, subject, body, contentType, prefix, host string, model ...interface{}) error {
+func (msg *Message) Add(to, from, subject, body, contentType, prefix, host string, cc []string, bcc []string, model ...interface{}) error {
 	//完成字符验证 长度验证，正则验证
 	if len(strings.TrimSpace(to)) == 0 {
 		log.Println("收件箱为空值")
@@ -210,16 +283,21 @@ func (msg *Message) Add(to, from, subject, body, contentType, prefix, host strin
 	msg.From = from
 	msg.Subject = subject
 	msg.Prefix = prefix
+	msg.Cc = cc
+	msg.Bcc = bcc
 	//判断类型，如果是html类型的邮件则对其进行渲染 对msg.Body渲染赋值
-	if strings.TrimSpace(contentType) == "html" {
-		msg.ContentType = "text/html; charset=UTF-8"
+	if contentType := strings.TrimSpace(contentType); contentType == "html" {
+		msg.Type = contentType
 		err := msg.Render(model[0])
 		if err != nil {
 			return err
 		}
-	} else {
-		msg.ContentType = contentType
+	} else if contentType == "text" {
+		msg.Type = contentType
 		msg.Body = body
+	} else {
+		log.Println("邮件类型为text或者html")
+		return errors.New("邮件类型指定错误")
 	}
 	msg.Host = host
 	msg.Status = "I"
