@@ -59,7 +59,7 @@ func StartService() {
 			if stop {
 				return
 			}
-			log.Printf("[email]数据库中公有%d个模板，数据库中一共有邮件%d封，本次发送成功%d条，发送失败%d条\n", tmpl_count, msg_count, msg_success_count, msg_failed_count)
+			log.Printf("[email]数据库中共有%d个模板，数据库中一共有邮件%d封，本次发送成功%d条，发送失败%d条\n", tmpl_count, msg_count, msg_success_count, msg_failed_count)
 			time.Sleep(5 * time.Minute)
 		}
 	}()
