@@ -38,6 +38,7 @@ type Message struct {
 	Count       int           //记录发送次数
 }
 
+//邮件模板定义
 type TemplateHtml struct {
 	Prefix  string
 	Content []byte
