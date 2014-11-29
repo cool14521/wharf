@@ -67,6 +67,8 @@ Bucket Conf
 ```
 runmode = dev
 
+enablehttptls = true
+httpsport = 443
 httpcertfile = cert/docker-bucket.crt
 httpkeyfile = cert/docker-bucket.key
 
