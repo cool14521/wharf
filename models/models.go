@@ -48,7 +48,6 @@ func InitDb() {
 	}
 
 	ledisOnce.Do(initLedisFunc)
-
 	db, _ := beego.AppConfig.Int("ledisdb::DB")
 	LedisDB, _ = nowLedis.Select(db)
 }
