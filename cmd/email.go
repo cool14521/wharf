@@ -18,7 +18,7 @@ var CmdEmail = cli.Command{
 	Flags: []cli.Flag{
 		cli.StringFlag{"object", "", "选择设置的对象[server 邮件服务器;template 邮件模板; message 邮件信息", ""},
 		cli.StringFlag{"action", "", "选择操作类型[add 添加;del 删除;update 更新;query 查询] 注：message只提供add和query操作", ""},
-		cli.StringFlag{"host", "", "输入邮件服务器的地址", ""},
+		cli.StringFlag{"host", "", "输入邮件服务器的地址,例如：smtp.exmail.qq.com", ""},
 		cli.IntFlag{"port", 0, "输入邮件服务器的端口", ""},
 		cli.StringFlag{"user", "", "输入邮件服务器的用户名", ""},
 		cli.StringFlag{"password", "", "输入邮件服务器的密码", ""},
@@ -83,12 +83,14 @@ func runEmail(c *cli.Context) {
 			mailServer := new(models.MailServer)
 			if len(strings.TrimSpace(c.String("host"))) == 0 {
 				mailServers := mailServer.Query()
-				fmt.Printf("%#v\n", mailServers)
+				for _, server := range mailServers {
+					fmt.Printf("%v\n", server)
+				}
 				log.Println("邮件服务器查询完成")
 				return
 			}
 			mailServers := mailServer.Query(c.String("host"))
-			fmt.Printf("%#v\n", mailServers[0])
+			fmt.Printf("%v\n", mailServers[0])
 			log.Println("邮件服务器查询完成")
 		default:
 			log.Fatalln("输入的action值非法，无法执行")
@@ -126,12 +128,14 @@ func runEmail(c *cli.Context) {
 			tmpl := new(models.TemplateHtml)
 			if len(strings.TrimSpace(c.String("prefix"))) == 0 {
 				tmpls := tmpl.Query()
-				fmt.Printf("%#v\n", tmpls)
+				for _, vtmpl := range tmpls {
+					fmt.Printf("%v\n", vtmpl)
+				}
 				log.Println("模板查询成功")
 				return
 			}
 			tmpls := tmpl.Query(c.String("prefix"))
-			fmt.Printf("%#v\n", tmpls[0])
+			fmt.Printf("%v\n", tmpls[0])
 			log.Println("邮件模板查询成功")
 		default:
 			log.Fatalln("输入的action值非法，无法执行")
@@ -144,6 +148,16 @@ func runEmail(c *cli.Context) {
 			if err := validate4email(c.String("to"), c.String("from"), c.String("type"), c.String("host"), c.String("prefix")); err != nil {
 				log.Fatalln(err)
 			}
+			//检查邮件依赖模板是否存在
+			tmpl := new(models.TemplateHtml)
+			if tmpls := tmpl.Query(c.String("prefix")); len(tmpls) == 0 {
+				log.Fatalln(errors.New("邮件依赖模板未添加，请先添加模板"))
+			}
+			//检查邮件内容发送服务器是否已添加
+			server := new(models.MailServer)
+			if servers := server.Query(c.String("host")); len(servers) == 0 {
+				log.Fatalln(errors.New("邮件选择发送服务器未添加到数据库中，请先添加再发送"))
+			}
 			msg := new(models.Message)
 			if err := msg.Add(c.String("to"), c.String("from"), "测试中文主题", c.String("body"), c.String("type"), c.String("prefix"), c.String("host"), cc, bcc); err != nil {
 				log.Fatalln(err)
@@ -155,7 +169,9 @@ func runEmail(c *cli.Context) {
 				log.Fatalln(err)
 			}
 			msgs := msg.Query(c.String("prefix"))
-			fmt.Printf("%#v\n", msgs)
+			for _, vmsg := range msgs {
+				fmt.Printf("%v\n", vmsg)
+			}
 			log.Println("信息查询完成")
 		default:
 			log.Fatalln("输入的action值非法，无法执行")

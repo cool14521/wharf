@@ -2,9 +2,7 @@ package models
 
 import (
 	"bytes"
-	"crypto/md5"
 	"crypto/tls"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,8 +14,11 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
+
+	"github.com/dockercn/docker-bucket/utils"
 )
 
 //邮件信息定义
@@ -119,7 +120,7 @@ func (tpl *TemplateHtml) Add(prefix, filePath string) error {
 	if len(strings.TrimSpace(prefix)) == 0 {
 		log.Println("邮件模板前缀名为空值")
 		return errors.New("邮件模板前缀名不能为空")
-	} else if err, isFile := IsFileExist(filePath); err != nil || !isFile {
+	} else if err, isFile := utils.IsFileExists(filePath); err != nil || !isFile {
 		log.Println("导入模板的路径非法,请检验文件是否存在")
 		return err
 	}
@@ -242,31 +243,21 @@ func (mailServer *MailServer) Delete(hostArr ...string) error {
 	return nil
 }
 
-func IsFileExist(filePath string) (error, bool) {
-	fi, err := os.Stat(filePath)
-	if err != nil {
-		return err, false
-	} else if fi.IsDir() {
-		return errors.New("传入参数应为文件而不是文件夹"), false
-	}
-	return nil, true
-}
-
 func (msg *Message) Add(to, from, subject, body, contentType, prefix, host string, cc []string, bcc []string, model ...interface{}) error {
 	//完成字符验证 长度验证，正则验证
-	if len(strings.TrimSpace(to)) == 0 {
-		log.Println("收件箱为空值")
-		return errors.New("收件箱的地址不能为空")
-	} else if len(strings.TrimSpace(from)) == 0 {
-		log.Println("发件人的邮箱为空值")
-		return errors.New("发件人的邮箱不能为空值")
+	if m, _ := regexp.MatchString("[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$", to); len(strings.TrimSpace(to)) == 0 || !m {
+		log.Println("收件箱不符合规范")
+		return errors.New("收件箱的地址不符合规范")
+	} else if m, _ := regexp.MatchString("[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$", from); len(strings.TrimSpace(from)) == 0 || !m {
+		log.Println("发件人的邮箱不符合规范")
+		return errors.New("发件人的邮箱不符合规范")
 	} else if len(strings.TrimSpace(body)) == 0 && strings.TrimSpace(contentType) != "html" {
 		log.Println("发送内容为空值")
 		return errors.New("发送内容不能为空")
 	} else if len(strings.TrimSpace(contentType)) == 0 {
 		log.Println("邮件类型空值")
 		return errors.New("邮件类型不能为空")
-	} else if len(strings.TrimSpace(prefix)) == 0 && strings.TrimSpace(contentType) == "text/html;charset=UTF-8" {
+	} else if len(strings.TrimSpace(prefix)) == 0 && strings.TrimSpace(contentType) == "html" {
 		log.Println("邮件依赖模板为空值")
 		return errors.New("邮件依赖模板不能为空")
 	} else if len(strings.TrimSpace(host)) == 0 {
@@ -303,7 +294,7 @@ func (msg *Message) Add(to, from, subject, body, contentType, prefix, host strin
 	msg.Status = "I"
 	msg.Count = 0
 	//存储的结构为prefix md5(to) msg4json
-	to_md5 := EncodeMd5(msg.To)
+	to_md5 := utils.EncodeEmail(msg.To)
 	msg4json, _ := json.Marshal(msg)
 	LedisDB.HSet([]byte(msg.Prefix), []byte(to_md5), msg4json)
 	return nil
@@ -328,7 +319,7 @@ func (msg *Message) Query(prefixArr ...string) []*Message {
 
 func (msg *Message) Update() {
 	msg4json, _ := json.Marshal(msg)
-	to_md5 := EncodeMd5(msg.To)
+	to_md5 := utils.EncodeEmail(msg.To)
 	LedisDB.HSet([]byte(msg.Prefix), []byte(to_md5), msg4json)
 }
 
@@ -347,12 +338,6 @@ func (msg *Message) Render(model interface{}) error {
 	}
 	msg.Body = body.String()
 	return nil
-}
-
-func EncodeMd5(email string) string {
-	h := md5.New()
-	h.Write([]byte(email))
-	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (mailServer *MailServer) DialTest() error {

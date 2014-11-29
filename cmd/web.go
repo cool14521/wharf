@@ -55,7 +55,7 @@ func runWeb(c *cli.Context) {
 	models.InitSession()
 	//初始化 数据库
 	models.InitDb()
-	email.MailService()
+	email.StartService()
 	//运行 Application
 	beego.Run(fmt.Sprintf("%v:%v", address, port))
 }

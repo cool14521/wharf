@@ -23,30 +23,50 @@ const (
 	maxLineLength = 76
 )
 
+var stop bool
+
 //默认5分钟发一次
-func MailService() {
+func StartService() {
 	checkService()
 	go func() {
 		for {
+			var msg_count, tmpl_count, msg_success_count, msg_failed_count int //分别统计信息，模板,发送成功条数,发送失败条数
+
 			//加载模板列表去到prefix的集合，再去prefix对应的message
 			tmpl := new(models.TemplateHtml)
 			tmpls := tmpl.Query()
+			tmpl_count = len(tmpls)
+
 			for i, _ := range tmpls {
 				msg := new(models.Message)
 				msgs := msg.Query(tmpls[i].Prefix)
 				for j, _ := range msgs {
+					msg_count++
 					fmt.Printf("%#v\n", msgs[j])
 					mailServer := new(models.MailServer)
 					server := mailServer.Query(msgs[j].Host)
 					isSend, _ := Send(server[0], msgs[j])
 					if isSend {
+						if msg.Status == "A" {
+							msg_success_count++
+						} else if msg.Status == "X" {
+							msg_failed_count++
+						}
 						msgs[j].Update()
 					}
 				}
 			}
+			if stop {
+				return
+			}
+			log.Printf("[email]数据库中公有%d个模板，数据库中一共有邮件%d封，本次发送成功%d条，发送失败%d条\n", tmpl_count, msg_count, msg_success_count, msg_failed_count)
 			time.Sleep(5 * time.Minute)
 		}
 	}()
+}
+
+func StopService() {
+	stop = true
 }
 
 func checkService() {
