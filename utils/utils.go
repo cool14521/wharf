@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -157,4 +158,20 @@ func IsDirExists(path string) bool {
 	}
 
 	panic("not reached")
+}
+
+func IsFileExists(filePath string) (error, bool) {
+	fi, err := os.Stat(filePath)
+	if err != nil {
+		return err, false
+	} else if fi.IsDir() {
+		return errors.New("传入参数应为文件而不是文件夹"), false
+	}
+	return nil, true
+}
+
+func EncodeEmail(email string) string {
+	h := md5.New()
+	h.Write([]byte(email))
+	return hex.EncodeToString(h.Sum(nil))
 }

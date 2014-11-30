@@ -28,7 +28,6 @@ var (
 func setSessionEngine() {
 	beego.SessionProvider = beego.AppConfig.String("session::Provider")
 	beego.SessionSavePath = beego.AppConfig.String("session::SavePath")
-	beego.SessionName = "bucket"
 }
 
 func InitSession() {
@@ -40,7 +39,6 @@ func InitDb() {
 	initLedisFunc := func() {
 		cfg := new(config.Config)
 		cfg.DataDir = beego.AppConfig.String("ledisdb::DataDir")
-
 		var err error
 		nowLedis, err = ledis.Open(cfg)
 		if err != nil {
@@ -50,9 +48,7 @@ func InitDb() {
 	}
 
 	ledisOnce.Do(initLedisFunc)
-
 	db, _ := beego.AppConfig.Int("ledisdb::DB")
-
 	LedisDB, _ = nowLedis.Select(db)
 }
 

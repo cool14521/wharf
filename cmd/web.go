@@ -5,9 +5,10 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego"
-	_ "github.com/astaxie/beego/session/redis"
+	_ "github.com/astaxie/beego/session/ledis"
 	"github.com/codegangsta/cli"
 
+	"github.com/dockercn/docker-bucket/email"
 	"github.com/dockercn/docker-bucket/models"
 	_ "github.com/dockercn/docker-bucket/routers"
 )
@@ -54,6 +55,7 @@ func runWeb(c *cli.Context) {
 	models.InitSession()
 	//初始化 数据库
 	models.InitDb()
+	email.StartService()
 	//运行 Application
 	beego.Run(fmt.Sprintf("%v:%v", address, port))
 }
