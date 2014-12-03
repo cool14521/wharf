@@ -11,6 +11,7 @@ go get github.com/astaxie/beego
 go get github.com/codegangsta/cli
 go get github.com/siddontang/ledisdb/ledis
 go get github.com/garyburd/redigo/redis
+go get github.com/shurcooL/go/github_flavored_markdown
 go build
 ```
 `TODO` 支持 **gopm** 编译程序
@@ -64,6 +65,13 @@ Bucket Conf
 ==========
 
 ```
+runmode = dev
+
+enablehttptls = true
+httpsport = 443
+httpcertfile = cert/docker-bucket.crt
+httpkeyfile = cert/docker-bucket.key
+
 [docker]
 BasePath = /tmp/registry
 StaticPath = files
@@ -77,12 +85,6 @@ Encrypt = true
 [ledisdb]
 DataDir = /tmp/ledisdb
 DB = 8
-
-[email]
-Host = smtp.exmail.qq.com
-Port = 465
-User = demo@docker.cn
-Password = 123456
 
 [log]
 FilePath = /tmp/log
