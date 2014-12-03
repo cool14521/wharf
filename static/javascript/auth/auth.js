@@ -13,7 +13,7 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
 .controller('SigninCtrl', ['$scope', '$cookies', '$http', 'growl', '$window', '$timeout', function ($scope, $cookies, $http, growl, $window, $timeout) {
   $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
 
-  $scope.submitting = false;
+  $scope.submitting = true;
 
   $scope.submit = function () {
     if($scope.loginForm.$valid) {
