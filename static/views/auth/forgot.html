@@ -6,8 +6,8 @@
         <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
         <input type="email" name="email" ng-model="user.email" class="form-control input-lg" placeholder="Email" required email-validator>
           <div class="error-message" ng-messages="forgotForm.email.$error" ng-if="forgotForm.email.$dirty">
-            <div ng-message="required">请输入 Email</div>
-            <div ng-message="emails">请输入正确的 Email 格式</div>
+            <div ng-message="required">Please enter your email.</div>
+            <div ng-message="emails">Please enter a valid email address.</div>
           </div>
       </div>
     </div>
