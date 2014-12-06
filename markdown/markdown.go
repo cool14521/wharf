@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/shurcooL/go/github_flavored_markdown"
+	"github.com/siddontang/ledisdb/config"
+	"github.com/siddontang/ledisdb/ledis"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -14,10 +17,6 @@ import (
 	"regexp"
 	"strings"
 	"syscall"
-
-	"github.com/shurcooL/go/github_flavored_markdown"
-	"github.com/siddontang/ledisdb/config"
-	"github.com/siddontang/ledisdb/ledis"
 )
 
 /*
@@ -39,19 +38,19 @@ type Doc struct {
 	Prefix  string           //doc的前缀名，和router关联，例如存入HSet(a xx.md time=20131112 12:00:00),可通过/a/xx来获取数据
 	Storage string           //doc处理后存入数据文件的路径
 	Db      int              //doc所在数据库
-	itemMap map[string]*Item //doc中的文件集
-	conn    *ledis.DB        //操作doc的数据库连接
+	ItemMap map[string]*Item //doc中的文件集
+	Conn    *ledis.DB        //操作doc的数据库连接
 }
 
 type Item struct {
-	key      string //文件关键字
-	title    string //文件标题
-	desc     string //文件描述
-	keywords string //文件关键字集合
-	updated  string //文件更新时间
-	content  string //文件内容（经过render之后的html格式）
-	tags     string //文件标签集合
-	path     string //文件路径
+	Key      string //文件关键字
+	Title    string //文件标题
+	Desc     string //文件描述
+	Keywords string //文件关键字集合
+	Updated  string //文件更新时间
+	Content  string //文件内容（经过render之后的html格式）
+	Tags     string //文件标签集合
+	Path     string //文件路径
 }
 
 //远程同步的到本地的操作
@@ -113,21 +112,22 @@ func (doc *Doc) Render() error {
 			timeString = v
 		}
 		item := new(Item)
-		item.updated = timeString
-		item.path = fmt.Sprint(doc.Local, "/", file.Name())
-		item.key = strings.Split(file.Name(), ".")[0]
+		item.Updated = timeString
+		item.Path = fmt.Sprint(doc.Local, "/", file.Name())
+		item.Key = strings.Split(file.Name(), ".")[0]
 		if err := item.generate(); err != nil {
 			fmt.Println(err)
 			continue
 		}
-		fileMap[item.key] = item
+		fileMap[item.Key] = item
 	}
-
 	//将fileMap存入到.render的文件中
 	bytes, _ := json.Marshal(fileMap)
 	if _, err := os.Stat(".render"); err == nil {
 		os.Remove(".render")
-	} else if err := ioutil.WriteFile(".render", bytes, 0660); err != nil {
+	}
+	err := ioutil.WriteFile(".render", bytes, 0660)
+	if err != nil {
 		return err
 	}
 	fmt.Println("....文件预处理全部完成")
@@ -135,39 +135,62 @@ func (doc *Doc) Render() error {
 }
 
 //数据查询
-func (doc *Doc) Query(isDict bool, key string) error {
+func (doc *Doc) Query(isDict bool, keys ...string) ([]*Item, error) {
 	var err error
 	if err = doc.validate("query"); err != nil {
-		return err
+		return nil, err
 	}
 	doc.initDB()
+	items := make([]*Item, 0)
 	switch isDict {
 	case true:
 		//展示doc的目录数据
 		if len(strings.TrimSpace(doc.Prefix)) == 0 {
 			err = errors.New("...请输入查询目录doc的前缀值")
-			break
+			return nil, err
 		}
-		fileNames, _ := doc.conn.HKeys([]byte(doc.Prefix))
-		i := 0
+		fileNames, _ := doc.Conn.HKeys([]byte(doc.Prefix))
 		for _, fileName := range fileNames {
-			i = i + 1
-			fmt.Println("manage", i)
-			data, _ := doc.conn.HGet([]byte(doc.Prefix), []byte(string(fileName)))
-			fmt.Printf("%s\t%s\t%s\n", doc.Prefix, string(fileName), string(data))
+			item := new(Item)
+			data, _ := doc.Conn.HGet([]byte(doc.Prefix), []byte(string(fileName)))
+			item.Key = string(fileName)
+			item.Title = strings.Split(string(data), "|")[0]
+			item.Updated = strings.Split(string(data), "|")[1]
+			items = append(items, item)
 		}
 	case false:
-		if len(strings.TrimSpace(key)) == 0 {
+		if len(strings.TrimSpace(keys[0])) == 0 {
 			err = errors.New("...请输入查询markdown文件的key值")
 			break
 		}
-		attrs, _ := doc.conn.HKeys([]byte(key))
+		attrs, _ := doc.Conn.HKeys([]byte(keys[0]))
+		item := new(Item)
 		for _, attr := range attrs {
-			data, _ := doc.conn.HGet([]byte(key), []byte(string(attr)))
-			fmt.Printf("%s\t%s\t%s\n", key, string(attr), string(data))
+			data, _ := doc.Conn.HGet([]byte(keys[0]), attr)
+			//mt.Printf("%s=%s\n", string(attr), string(data))
+			attr2string := string(attr)
+			switch attr2string {
+			case "key":
+				item.Key = string(data)
+			case "title":
+				item.Title = string(data)
+			case "desc":
+				item.Desc = string(data)
+			case "keywords":
+				item.Keywords = string(data)
+			case "updated":
+				item.Updated = string(data)
+			case "content":
+				item.Content = string(data)
+			case "tags":
+				item.Tags = string(data)
+			case "path":
+				item.Path = string(data)
+			}
 		}
+		items = append(items, item)
 	}
-	return err
+	return items, nil
 }
 
 func (doc *Doc) Save() error {
@@ -181,25 +204,25 @@ func (doc *Doc) Save() error {
 	}
 	//清除掉数据库中多余的部分
 	var i int //记录删除记录数
-	fileNames, _ := doc.conn.HKeys([]byte(doc.Prefix))
+	fileNames, _ := doc.Conn.HKeys([]byte(doc.Prefix))
 	for _, fileName := range fileNames {
-		if _, found := doc.itemMap[string(fileName)]; !found {
+		if _, found := doc.ItemMap[string(fileName)]; !found {
 			//在目录中没有查到该文件，则进行删除
-			doc.conn.HDel([]byte(doc.Prefix), []byte(string(fileName)))
-			doc.conn.HDel([]byte(string(fileName)), []byte("title"), []byte("desc"), []byte("keywords"), []byte("content"), []byte("tags"))
+			doc.Conn.HDel([]byte(doc.Prefix), []byte(string(fileName)))
+			doc.Conn.HDel([]byte(string(fileName)), []byte("title"), []byte("desc"), []byte("keywords"), []byte("content"), []byte("tags"))
 			i++
 		}
 	}
 	fmt.Println("....已经删除数据库中多余数据")
 	//插入或更新数据库
-	for _, item := range doc.itemMap {
-		doc.conn.HSet([]byte(doc.Prefix), []byte(item.key), []byte(item.title+"|"+item.updated))
+	for _, item := range doc.ItemMap {
+		doc.Conn.HSet([]byte(doc.Prefix), []byte(item.Key), []byte(item.Title+"|"+item.Updated))
 		//插入文章内容
-		doc.conn.HSet([]byte(item.key), []byte("title"), []byte(item.title))
-		doc.conn.HSet([]byte(item.key), []byte("desc"), []byte(item.desc))
-		doc.conn.HSet([]byte(item.key), []byte("keywords"), []byte(item.keywords))
-		doc.conn.HSet([]byte(item.key), []byte("content"), []byte(item.content))
-		doc.conn.HSet([]byte(item.key), []byte("tags"), []byte(item.tags))
+		doc.Conn.HSet([]byte(item.Key), []byte("title"), []byte(item.Title))
+		doc.Conn.HSet([]byte(item.Key), []byte("desc"), []byte(item.Desc))
+		doc.Conn.HSet([]byte(item.Key), []byte("keywords"), []byte(item.Keywords))
+		doc.Conn.HSet([]byte(item.Key), []byte("content"), []byte(item.Content))
+		doc.Conn.HSet([]byte(item.Key), []byte("tags"), []byte(item.Tags))
 	}
 	fmt.Println("....插入或更新数据成功")
 	os.Remove(".render")
@@ -209,7 +232,7 @@ func (doc *Doc) Save() error {
 func (doc *Doc) load() error {
 	//加载.render文件，对doc.itemmap赋值
 	bytes, _ := ioutil.ReadFile(".render")
-	err := json.Unmarshal(bytes, &doc.itemMap)
+	err := json.Unmarshal(bytes, &doc.ItemMap)
 	if err != nil {
 		return errors.New("....加载缓存文件失败，请重新执行render操作")
 	}
@@ -252,7 +275,7 @@ func (doc *Doc) initDB() error {
 	cfg.DataDir = doc.Storage
 	var err error
 	nowLedis, err := ledis.Open(cfg)
-	doc.conn, err = nowLedis.Select(doc.Db)
+	doc.Conn, err = nowLedis.Select(doc.Db)
 	if err != nil {
 		return err
 	}
@@ -298,9 +321,9 @@ func CreateDir(path string) {
 }
 
 func (item *Item) generate() error {
-	f, err := os.Open(item.path)
+	f, err := os.Open(item.Path)
 	if err != nil {
-		return errors.New(fmt.Sprint(item.path, ";文件预处理失败;err=", err))
+		return errors.New(fmt.Sprint(item.Path, ";文件预处理失败;err=", err))
 	}
 	defer f.Close()
 	buff := bufio.NewReader(f)
@@ -311,26 +334,26 @@ func (item *Item) generate() error {
 			break
 		}
 		if strings.HasPrefix(line, "@title:") {
-			item.title = strings.TrimRight(line, "\n")
-			item.title = strings.Replace(item.title, "@title", "", 1)
+			item.Title = strings.TrimRight(line, "\n")
+			item.Title = strings.Replace(item.Title, "@title", "", 1)
 			continue
 		} else if strings.HasPrefix(line, "@keywords:") {
-			item.keywords = strings.TrimRight(line, "\n")
-			item.keywords = strings.Replace(item.keywords, "@keywords:", "", 1)
+			item.Keywords = strings.TrimRight(line, "\n")
+			item.Keywords = strings.Replace(item.Keywords, "@keywords:", "", 1)
 			continue
 		} else if strings.HasPrefix(line, "@desc:") {
-			item.desc = strings.TrimRight(line, "\n")
-			item.desc = strings.Replace(item.desc, "@desc:", "", 1)
+			item.Desc = strings.TrimRight(line, "\n")
+			item.Desc = strings.Replace(item.Desc, "@desc:", "", 1)
 			continue
 		} else if strings.HasPrefix(line, "@tags:") {
-			item.tags = strings.TrimRight(line, "\n")
-			item.tags = strings.Replace(item.tags, "@tags:", "", 1)
+			item.Tags = strings.TrimRight(line, "\n")
+			item.Tags = strings.Replace(item.Tags, "@tags:", "", 1)
 			continue
 		}
-		item.content = item.content + line
+		item.Content = item.Content + line
 	}
-	item.content = markdown2html(item.content)
-	fmt.Println("....", item.path, ";文件预处理完成;success")
+	item.Content = markdown2html(item.Content)
+	fmt.Println("....", item.Path, ";文件预处理完成;success")
 	return nil
 }
 

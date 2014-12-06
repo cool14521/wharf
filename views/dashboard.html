@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <!--[if IE 8]> <html class="no-js lt-ie9"> <![endif]-->
 <!--[if IE 9]> <html class="no-js lt-ie10"> <![endif]-->
-<!--[if gt IE 8]><!--><html class="no-js"><!--<![endif]-->
-  <head>
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
     <meta charset="utf-8">
 
     <title>Docker Bucket - Content, Collaboration, Workflows, and More</title>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8">
-    
+
     <meta name="description" content="<<<.description>>>">
     <meta name="author" content="<<<.author>>>">
     <meta name="robots" content="noindex, noflilow">
@@ -25,87 +28,88 @@
     <!-- END Icons -->
 
     <link rel="stylesheet" href="static/bower_components/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="static/bower_components/font-awesome/css/font-awesome.min.css">    
-    <link rel="stylesheet" href="static/bower_components/angular-growl-v2/build/angular-growl.min.css">    
+    <link rel="stylesheet" href="static/bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="static/bower_components/angular-growl-v2/build/angular-growl.min.css">
     <link rel="stylesheet" href="static/css/bucket.css">
-    <link rel="stylesheet" href="static/css/header.css">    
-    <link rel="stylesheet" href="static/css/dashboard/dashboard.css">    
-  </head>
-  <body ng-app="dashboard">
+    <link rel="stylesheet" href="static/css/header.css">
+    <link rel="stylesheet" href="static/css/dashboard/dashboard.css">
+</head>
+
+<body ng-app="dashboard">
 
     <div id="main-container">
-      <<<template "header.html" .>>>
+        <<<template "header.html" .>>>
 
-      <div class="container">
-        <!-- Left Bar -->
-        <div class="row">
-          <div class="col-md-3">
-            <!-- Repository List Group --> 
-            <div class="block left-nav">
-              <div class="block-title">
-                <h2><strong>
+            <div class="container">
+                <!-- Left Bar -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <!-- Repository List Group -->
+                        <div class="block left-nav">
+                            <div class="block-title">
+                                <h2><strong>
                   Repositories
                 </strong></h2>
-              </div>
-              <div class="list-group">
-                <span class="list-group-item"><a href="#"><i class="fa fa-database fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Repositories</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-unlock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Public&nbsp;&nbsp;repositories</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-lock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Private&nbsp;&nbsp;repositories</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-star fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Starred&nbsp;&nbsp;repositories</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-comments fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Comments</a></span>
-              </div>
-            </div>
-            <!-- End Personal List Group -->
+                            </div>
+                            <div class="list-group">
+                                <span class="list-group-item"><a href="#"><i class="fa fa-database fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Repositories</a></span>
+                                <span class="list-group-item"><a href="#"><i class="fa fa-unlock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Public&nbsp;&nbsp;repositories</a></span>
+                                <span class="list-group-item"><a href="#"><i class="fa fa-lock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Private&nbsp;&nbsp;repositories</a></span>
+                                <span class="list-group-item"><a href="#"><i class="fa fa-star fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Starred&nbsp;&nbsp;repositories</a></span>
+                                <span class="list-group-item"><a href="#"><i class="fa fa-comments fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Comments</a></span>
+                            </div>
+                        </div>
+                        <!-- End Personal List Group -->
 
-            <!-- Job List Group -->
-            <div class="block left-nav">
-              <div class="block-title">
-                <h2><strong>
+                        <!-- Job List Group -->
+                        <div class="block left-nav">
+                            <div class="block-title">
+                                <h2><strong>
                   Jobs
                 </strong></h2>
-              </div>
-              <div class="list-group">
-                <span class="list-group-item"><a href="#"><i class="fa fa-bolt fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Jobs</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-unlock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Public&nbsp;&nbsp;jobs</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-lock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Private&nbsp;&nbsp;jobs</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-star fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Starred&nbsp;&nbsp;jobs</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-comments fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Comments</a></span>
-              </div>
-            </div>
-            <!-- End Job List Group -->
+                            </div>
+                            <div class="list-group">
+                                <span class="list-group-item"><a href="#"><i class="fa fa-bolt fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Jobs</a></span>
+                                <span class="list-group-item"><a href="#"><i class="fa fa-unlock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Public&nbsp;&nbsp;jobs</a></span>
+                                <span class="list-group-item"><a href="#"><i class="fa fa-lock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Private&nbsp;&nbsp;jobs</a></span>
+                                <span class="list-group-item"><a href="#"><i class="fa fa-star fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Starred&nbsp;&nbsp;jobs</a></span>
+                                <span class="list-group-item"><a href="#"><i class="fa fa-comments fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Comments</a></span>
+                            </div>
+                        </div>
+                        <!-- End Job List Group -->
 
-            <!-- Job List Group -->
-            <div class="block left-nav">
-              <div class="block-title">
-                <h2><strong>
+                        <!-- Job List Group -->
+                        <div class="block left-nav">
+                            <div class="block-title">
+                                <h2><strong>
                   Organization
                 </strong></h2>
-              </div>
-              <div class="list-group">
-              </div>
-            </div>
-            <!-- End Job List Group -->
+                            </div>
+                            <div class="list-group">
+                            </div>
+                        </div>
+                        <!-- End Job List Group -->
 
 
-            <!-- Job List Group -->
-            <div class="block left-nav">
-              <div class="block-title">
-                <h2><strong>
+                        <!-- Job List Group -->
+                        <div class="block left-nav">
+                            <div class="block-title">
+                                <h2><strong>
                   服务状态
                 </strong></h2>
-              </div>
-              <div class="list-group">
-              </div>
+                            </div>
+                            <div class="list-group">
+                            </div>
+                        </div>
+                        <!-- End Job List Group -->
+
+
+
+
+                    </div>
+                </div>
+                <!-- End Left Bar -->
             </div>
-            <!-- End Job List Group -->
-
-
-
-
-          </div>
-        </div>
-        <!-- End Left Bar -->
-      </div>
     </div>
 
     <script src="static/javascript/utils.js"></script>
@@ -116,8 +120,9 @@
     <script src="static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
     <script src="static/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
     <script src="static/bower_components/angular-growl-v2/build/angular-growl.min.js"></script>
-    
+
     <script src="static/javascript/dashboard/dashboard.js"></script>
-    
-  </body>
+
+</body>
+
 </html>

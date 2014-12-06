@@ -74,10 +74,10 @@ func runDoc(c *cli.Context) {
 			if len(strings.TrimSpace(c.String("prefix"))) == 0 {
 				fmt.Println(errors.New("请输入prefix的值"))
 				return
-			} else if err := doc.Query(true, ""); err != nil {
+			} else if _, err := doc.Query(true); err != nil {
 				fmt.Println(err)
 			}
-		} else if err := doc.Query(false, strings.TrimSpace(c.String("key"))); err != nil {
+		} else if _, err := doc.Query(false, strings.TrimSpace(c.String("key"))); err != nil {
 			fmt.Println(err)
 		}
 	default:
