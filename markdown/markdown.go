@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"sync"
 	"syscall"
 )
 
@@ -31,6 +32,12 @@ import (
 5 删除掉本地存在，远程库已经删除的数据
 6 对存在数据进行添加和更新
 */
+
+var (
+	ledisOnce sync.Once
+	nowLedis  *ledis.Ledis
+	conn      *ledis.DB
+)
 
 type Doc struct {
 	Remote  string           //远程git库的地址
@@ -199,9 +206,8 @@ func (doc *Doc) Save() error {
 		return err
 	} else if err = doc.load(); err != nil {
 		return err
-	} else if err = doc.initDB(); err != nil {
-		return err
 	}
+	doc.initDB()
 	//清除掉数据库中多余的部分
 	var i int //记录删除记录数
 	fileNames, _ := doc.Conn.HKeys([]byte(doc.Prefix))
@@ -266,21 +272,32 @@ func (doc *Doc) validate(action string) error {
 	return nil
 }
 
-func (doc *Doc) initDB() error {
+func (doc *Doc) initDB() {
+	doc.Conn = conn
+}
+
+func init() {
 	//如果存储路径不存在，则创建路径
-	if !IsDirExist(doc.Storage) {
-		CreateDir(doc.Storage)
+	if !IsDirExist("/tmp/docs") {
+		CreateDir("/tmp/docs")
 	}
-	cfg := new(config.Config)
-	cfg.DataDir = doc.Storage
+	initLedisFunc := func() {
+		cfg := new(config.Config)
+		cfg.DataDir = "/tmp/docs"
+		var err error
+		nowLedis, err = ledis.Open(cfg)
+		if err != nil {
+			println(err.Error())
+			panic(err)
+		}
+	}
+	ledisOnce.Do(initLedisFunc)
 	var err error
-	nowLedis, err := ledis.Open(cfg)
-	doc.Conn, err = nowLedis.Select(doc.Db)
+	conn, err = nowLedis.Select(6)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	log.Println("....初始化数据库成功")
-	return nil
 }
 
 func (doc *Doc) clone() error {
