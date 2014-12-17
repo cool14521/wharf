@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/astaxie/beego"
 	"github.com/shurcooL/go/github_flavored_markdown"
 	"github.com/siddontang/ledisdb/config"
 	"github.com/siddontang/ledisdb/ledis"
@@ -278,12 +279,12 @@ func (doc *Doc) initDB() {
 
 func init() {
 	//如果存储路径不存在，则创建路径
-	if !IsDirExist("/tmp/docs") {
-		CreateDir("/tmp/docs")
+	if !IsDirExist(beego.AppConfig.String("markdown::DataDir")) {
+		CreateDir(beego.AppConfig.String("markdown::DataDir"))
 	}
 	initLedisFunc := func() {
 		cfg := new(config.Config)
-		cfg.DataDir = "/tmp/docs"
+		cfg.DataDir = beego.AppConfig.String("markdown::DataDir")
 		var err error
 		nowLedis, err = ledis.Open(cfg)
 		if err != nil {
@@ -293,7 +294,7 @@ func init() {
 	}
 	ledisOnce.Do(initLedisFunc)
 	var err error
-	conn, err = nowLedis.Select(6)
+	conn, err = nowLedis.Select(beego.AppConfig.Int("markdown::Db"))
 	if err != nil {
 		panic(err)
 	}
