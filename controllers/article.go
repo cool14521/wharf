@@ -16,8 +16,6 @@ type ArticleController struct {
 func (this *ArticleController) GetArticle() {
 	//加载markdown文件
 	doc := new(markdown.Doc)
-	doc.Storage = "/tmp/docs"
-	doc.Db = 6
 	items, err := doc.Query(false, "private-docker-registry-with-nginx")
 	if err != nil {
 		beego.Trace(err)
