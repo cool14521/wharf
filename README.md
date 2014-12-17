@@ -91,7 +91,9 @@ FilePath = /tmp/log
 FileName = bucket-log
 
 [markdown]
-Docs = test/docs
+DataDir = /tmp/doc_data/
+Db = 6
+
 ```
 
 Nginx Conf
