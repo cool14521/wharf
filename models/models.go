@@ -2,12 +2,13 @@ package models
 
 import (
 	"fmt"
-	"strings"
-	"sync"
-
 	"github.com/astaxie/beego"
+	"github.com/dockercn/docker-bucket/utils"
 	"github.com/siddontang/ledisdb/config"
 	"github.com/siddontang/ledisdb/ledis"
+	"reflect"
+	"strings"
+	"sync"
 )
 
 const (
@@ -89,4 +90,36 @@ func GetObjectKey(object string, id string) string {
 	default:
 		return ""
 	}
+}
+
+func Save(obj interface{}, key []byte) error {
+	s := reflect.TypeOf(obj).Elem()
+
+	//循环处理 Struct 的每一个 Field
+	for i := 0; i < s.NumField(); i++ {
+		//获取 Field 的 Value
+		value := reflect.ValueOf(obj).Elem().Field(s.Field(i).Index[0])
+
+		//判断 Field 不为空
+		if utils.IsEmptyValue(value) == false {
+			switch value.Kind() {
+			case reflect.String:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(value.String())); err != nil {
+					return err
+				}
+			case reflect.Bool:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.BoolToBytes(value.Bool())); err != nil {
+					return err
+				}
+			case reflect.Int64:
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
+					return err
+				}
+			default:
+				return fmt.Errorf("不支持的数据类型 %s:%s", s.Field(i).Name, value.Kind().String())
+			}
+		}
+
+	}
+	return nil
 }
