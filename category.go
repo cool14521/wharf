@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
+	"github.com/astaxie/beego"
+	"github.com/codegangsta/cli"
+	"github.com/dockercn/docker-bucket/markdown"
 	"io/ioutil"
 	"os"
 	"strings"
-
-	"github.com/codegangsta/cli"
-	"github.com/dockercn/docker-bucket/markdown"
 )
 
 var CmdDoc = cli.Command{
@@ -28,7 +27,7 @@ var CmdDoc = cli.Command{
 func runCategory(c *cli.Context) {
 	action := strings.TrimSpace(c.String("action"))
 	if len(action) == 0 {
-		fmt.Println(errors.New("文档操作请输入action的值"))
+		beego.Trace(errors.New("文档操作请输入action的值"))
 		return
 	}
 	category := &markdown.Category{
@@ -39,45 +38,51 @@ func runCategory(c *cli.Context) {
 	switch action {
 	case "sync":
 		if err := validate(category, "sync"); err != nil {
-			fmt.Println(err)
+			beego.Trace(err)
 			return
 		} else if err := category.Sync(); err != nil {
-			fmt.Println(err)
+			beego.Trace(err)
 			return
 		}
 	case "render":
 		if err := validate(category, "render"); err != nil {
-			fmt.Println(err)
+			beego.Trace(err)
 			return
 		} else if err := category.Render(); err != nil {
-			fmt.Println(err)
+			beego.Trace(err)
 			return
 		}
 	case "save":
 		if err := validate(category, "save"); err != nil {
-			fmt.Println(err)
+			beego.Trace(err)
 			return
 		} else if err := category.Save(); err != nil {
-			fmt.Println(err)
+			beego.Trace(err)
 			return
 		}
 	case "query":
 		if err := validate(category, "query"); err != nil {
-			fmt.Println(err)
+			beego.Trace(err)
 			return
 		}
 		if len(strings.TrimSpace(c.String("permalink"))) == 0 {
 			if len(strings.TrimSpace(c.String("prefix"))) == 0 {
-				fmt.Println(errors.New("请输入prefix的值"))
+				beego.Trace(errors.New("请输入prefix的值"))
 				return
-			} else if _, err := category.Query(true); err != nil {
-				fmt.Println(err)
+			} else if docs, err := category.Query(true); err != nil {
+				beego.Trace(err)
+				return
+			} else {
+				beego.Trace(docs)
 			}
-		} else if _, err := category.Query(false, strings.TrimSpace(c.String("permalink"))); err != nil {
-			fmt.Println(err)
+		} else if docs, err := category.Query(false, strings.TrimSpace(c.String("permalink"))); err != nil {
+			beego.Trace(err)
+			return
+		} else {
+			beego.Trace(docs[0])
 		}
 	default:
-		fmt.Println(errors.New("输入的action参数不存在"))
+		beego.Trace(errors.New("输入的action参数不存在"))
 	}
 }
 
