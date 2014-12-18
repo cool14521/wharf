@@ -8,6 +8,7 @@ import (
 	_ "github.com/astaxie/beego/session/ledis"
 	"github.com/codegangsta/cli"
 
+	"github.com/dockercn/docker-bucket/crontab"
 	"github.com/dockercn/docker-bucket/email"
 	"github.com/dockercn/docker-bucket/models"
 	_ "github.com/dockercn/docker-bucket/routers"
@@ -56,6 +57,8 @@ func runWeb(c *cli.Context) {
 	//初始化 数据库
 	models.InitDb()
 	email.StartService()
+	//初始化定时任务
+	crontab.InitTask()
 	//运行 Application
 	beego.Run(fmt.Sprintf("%v:%v", address, port))
 }
