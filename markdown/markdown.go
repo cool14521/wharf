@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -57,6 +58,7 @@ type Doc struct {
 	Tags      string //文章标签集合
 	Path      string //文章路径
 	Author    string //文章作者
+	Views     int64  //阅读次数
 }
 
 //远程同步的到本地的操作
@@ -193,9 +195,14 @@ func (category *Category) Query(isDict bool, permalink ...string) ([]*Doc, error
 				doc.Path = string(data)
 			case "author":
 				doc.Author = string(data)
+			case "views":
+				doc.Views, _ = strconv.ParseInt(string(data), 0, 64)
 			}
 		}
 		docs = append(docs, doc)
+		//查阅数加1
+		doc.Views = doc.Views + 1
+		category.Conn.HSet([]byte(permalink[0]), []byte("views"), []byte(fmt.Sprint(doc.Views)))
 	}
 	return docs, nil
 }
@@ -209,17 +216,28 @@ func (category *Category) Save() error {
 	}
 	category.initDB()
 	//清除掉数据库中多余的部分
-	var i int //记录删除记录数
+	var deleted, updated, insert int //记录删除，更新，插入记录数
 	permalinks, _ := category.Conn.HKeys([]byte(category.Prefix))
 	for _, permalink := range permalinks {
-		if _, found := category.DocMap[string(permalink)]; !found {
+		beego.Trace(string(permalink))
+		if doc, found := category.DocMap[string(permalink)]; !found {
 			//在目录中没有查到该文件，则进行删除
 			category.Conn.HDel([]byte(category.Prefix), []byte(string(permalink)))
-			category.Conn.HDel([]byte(string(permalink)), []byte("title"), []byte("desc"), []byte("keywords"), []byte("content"), []byte("tags"), []byte("author"))
-			i++
+			category.Conn.HDel([]byte(string(permalink)), []byte("title"), []byte("desc"), []byte("keywords"), []byte("content"), []byte("tags"), []byte("author"), []byte("views"), []byte("updated"))
+			deleted++
+		} else if found && doc.Permalink != "" {
+			//如果存在，则更新数据库中数据，从docMap中移除
+			category.Conn.HSet([]byte(category.Prefix), []byte(doc.Permalink), []byte(doc.Title+"|"+doc.Updated))
+			category.Conn.HSet([]byte(doc.Permalink), []byte("desc"), []byte(doc.Desc))
+			category.Conn.HSet([]byte(doc.Permalink), []byte("keywords"), []byte(doc.Keywords))
+			category.Conn.HSet([]byte(doc.Permalink), []byte("content"), []byte(doc.Content))
+			category.Conn.HSet([]byte(doc.Permalink), []byte("tags"), []byte(doc.Tags))
+			category.Conn.HSet([]byte(doc.Permalink), []byte("author"), []byte(doc.Author))
+			category.Conn.HSet([]byte(doc.Permalink), []byte("updated"), []byte(doc.Updated))
+			delete(category.DocMap, doc.Permalink)
+			updated++
 		}
 	}
-	beego.Trace("....已经删除数据库中多余数据")
 	//插入或更新数据库
 	for _, doc := range category.DocMap {
 		category.Conn.HSet([]byte(category.Prefix), []byte(doc.Permalink), []byte(doc.Title+"|"+doc.Updated))
@@ -230,8 +248,11 @@ func (category *Category) Save() error {
 		category.Conn.HSet([]byte(doc.Permalink), []byte("content"), []byte(doc.Content))
 		category.Conn.HSet([]byte(doc.Permalink), []byte("tags"), []byte(doc.Tags))
 		category.Conn.HSet([]byte(doc.Permalink), []byte("author"), []byte(doc.Author))
+		category.Conn.HSet([]byte(doc.Permalink), []byte("updated"), []byte(doc.Updated))
+		category.Conn.HSet([]byte(doc.Permalink), []byte("views"), []byte("0"))
+		insert++
 	}
-	beego.Trace("....插入或更新数据成功")
+	beego.Trace("....本次操作输入数据", insert, "条，删除数据", deleted, "条，更新数据", updated, "条")
 	os.Remove(".render")
 	return nil
 }
@@ -293,7 +314,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	beego.Trace("....初始化数据库成功")
 }
 
 func (category *Category) clone() error {
@@ -348,7 +368,7 @@ func (doc *Doc) generate() error {
 		}
 		if strings.HasPrefix(line, "@title:") {
 			doc.Title = strings.TrimRight(line, "\n")
-			doc.Title = strings.Replace(doc.Title, "@title", "", 1)
+			doc.Title = strings.Replace(doc.Title, "@title:", "", 1)
 			continue
 		} else if strings.HasPrefix(line, "@keywords:") {
 			doc.Keywords = strings.TrimRight(line, "\n")
@@ -370,7 +390,6 @@ func (doc *Doc) generate() error {
 		doc.Content = doc.Content + line
 	}
 	doc.Content = markdown2html(doc.Content)
-	beego.Trace("....", doc.Path, ";文件预处理完成;success")
 	return nil
 }
 
