@@ -45,43 +45,39 @@
                     </li>
                     <li><a href="active">Documents</a>
                     </li>
-                    <span class="nav-local-span">用 Nginx 来做私有 docker registry 的安全控制</span>
+                    <span class="nav-local-span"><<<.title>>></span>
                 </ol>
             </div>
             <div class="row">
                 <div class="col-md-8">
                     <div class="row">
-                        <h4 class="h1 h1-title">用 Nginx 来做私有 docker registry 的安全控制</h4>
+                        <h4 class="h1 h1-title"><<<.title>>></h4>
                     </div>
                     <div class="row">
                         <div class="tit_bar">
-                            发表于<span class="ago">2小时前</span>|
-                            <span class="view_time">1922次阅读</span>| 来源
+                            发布时间<span class="ago"><<<.updated>>></span>|
+                            <span class="view_time"><<<.views>>>次阅读</span>| 来源
                             <span class="ago">docker.cn</span>|
                             <span class="num_recom"><font id="remark_count1" class="cmtcount" style="font-size:12px;color:#c00;">13</font> 条评论</span>| 作者
-                            <span class="ago">蔡煜</span>
+                            <span class="ago"><<<.author>>></span>
                         </div>
                     </div>
                     <div class="row row-list-inline">
                         <ul class="list-inline sidebar-tags">
+                            <<<range $key, $val := .tags>>>
                             <li>
                                 <a href="#">
-                                    <i class="fa fa-tags"></i> Electronics </a>
+                                    <i class="fa fa-tags"></i>
+                                     <<<$val>>></a>
                             </li>
-                            <li>
-                                <a href="#">
-                                    <i class="fa fa-tags"></i> Apple </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <i class="fa fa-tags"></i> Canada </a>
-                            </li>
+                            <<<end>>>
                         </ul>
                     </div>
                     <div class="row">
                         <div class="summary">
                             <p>
-                                <strong>摘要：</strong>Angry Birds品牌走冷，免费增值模式盛行，公司团队超于实际的增长速度，Rovio最终采取了和大多数公司一样的手法来精简求生，将裁员110人，部分职位内部招聘，关闭坦佩雷游戏工作室，全力巩固芬兰整体业务。
+                                <strong>摘要：</strong>
+                                <<<.desc>>>
                             </p>
                         </div>
                     </div>
@@ -107,7 +103,7 @@
             </div>
             <div class="row">
                 <div class="col-md-8">
-					<<<str2html .content>>>
+                    <<<str2html .content>>>
                 </div>
                 <div class="col-md-4 col-article-border">
                     <div class="article-recomend">
