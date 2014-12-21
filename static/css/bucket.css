@@ -6423,7 +6423,8 @@ a.text-primary:focus {
 
 /* css for article  start*/
 .nav-local {
-    background-color:white;    
+    background-color:white; 
+    margin-top:5px;
 }
 
 .tit_bar {
@@ -6488,13 +6489,16 @@ a.text-primary:focus {
     border-radius: 4px;
     background-color:#95A5A6;
 }
+.row-desc {
+	margin-top:-35px;    
+}
 
 .row-collect {
-    margin-top:20px;
+    margin-top:25px;
 }
 
 .row-recommend {
-    margin-top:60px;
+    margin-top:25px;
 }
 .span-recommend {
     font-size: 13px;
@@ -6507,6 +6511,12 @@ a.text-primary:focus {
 	padding: 5px 10px;
 	background: #f7f7f7;
     margin-left:15px;
+    letter-spacing:1.5px;
+    text-align:justify;
+}
+
+.main-content {
+    text-align:justify;
 }
 
 .summary>p {
