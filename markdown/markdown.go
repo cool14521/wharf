@@ -172,6 +172,10 @@ func (category *Category) Query(isDict bool, permalink ...string) ([]*Doc, error
 			break
 		}
 		attrs, _ := category.Conn.HKeys([]byte(permalink[0]))
+		//未查到文件 返回错误
+		if len(attrs) == 0 {
+			return nil, errors.New("查询文件不存在")
+		}
 		doc := new(Doc)
 		for _, attr := range attrs {
 			data, _ := category.Conn.HGet([]byte(permalink[0]), attr)

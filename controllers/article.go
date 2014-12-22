@@ -15,11 +15,14 @@ type ArticleController struct {
 }
 
 func (this *ArticleController) GetArticle() {
+	//读取参数
+	pernalink := this.Ctx.Input.Param(":article")
 	//加载markdown文件
 	category := new(markdown.Category)
-	docs, err := category.Query(false, "automate-docker-and-enhance-your-devops-flows-with-hp-operations-orchestration-en")
+	docs, err := category.Query(false, pernalink)
 	if err != nil {
-		beego.Trace(err)
+		this.Abort("401")
+		return
 	}
 	this.TplNames = "article.html"
 	this.Data["content"] = docs[0].Content
@@ -30,4 +33,5 @@ func (this *ArticleController) GetArticle() {
 	this.Data["views"] = docs[0].Views
 	this.Data["updated"] = docs[0].Updated
 	this.Render()
+	return
 }

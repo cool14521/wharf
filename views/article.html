@@ -8,10 +8,11 @@
 <head>
     <meta charset="utf-8">
 
-    <title>Docker Bucket - 用户设置</title>
+    <title>Docker Bucket -
+        <<<.title>>></title>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8">
 
-    <meta name="description" content="<<<.description>>>">
+    <meta name="description" content="<<<.desc>>>">
     <meta name="author" content="<<<.author>>>">
     <meta name="robots" content="noindex, noflilow">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0">
@@ -41,11 +42,12 @@
             <!--显示用户所在路径-->
             <div class="row">
                 <ol class="breadcrumb nav-local">
-                    <li><a href="#">Home</a>
+                    <li><a href="/">Home</a>
                     </li>
-                    <li><a href="active">Documents</a>
+                    <li><a href="/documents">Documents</a>
                     </li>
-                    <span class="nav-local-span"><<<.title>>></span>
+                    <li><a href="/documents/<<<.title>>>"><span class="nav-local-span"><<<.title>>></span></a>
+                    </li>
                 </ol>
             </div>
             <div class="row row-desc">
@@ -55,22 +57,21 @@
                     </div>
                     <div class="row">
                         <div class="tit_bar">
-                            发布时间<span class="ago"><<<.updated>>></span>|
-                            <span class="view_time"><<<.views>>>次阅读</span>| 来源
-                            <span class="ago">docker.cn</span>|
-                            <span class="num_recom"><font id="remark_count1" class="cmtcount" style="font-size:12px;color:#c00;">13</font> 条评论</span>| 作者
+                            发布时间<span class="ago"><<<.updated>>></span>&nbsp;&nbsp;&nbsp;
+                            <span class="view_time"><font id="remark_count1" class="cmtcount" style="font-size:12px;color:#c00;"><<<.views>>></font>&nbsp;次阅读</span>&nbsp;&nbsp;&nbsp;
+                            <span class="num_recom"><font id="remark_count1" class="cmtcount" style="font-size:12px;color:#c00;">13</font>&nbsp;条评论</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;作者
                             <span class="ago"><<<.author>>></span>
                         </div>
                     </div>
                     <div class="row row-list-inline">
                         <ul class="list-inline sidebar-tags">
-                            <<<range $key, $val := .tags>>>
-                            <li>
-                                <a href="#">
-                                    <i class="fa fa-tags"></i>
-                                     <<<$val>>></a>
-                            </li>
-                            <<<end>>>
+                            <<<range $key, $val :=.tags>>>
+                                <li>
+                                    <a href="/documents/tags/<<<$val>>>">
+                                        <i class="fa fa-tags"></i>
+                                        <<<$val>>></a>
+                                </li>
+                                <<<end>>>
                         </ul>
                     </div>
                     <div class="row">
@@ -84,23 +85,33 @@
                 </div>
                 <div class="col-md-4">
                     <div class="row row-recommend">
-                        <div class="col-md-4">
-                            <a class="btn-recommend">推荐</a><span class="span-recommend">1&nbsp;&nbsp;推荐</span>
+                        <div class="col-md-6">
+                            <a class="btn-recommend" href="#">分享</a><span class="span-recommend">&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;分享</span>
                         </div>
-                        <div class="col-md-4">
-                            <a class="btn-collect">收藏</a><span class="span-recommend">1&nbsp;&nbsp;收藏</span>
+                        <div class="col-md-6">
+                            <a class="btn-collect" href="#">收藏</a><span class="span-recommend">&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;收藏</span>
                         </div>
                     </div>
                     <div class="row">
-                                                
+                        <div class="message">
+                            <div class="col-md-2" style="color:#428bca;margin-left:-10px;">
+                                <i class="fa fa-volume-up fa-3x"></i>
+                            </div>
+                            <div class="col-md-10">
+                                <h4 class="broadcast-title"><a style="color:#428bca;" href="/broadcast"><span class="broadcast-span">See results from all pull request status checks</span></a></h4>
+                                <p style="font-size:12px;">
+                                    Be more confident that a branch is passing all your tests, from CI and security testing to code coverage analysis.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-8">
                     <div class="main-content">
-                        <<<str2html .content>>
-                    </div>>
+                        <<<str2html .content>>>
+                    </div>
                 </div>
                 <div class="col-md-4 col-article-border">
                     <div class="article-recomend">
