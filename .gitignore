@@ -25,5 +25,6 @@ docker-bucket
 .vendor/*
 nohup.out
 conf/bucket.conf
+conf/app.conf
 var/*
 cert/*

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html class="no-js lt-ie9"> <![endif]-->
+<!--[if IE 9]> <html class="no-js lt-ie10"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Docker Bucket -
+        <<<.title>>></title>
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8">
+
+    <meta name="description" content="<<<.desc>>>">
+    <meta name="author" content="<<<.author>>>">
+    <meta name="robots" content="noindex, noflilow">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0">
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="">
+    <link rel="apple-touch-icon" href="" sizes="57x57">
+    <link rel="apple-touch-icon" href="" sizes="72x72">
+    <link rel="apple-touch-icon" href="" sizes="76x76">
+    <link rel="apple-touch-icon" href="" sizes="114x114">
+    <link rel="apple-touch-icon" href="" sizes="120x120">
+    <link rel="apple-touch-icon" href="" sizes="144x144">
+    <link rel="apple-touch-icon" href="" sizes="152x152">
+    <!-- END Icons -->
+
+    <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/bower_components/angular-growl-v2/build/angular-growl.min.css">
+    <link rel="stylesheet" href="/static/css/bucket.css">
+    <link rel="stylesheet" href="/static/css/header.css">
+</head>
+
+<body ng-app="article">
+    <<<template "header.html" .>>>
+        <!--左侧为文章的内容，右侧为最近文章更新列表-->
+        <div class="container">
+            <!--显示用户所在路径-->
+            <div class="row">
+                <ol class="breadcrumb nav-local">
+                    <li><a href="/">Home</a>
+                    </li>
+                    <li><a href="/documents">Documents</a>
+                    </li>
+                    <li><a href="/documents/<<<.title>>>"><span class="nav-local-span"><<<.title>>></span></a>
+                    </li>
+                </ol>
+            </div>
+            <div class="row row-desc">
+                <div class="col-md-8">
+                    <div class="row">
+                        <h4 class="h1 h1-title"><<<.title>>></h4>
+                    </div>
+                    <div class="row">
+                        <div class="tit_bar">
+                            发布时间<span class="ago"><<<.updated>>></span>&nbsp;&nbsp;&nbsp;
+                            <span class="view_time"><font id="remark_count1" class="cmtcount" style="font-size:12px;color:#c00;"><<<.views>>></font>&nbsp;次阅读</span>&nbsp;&nbsp;&nbsp;
+                            <span class="num_recom"><font id="remark_count1" class="cmtcount" style="font-size:12px;color:#c00;">13</font>&nbsp;条评论</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;作者
+                            <span class="ago"><<<.author>>></span>
+                        </div>
+                    </div>
+                    <div class="row row-list-inline">
+                        <ul class="list-inline sidebar-tags">
+                            <<<range $key, $val :=.tags>>>
+                                <li>
+                                    <a href="/documents/tags/<<<$val>>>">
+                                        <i class="fa fa-tags"></i>
+                                        <<<$val>>></a>
+                                </li>
+                                <<<end>>>
+                        </ul>
+                    </div>
+                    <div class="row">
+                        <div class="summary">
+                            <p>
+                                <strong>摘要：</strong>
+                                <<<.desc>>>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="row row-recommend">
+                        <div class="col-md-6">
+                            <a class="btn-recommend" href="#">分享</a><span class="span-recommend">&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;分享</span>
+                        </div>
+                        <div class="col-md-6">
+                            <a class="btn-collect" href="#">收藏</a><span class="span-recommend">&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;收藏</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="message">
+                            <div class="col-md-2" style="color:#428bca;margin-left:-10px;">
+                                <i class="fa fa-volume-up fa-3x"></i>
+                            </div>
+                            <div class="col-md-10">
+                                <h4 class="broadcast-title"><a style="color:#428bca;" href="/broadcast"><span class="broadcast-span">See results from all pull request status checks</span></a></h4>
+                                <p style="font-size:12px;">
+                                    Be more confident that a branch is passing all your tests, from CI and security testing to code coverage analysis.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="main-content">
+                        <<<str2html .content>>>
+                    </div>
+                </div>
+                <div class="col-md-4 col-article-border">
+                    <div class="article-recomend">
+                        <h6>热门文章</h6>
+                        <ul>
+                            <li class="li-article"><a href="">Docker 1.3.2 in Stable Channel</a>
+                            </li>
+                            <li class="li-article"><a href="">CoreOS 实战：剖析 etcd</a>
+                            </li>
+                            <li class="li-article"><a href="">用 Nginx 来做私有 docker registry 的安全控制</a>
+                            </li>
+                            <li class="li-article"><a href="">Flynn 初探</a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+</body>
+
+</html>

@@ -91,7 +91,14 @@ FilePath = /tmp/log
 FileName = bucket-log
 
 [markdown]
-Docs = test/docs
+DataDir = /tmp/doc_data/
+Db = 6
+
+[category]
+Prefix = doc
+Local = /tmp/category
+Remote = https://github.com/xxx/docs1.git
+
 ```
 
 Nginx Conf

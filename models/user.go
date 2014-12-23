@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"regexp"
 	"sort"
 	"time"
@@ -99,7 +98,7 @@ func (user *User) Put(username string, passwd string, email string) error {
 		user.Created = time.Now().Unix()
 
 		//保存 User 对象的数据
-		if err := user.Save(key); err != nil {
+		if err := Save(user, key); err != nil {
 			return err
 		} else {
 			//在全局 @user 数据中保存 key 信息
@@ -142,7 +141,7 @@ func (user *User) ResetPasswd(username, password string) error {
 		user.Password = password
 		user.Updated = time.Now().Unix()
 
-		if err := user.Save(key); err != nil {
+		if err := Save(user, key); err != nil {
 			return err
 		}
 	} else {
@@ -190,7 +189,7 @@ func (user *User) AddRepository(username, repository, key string) error {
 	user.Repositories = string(repo)
 	user.Updated = time.Now().Unix()
 
-	if err := user.Save(u); err != nil {
+	if err := Save(user, u); err != nil {
 		return err
 	}
 
@@ -233,7 +232,7 @@ func (user *User) RemoveRepository(username, repository string) error {
 	user.Repositories = string(repo)
 	user.Updated = time.Now().Unix()
 
-	if err := user.Save(u); err != nil {
+	if err := Save(user, u); err != nil {
 		return err
 	}
 
@@ -276,7 +275,7 @@ func (user *User) AddOrganization(username, org, member string) error {
 	user.Organizations = string(os)
 	user.Updated = time.Now().Unix()
 
-	if err := user.Save(u); err != nil {
+	if err := Save(user, u); err != nil {
 		return err
 	}
 
@@ -317,42 +316,8 @@ func (user *User) RemoveOrganization(username, org string) error {
 	user.Organizations = string(os)
 	user.Updated = time.Now().Unix()
 
-	if err := user.Save(u); err != nil {
+	if err := Save(user, u); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-//循环 User 的所有 Property ，保存数据
-func (user *User) Save(key []byte) error {
-	s := reflect.TypeOf(user).Elem()
-
-	//循环处理 Struct 的每一个 Field
-	for i := 0; i < s.NumField(); i++ {
-		//获取 Field 的 Value
-		value := reflect.ValueOf(user).Elem().Field(s.Field(i).Index[0])
-
-		//判断 Field 不为空
-		if utils.IsEmptyValue(value) == false {
-			switch value.Kind() {
-			case reflect.String:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(value.String())); err != nil {
-					return err
-				}
-			case reflect.Bool:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.BoolToBytes(value.Bool())); err != nil {
-					return err
-				}
-			case reflect.Int64:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
-					return err
-				}
-			default:
-				return fmt.Errorf("不支持的数据类型 %s:%s", s.Field(i).Name, value.Kind().String())
-			}
-		}
-
 	}
 
 	return nil
@@ -427,7 +392,7 @@ func (org *Organization) Put(user, name, description string) error {
 		org.Updated = time.Now().Unix()
 		org.Created = time.Now().Unix()
 
-		if err := org.Save(key); err != nil {
+		if err := Save(org, key); err != nil {
 			return err
 		} else {
 			//保存成功后在全局变量 #org 中保存 Key 的信息。
@@ -492,7 +457,7 @@ func (org *Organization) AddUser(name, user, member string) error {
 	org.Users = string(us)
 	org.Updated = time.Now().Unix()
 
-	if err = org.Save(o); err != nil {
+	if err = Save(org, o); err != nil {
 		return err
 	}
 
@@ -541,7 +506,7 @@ func (org *Organization) RemoveUser(name, user string) error {
 	org.Users = string(us)
 	org.Updated = time.Now().Unix()
 
-	if err = org.Save(o); err != nil {
+	if err = Save(org, o); err != nil {
 		return err
 	}
 
@@ -590,7 +555,7 @@ func (org *Organization) AddRepository(name, repository, key string) error {
 	org.Repositories = string(rs)
 	org.Updated = time.Now().Unix()
 
-	if err = org.Save(o); err != nil {
+	if err = Save(org, o); err != nil {
 		return err
 	}
 
@@ -639,7 +604,7 @@ func (org *Organization) RemoveRepository(name, repository string) error {
 	org.Repositories = string(rs)
 	org.Updated = time.Now().Unix()
 
-	if err = org.Save(o); err != nil {
+	if err = Save(org, o); err != nil {
 		return err
 	}
 
@@ -696,7 +661,7 @@ func (org *Organization) AddPrivilege(name, user, repository string) error {
 			org.Privileges = string(ps)
 			org.Updated = time.Now().Unix()
 
-			if err = org.Save(o); err != nil {
+			if err = Save(org, o); err != nil {
 				return err
 			}
 
@@ -757,45 +722,11 @@ func (org *Organization) RemovePrivilege(name, user, repository string) error {
 			org.Privileges = string(ps)
 			org.Updated = time.Now().Unix()
 
-			if err = org.Save(o); err != nil {
+			if err = Save(org, o); err != nil {
 				return err
 			}
 
 		}
-	}
-
-	return nil
-}
-
-//循环 Org 的所有 Property ，保存数据
-func (org *Organization) Save(key []byte) error {
-	s := reflect.TypeOf(org).Elem()
-
-	//循环处理 Struct 的每一个 Field
-	for i := 0; i < s.NumField(); i++ {
-		//获取 Field 的 Value
-		value := reflect.ValueOf(org).Elem().Field(s.Field(i).Index[0])
-
-		//判断 Field 不为空
-		if utils.IsEmptyValue(value) == false {
-			switch value.Kind() {
-			case reflect.String:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(value.String())); err != nil {
-					return err
-				}
-			case reflect.Bool:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.BoolToBytes(value.Bool())); err != nil {
-					return err
-				}
-			case reflect.Int64:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
-					return err
-				}
-			default:
-				return fmt.Errorf("不支持的数据类型 %s:%s", s.Field(i).Name, value.Kind().String())
-			}
-		}
-
 	}
 
 	return nil
