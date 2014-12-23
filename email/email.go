@@ -73,10 +73,10 @@ func checkService() {
 	mailServer := new(models.MailServer)
 	servers := mailServer.Query()
 	if len(servers) == 0 {
-		log.Println("数据库中未设置任何smtp服务器,无法发送任何邮件")
+		log.Println("[email]数据库中未设置任何smtp服务器,无法发送任何邮件")
 		return
 	}
-	log.Println("邮件服务器设置检查完成，邮件服务正常启动")
+	log.Println("[email]邮件服务器设置检查完成，邮件服务正常启动")
 }
 
 //调用发送邮件服务 返回值bool表示是否发送  error表示如果发送是成功还是失败
@@ -239,7 +239,7 @@ func quotePrintEncode(w io.Writer, s string) error {
 		}
 		mc += len(nextOut)
 	}
-	// No trailing end-of-line?? Soft line break, then. TODO: is this sane?
+	// No trailing end-of-linejQuery21108770898473449051_1419300850373 Soft line break, then. TODO: is this sane?
 	if mc > 0 {
 		io.WriteString(w, "=\r\n")
 	}

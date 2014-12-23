@@ -21,15 +21,15 @@ func UpdateDocs() error {
 	category.Remote = beego.AppConfig.String("category::Remote")
 	category.Prefix = beego.AppConfig.String("category::Prefix")
 	if err := category.Sync(); err != nil {
-		beego.Trace("Sync错误，err=", err)
+		beego.Error("Sync错误，err=", err)
 		return err
 	} else if err = category.Render(); err != nil {
-		beego.Trace("Render错误，err=", err)
+		beego.Error("Render错误，err=", err)
 		return err
 	} else if err = category.Save(); err != nil {
-		beego.Trace("Save错误，err=", err)
+		beego.Error("Save错误，err=", err)
 		return err
 	}
-	beego.Error("同步更新文档完成......")
+	beego.Trace("同步更新文档完成")
 	return nil
 }

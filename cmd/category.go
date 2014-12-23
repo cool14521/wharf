@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"errors"
-	"github.com/astaxie/beego"
 	"github.com/codegangsta/cli"
 	"github.com/dockercn/docker-bucket/markdown"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 )
@@ -27,7 +27,7 @@ var CmdDoc = cli.Command{
 func runCategory(c *cli.Context) {
 	action := strings.TrimSpace(c.String("action"))
 	if len(action) == 0 {
-		beego.Trace(errors.New("文档操作请输入action的值"))
+		log.Fatalln(errors.New("文档操作请输入action的值"))
 		return
 	}
 	category := &markdown.Category{
@@ -38,51 +38,51 @@ func runCategory(c *cli.Context) {
 	switch action {
 	case "sync":
 		if err := validate(category, "sync"); err != nil {
-			beego.Trace(err)
+			log.Fatalln(err)
 			return
 		} else if err := category.Sync(); err != nil {
-			beego.Trace(err)
+			log.Fatalln(err)
 			return
 		}
 	case "render":
 		if err := validate(category, "render"); err != nil {
-			beego.Trace(err)
+			log.Fatalln(err)
 			return
 		} else if err := category.Render(); err != nil {
-			beego.Trace(err)
+			log.Fatalln(err)
 			return
 		}
 	case "save":
 		if err := validate(category, "save"); err != nil {
-			beego.Trace(err)
+			log.Fatalln(err)
 			return
 		} else if err := category.Save(); err != nil {
-			beego.Trace(err)
+			log.Fatalln(err)
 			return
 		}
 	case "query":
 		if err := validate(category, "query"); err != nil {
-			beego.Trace(err)
+			log.Fatalln(err)
 			return
 		}
 		if len(strings.TrimSpace(c.String("permalink"))) == 0 {
 			if len(strings.TrimSpace(c.String("prefix"))) == 0 {
-				beego.Trace(errors.New("请输入prefix的值"))
+				log.Fatalln(errors.New("请输入prefix的值"))
 				return
 			} else if docs, err := category.Query(true); err != nil {
-				beego.Trace(err)
+				log.Fatalln(err)
 				return
 			} else {
-				beego.Trace(docs)
+				log.Println(docs)
 			}
 		} else if docs, err := category.Query(false, strings.TrimSpace(c.String("permalink"))); err != nil {
-			beego.Trace(err)
+			log.Fatalln(err)
 			return
 		} else {
-			beego.Trace(docs[0])
+			log.Println(docs[0])
 		}
 	default:
-		beego.Trace(errors.New("输入的action参数不存在"))
+		log.Fatalln(errors.New("输入的action参数不存在"))
 	}
 }
 
@@ -90,17 +90,17 @@ func validate(category *markdown.Category, action string) error {
 	switch action {
 	case "sync":
 		if len(strings.TrimSpace(category.Remote)) == 0 || len(strings.TrimSpace(category.Local)) == 0 {
-			return errors.New("....markdown git地址初始化异常,请赋值remote和local")
+			return errors.New("markdown git地址初始化异常,请赋值remote和local")
 		}
 	case "render":
 		if len(strings.TrimSpace(category.Local)) == 0 {
-			return errors.New("....请输入local的值")
+			return errors.New("请输入local的值")
 		} else if files, _ := ioutil.ReadDir(category.Local); len(files) == 0 {
-			return errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
+			return errors.New("本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
 		}
 	case "save":
 		if _, err := os.Stat(".render"); err != nil || len(strings.TrimSpace(category.Prefix)) == 0 {
-			return errors.New("....请确认是否值之前执行了sync、render的操作;检查prefix的值")
+			return errors.New("请确认是否值之前执行了sync、render的操作;检查prefix的值")
 		}
 	}
 	return nil

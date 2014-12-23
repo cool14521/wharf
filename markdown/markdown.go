@@ -66,7 +66,7 @@ func (category *Category) Sync() error {
 	if err := category.validate("sync"); err != nil {
 		return err
 	}
-	beego.Trace("....开始同步git数据")
+	beego.Trace("[markdown]开始同步git数据")
 	//判断本地路径是否存在，不存在则创建
 	if !IsDirExist(category.Local) {
 		CreateDir(category.Local)
@@ -91,7 +91,7 @@ func (category *Category) Sync() error {
 		}
 		category.Local = category.Local + "/" + strings.Split(strings.Split(category.Remote, "/")[varlength-1], ".")[0]
 	}
-	beego.Trace("....仓库[", category.Remote, "]同步本地完成")
+	beego.Trace("[markdown]仓库[", category.Remote, "]同步本地完成")
 	return nil
 }
 
@@ -124,7 +124,7 @@ func (category *Category) Render() error {
 		doc.Path = fmt.Sprint(category.Local, "/", file.Name())
 		doc.Permalink = strings.Split(file.Name(), ".")[0]
 		if err := doc.generate(); err != nil {
-			beego.Trace(err)
+			beego.Error(err)
 			continue
 		}
 		fileMap[doc.Permalink] = doc
@@ -138,7 +138,7 @@ func (category *Category) Render() error {
 	if err != nil {
 		return err
 	}
-	beego.Trace("....文件预处理全部完成")
+	beego.Trace("[markdown]文件预处理全部完成")
 	return nil
 }
 
@@ -154,7 +154,7 @@ func (category *Category) Query(isDict bool, permalink ...string) ([]*Doc, error
 	case true:
 		//展示category的目录数据
 		if len(strings.TrimSpace(category.Prefix)) == 0 {
-			err = errors.New("...请输入查询目录category的前缀值")
+			err = errors.New("请输入查询目录category的前缀值")
 			return nil, err
 		}
 		permalinks, _ := category.Conn.HKeys([]byte(category.Prefix))
@@ -168,7 +168,7 @@ func (category *Category) Query(isDict bool, permalink ...string) ([]*Doc, error
 		}
 	case false:
 		if len(strings.TrimSpace(permalink[0])) == 0 {
-			err = errors.New("...请输入查询markdown文件的permalink值")
+			err = errors.New("请输入查询markdown文件的permalink值")
 			break
 		}
 		attrs, _ := category.Conn.HKeys([]byte(permalink[0]))
@@ -256,7 +256,7 @@ func (category *Category) Save() error {
 		category.Conn.HSet([]byte(doc.Permalink), []byte("views"), []byte("0"))
 		insert++
 	}
-	beego.Trace("....本次操作输入数据", insert, "条，删除数据", deleted, "条，更新数据", updated, "条")
+	beego.Trace("[markdown]本次操作输入数据", insert, "条，删除数据", deleted, "条，更新数据", updated, "条")
 	os.Remove(".render")
 	return nil
 }
@@ -266,9 +266,9 @@ func (category *Category) load() error {
 	bytes, _ := ioutil.ReadFile(".render")
 	err := json.Unmarshal(bytes, &category.DocMap)
 	if err != nil {
-		return errors.New("....加载缓存文件失败，请重新执行render操作")
+		return errors.New("加载缓存文件失败，请重新执行render操作")
 	}
-	beego.Trace("....加载缓存文件成功，开始进行数据库操作")
+	beego.Trace("[markdown]加载缓存文件成功，开始进行数据库操作")
 	return nil
 }
 
@@ -276,17 +276,17 @@ func (category *Category) validate(action string) error {
 	switch action {
 	case "sync":
 		if len(strings.TrimSpace(category.Remote)) == 0 || len(strings.TrimSpace(category.Local)) == 0 {
-			return errors.New("....markdown git地址初始化异常,请赋值remote和local")
+			return errors.New("markdown git地址初始化异常,请赋值remote和local")
 		}
 	case "render":
 		if !IsDirExist(category.Local) {
-			return errors.New("....本地路径不存在,请执行sync操作")
+			return errors.New("本地路径不存在,请执行sync操作")
 		} else if files, _ := ioutil.ReadDir(category.Local); len(files) == 0 {
-			return errors.New("....本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
+			return errors.New("本地路径不存在文件,无法进行转换处理，请执行sync操作,确认文件已经同步")
 		}
 	case "save":
 		if _, err := os.Stat(".render"); err != nil || len(strings.TrimSpace(category.Prefix)) == 0 {
-			return errors.New("....请确认是否值之前执行了sync、render的操作")
+			return errors.New("请确认是否值之前执行了sync、render的操作")
 		}
 	}
 	return nil
@@ -307,8 +307,7 @@ func init() {
 		var err error
 		nowLedis, err = ledis.Open(cfg)
 		if err != nil {
-			println(err.Error())
-			panic(err)
+			beego.Error(err)
 		}
 	}
 	ledisOnce.Do(initLedisFunc)
@@ -316,12 +315,12 @@ func init() {
 	db, _ := beego.AppConfig.Int("markdown::Db")
 	conn, err = nowLedis.Select(db)
 	if err != nil {
-		panic(err)
+		beego.Error(err)
 	}
 }
 
 func (category *Category) clone() error {
-	beego.Trace("....开始进行克隆操作", "remote=", category.Remote, ";local=", category.Local)
+	beego.Trace("[markdown]开始进行克隆操作", "remote=", category.Remote, ";local=", category.Local)
 	cmd := exec.Command("git", "clone", category.Remote)
 	cmd.Dir = category.Local
 	_, err := cmd.Output()
@@ -332,7 +331,7 @@ func (category *Category) clone() error {
 }
 
 func (category *Category) pull() error {
-	beego.Trace("....开始进行pull操作local=", category.Local)
+	beego.Trace("[markdown]开始进行pull操作local=", category.Local)
 	cmd := exec.Command("git", "pull")
 	cmd.Dir = category.Local
 	_, err := cmd.Output()
