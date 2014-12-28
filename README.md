@@ -11,7 +11,9 @@ go get github.com/astaxie/beego
 go get github.com/codegangsta/cli
 go get github.com/siddontang/ledisdb/ledis
 go get github.com/garyburd/redigo/redis
-go get github.com/shurcooL/go/github_flavored_markdown
+go get github.com/chliang2030598/go/github_flavored_markdown
+go get github.com/sourcegraph/syntaxhighlight
+
 go build
 ```
 `TODO` 支持 **gopm** 编译程序
