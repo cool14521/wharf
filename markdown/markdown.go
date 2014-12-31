@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
-	"github.com/chliang2030598/go/github_flavored_markdown"
+	"github.com/shurcool/go/github_flavored_markdown"
 	"github.com/siddontang/ledisdb/config"
 	"github.com/siddontang/ledisdb/ledis"
 	"html/template"
