@@ -22,6 +22,7 @@ func init() {
 		beego.NSRouter("/signin", &controllers.AuthWebController{}, "post:Signin"),
 		beego.NSRouter("/reset", &controllers.AuthWebController{}, "post:ResetPasswd"),
 		beego.NSRouter("/signup", &controllers.AuthWebController{}, "post:Signup"),
+		beego.NSRouter("/:username/gravatar", &controllers.UsersWebController{}, "post:PostGravatar"),
 	)
 
 	//CI Service API
