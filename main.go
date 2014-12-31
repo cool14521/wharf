@@ -3,12 +3,17 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/astaxie/beego"
 	"github.com/codegangsta/cli"
 
 	"github.com/dockercn/docker-bucket/cmd"
 )
+
+func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
 
 func main() {
 	beego.SetLogger("file", fmt.Sprintf("{\"filename\":\"%s/%s.log\"}", beego.AppConfig.String("log::FilePath"), beego.AppConfig.String("log::FileName")))
