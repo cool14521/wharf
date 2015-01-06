@@ -77,6 +77,19 @@ canvas {
     height: 100px;
     margin: 6px 0 0 6px;
 }
+.upload-button {
+    color: #2C2C2C;
+    background-color: #f9fafc;
+    border: 1px solid #ccc;
+    position: relative;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 7px 12px;
+    white-space: nowrap;
+    width: 150px;
+    margin-top: 15px;
+    margin-left:-30px;
+}
 <!-- .edit-profile-avatar .manual-file-chooser {
     position: absolute;
     top: 0;
