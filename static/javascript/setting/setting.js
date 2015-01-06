@@ -45,26 +45,23 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': "multipart/form-data",
-                                        'X-XSRFToken':base64_decode($cookies._xsrf.split('|')[0])
+                                        'X-XSRFToken': base64_decode($cookies._xsrf.split('|')[0])
                                     },
                                     data: {
                                         filename: 'file'
                                     },
                                     file: file // or list of files ($files) for html5 only
-                                }).progress(function(evt) {}).success(function(data, status, headers, config) { // file is uploaded successfully
-                                    //console.log(data);
-                                    console.log('ok');
+                                }).progress(function(evt) {
+                                    file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
+                                }).success(function(data, status, headers, config) { // file is uploaded successfully
+                                    if (data.Success) {
+                                        $scope.user = {
+                                            gravatar: data.Url
+                                        }
+                                        growl.info(data.Message);
+                                    }
                                 }).error(function(data, status, headers, config) {
                                     console.log('err');
-                                });
-                                file.upload.then(function(response) {
-                                    file.result = response.data;
-                                }, function(response) {
-                                    if (response.status > 0)
-                                        $scope.errorMsg = response.status + ': ' + response.data;
-                                });
-                                file.upload.progress(function(evt) {
-                                    file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
                                 });
                             });
                         }
