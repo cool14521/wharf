@@ -52,6 +52,7 @@ func runWeb(c *cli.Context) {
 
 	//设定 HTTP 的静态文件处理地址
 	beego.SetStaticPath(beego.AppConfig.String("docker::StaticPath"), fmt.Sprintf("%s/images", beego.AppConfig.String("docker::BasePath")))
+	beego.SetStaticPath(beego.AppConfig.String("docker::Gravatar"), beego.AppConfig.String("docker::Gravatar"))
 	//初始化 Session
 	models.InitSession()
 	//初始化 数据库
