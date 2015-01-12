@@ -36,10 +36,14 @@ func (this *AuthWebController) Signin() {
 	beego.Debug(fmt.Sprintf("[Web 用户] 用户登陆: %s", u["email"].(string)))
 	//验证用户登陆
 	user := new(models.User)
-	if has, err := user.Get(fmt.Sprint(u["username"]), fmt.Sprint(u["password"])); !has || err != nil {
+	if has, err := user.Get(fmt.Sprint(u["username"]), fmt.Sprint(u["password"])); err != nil {
 		beego.Error(fmt.Sprintf("[WEB 用户] 解码用户注册发送的 JSON 数据失败: %s", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户登陆失败\"}"))
+		return
+	} else if !has {
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户名或密码不存在\"}"))
 		return
 	}
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
