@@ -13,11 +13,11 @@
                 <div class="form-image">
                     <div class="row">
                         <div class="col-md-2">
-                            <img alt="陈亮" class="avatar" data-user="7056125" height="70" ng-src="{{user.gravatar}}" width="70">
+                            <img alt="陈亮" class="avatar" ng-src="{{user.gravatar}}">
                         </div>
                         <div class="col-md-5">
-                            <div style="overflow: hidden;" accept="image/*,application/pdf" ng-file-select="" ng-model="files" class="upload-button ng-isolate-scope ng-pristine ng-valid" ng-file-change="upload(files)" ng-multiple="false" ng-accept="'image/*'" tabindex="0">Upload new picture
-                                <input ng-file-generated-elem="true" tabindex="-1" style="width: 1px; height: 1px; opacity: 0; position: absolute; padding: 0px; margin: 0px; overflow: hidden;" accept="image/*,application/pdf" type="file">
+                            <div style="overflow: hidden;" accept="image/*" ng-file-select="" ng-model="files" class="upload-button ng-isolate-scope ng-pristine ng-valid" ng-file-change="upload(files)" ng-multiple="false" ng-accept="'image/*'" tabindex="0">Upload new picture
+                                <input ng-file-generated-elem="true" tabindex="-1" style="width: 1px; height: 1px; opacity: 0; position: absolute; padding: 0px; margin: 0px; overflow: hidden;" accept="image/*" type="file">
                             </div>
                             <!-- 注释掉上传文件展示和统计部分
                             <ul ng-show="files.length > 0" class="response">
