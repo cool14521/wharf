@@ -27,23 +27,13 @@ func (this *UsersWebController) PostGravatar() {
 	//从请求中读取图片信息，图片保存在相应
 	file, fileHeader, err := this.Ctx.Request.FormFile("file")
 	if err != nil {
-		beego.Error("[image] 处理上传头像错误,err=", err)
+		beego.Error(fmt.Sprintf("[image] 处理上传头像错误,err=%s", err))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"图片上传处理失败\"}"))
 		return
 	}
-	f, err := os.OpenFile(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename), os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		//处理文件错误
-		beego.Error("[image] 处理上传头像错误err=", err)
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"图片上传处理失败\"}"))
-		return
-	}
-	io.Copy(f, file)
-	f.Close()
 
-	//读取文件后缀名，对图片剪裁100*100
+	//读取文件后缀名，如果不是图片，则返回错误
 	prefix := strings.Split(fileHeader.Filename, ".")[0]
 	suffix := strings.Split(fileHeader.Filename, ".")[1]
 	if suffix != "png" && suffix != "jpg" && suffix != "jpeg" {
@@ -51,11 +41,23 @@ func (this *UsersWebController) PostGravatar() {
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"文件的扩展名必须是jpg、jpeg或者png!\"}"))
 		return
 	}
+
+	f, err := os.OpenFile(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename), os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		//处理文件错误
+		beego.Error(fmt.Sprintf("[image] 处理上传头像错误,err=%s", err))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"图片上传处理失败\"}"))
+		return
+	}
+	io.Copy(f, file)
+	f.Close()
+
 	// decode jpeg into image.Image
 	var img image.Image
 	imageFile, err := os.Open(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename))
 	if err != nil {
-		beego.Error("[image] 裁剪图片失败,err=", err)
+		beego.Error(fmt.Sprintf("[image] 上传图片预失败,err=%s", err))
 	}
 	switch suffix {
 	case "png":
@@ -66,7 +68,7 @@ func (this *UsersWebController) PostGravatar() {
 		img, err = jpeg.Decode(imageFile)
 	}
 	if err != nil {
-		beego.Error("err=", err)
+		beego.Error(fmt.Sprintf("[image] 裁剪图片失败,err=%s", err))
 		imageFile.Close()
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"图片上传处理失败\"}"))
@@ -79,7 +81,7 @@ func (this *UsersWebController) PostGravatar() {
 
 	out, err := os.Create(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix))
 	if err != nil {
-		beego.Error("[image] 裁剪图片失败,err=", err)
+		beego.Error(fmt.Sprintf("[image] 裁剪图片失败,err=%s", err))
 	}
 	defer out.Close()
 	// write new image to file
