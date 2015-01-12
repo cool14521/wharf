@@ -24,7 +24,11 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
           $scope.submitting = false;
            growl.info(data.message);
            $timeout(function(){
-             $window.location.href = '/dashboard';
+              if(data.Success){
+                  $window.location.href = '/dashboard';
+              } else {
+                  $window.location.href = '/auth';
+              }     
            }, 3000);
         })
         .error(function(data, status, headers, config) {
