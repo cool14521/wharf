@@ -28,3 +28,4 @@ conf/bucket.conf
 conf/app.conf
 var/*
 cert/*
+data/gravatar/*

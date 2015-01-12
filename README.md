@@ -82,6 +82,7 @@ Config = prod
 Standalone = true
 OpenSignup = false
 Encrypt = true
+Gravatar = data/gravatar
 
 [ledisdb]
 DataDir = /tmp/ledisdb
