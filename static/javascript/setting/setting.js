@@ -54,14 +54,12 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                                 }).progress(function(evt) {
                                     file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
                                 }).success(function(data, status, headers, config) { // file is uploaded successfully
-                                    if (data.Success) {
-                                        $scope.user = {
-                                            gravatar: data.Url
-                                        }
-                                        growl.info(data.Message);
+                                    growl.info(data.message);
+                                    $scope.user = {
+                                        gravatar: data.url
                                     }
                                 }).error(function(data, status, headers, config) {
-                                    console.log('err');
+                                    growl.error(data.message);
                                 });
                             });
                         }
