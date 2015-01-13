@@ -83,7 +83,7 @@ func (this *AuthWebController) Signup() {
 	//判断用户是否存在，存在返回错误；不存在创建用户数据
 	user := new(models.User)
 	if err := user.Put(fmt.Sprint(u["username"]), fmt.Sprint(u["password"]), fmt.Sprint(u["email"])); err != nil {
-		beego.Error(fmt.Sprintf("[WEB 用户] 登录查询错误: %s", err.Error()))
+		beego.Error(fmt.Sprintf("[WEB 用户] 注册用户错误: %s", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户注册失败\"}"))
 		return
