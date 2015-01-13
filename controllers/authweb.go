@@ -37,7 +37,7 @@ func (this *AuthWebController) Signin() {
 	//验证用户登陆
 	user := new(models.User)
 	if has, err := user.Get(fmt.Sprint(u["username"]), fmt.Sprint(u["passwd"])); err != nil {
-		beego.Error(fmt.Sprintf("[WEB 用户] 解码用户注册发送的 JSON 数据失败: %s", err.Error()))
+		beego.Error(fmt.Sprintf("[WEB 用户] 登录查询错误: %s", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户登陆失败\"}"))
 		return
@@ -52,6 +52,7 @@ func (this *AuthWebController) Signin() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"登录成功\"}"))
+	return
 }
 
 func (this *AuthWebController) ResetPasswd() {
@@ -67,6 +68,7 @@ func (this *AuthWebController) ResetPasswd() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"发送重置密码邮件成功\"}"))
+	return
 }
 
 func (this *AuthWebController) Signup() {
@@ -88,4 +90,5 @@ func (this *AuthWebController) Signup() {
 	}
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户注册成功\"}"))
+	return
 }
