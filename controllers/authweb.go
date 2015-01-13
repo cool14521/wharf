@@ -33,10 +33,10 @@ func (this *AuthWebController) Signin() {
 	}
 
 	beego.Debug(fmt.Sprintf("[Web 用户] 用户登陆: %s", string(this.Ctx.Input.CopyBody())))
-	beego.Debug(fmt.Sprintf("[Web 用户] 用户登陆: %s", u["email"].(string)))
+	beego.Debug(fmt.Sprintf("[Web 用户] 用户登陆: %s", u["username"].(string)))
 	//验证用户登陆
 	user := new(models.User)
-	if has, err := user.Get(fmt.Sprint(u["username"]), fmt.Sprint(u["password"])); err != nil {
+	if has, err := user.Get(fmt.Sprint(u["username"]), fmt.Sprint(u["passwd"])); err != nil {
 		beego.Error(fmt.Sprintf("[WEB 用户] 解码用户注册发送的 JSON 数据失败: %s", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户登陆失败\"}"))
@@ -46,6 +46,10 @@ func (this *AuthWebController) Signin() {
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户名或密码不存在\"}"))
 		return
 	}
+
+	//写入session中
+	this.SetSession("username", fmt.Sprint(u["username"]))
+
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"登录成功\"}"))
 }
@@ -76,13 +80,12 @@ func (this *AuthWebController) Signup() {
 	beego.Debug(fmt.Sprintf("[Web 用户] 用户注册: %s", string(this.Ctx.Input.CopyBody())))
 	//判断用户是否存在，存在返回错误；不存在创建用户数据
 	user := new(models.User)
-	if err := user.Put(fmt.Sprint(u["username"]), fmt.Sprint(u["email"]), fmt.Sprint(u["password"])); err != nil {
+	if err := user.Put(fmt.Sprint(u["username"]), fmt.Sprint(u["password"]), fmt.Sprint(u["email"])); err != nil {
 		beego.Error(fmt.Sprintf("[WEB 用户] 解码用户注册发送的 JSON 数据失败: %s", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户注册失败\"}"))
 		return
 	}
-	//发送注册邮件
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户注册成功\"}"))
 }
