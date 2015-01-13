@@ -13,7 +13,7 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
     .controller('SigninCtrl', ['$scope', '$cookies', '$http', 'growl', '$window', '$timeout', function($scope, $cookies, $http, growl, $window, $timeout) {
         $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
 
-        $scope.submitting = true;
+        $scope.submitting = false;
 
         $scope.submit = function() {
             if ($scope.loginForm.$valid) {
@@ -21,7 +21,7 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
 
                 $http.post('/w1/signin', $scope.user)
                     .success(function(data, status, headers, config) {
-                        $scope.submitting = false;
+                        $scope.submitting = true;
                         growl.info(data.message);
                         $timeout(function() {
                             $window.location.href = '/dashboard';
