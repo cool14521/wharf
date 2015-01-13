@@ -61,30 +61,6 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
             }
         }
     }])
-    .controller('ForgotCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', function($scope, $cookies, $http, growl, $location, $timeout) {
-        $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-
-        $scope.submitting = false;
-
-        $scope.submit = function() {
-            if ($scope.forgotForm.$valid) {
-                $scope.submitting = true;
-
-                $http.post("/w1/reset", $scope.user)
-                    .success(function(data, status, headers, config) {
-                        $scope.submitting = false;
-                        growl.info(data.message);
-                        $timeout(function() {
-                            $location.path('/');
-                        }, 3000);
-                    })
-                    .error(function(data, status, headers, config) {
-                        $scope.submitting = false;
-                        growl.error(data.message);
-                    });
-            }
-        }
-    }])
     //routes
     .config(function($routeProvider, $locationProvider) {
         $routeProvider
@@ -92,13 +68,13 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
                 templateUrl: 'static/views/auth/signin.html',
                 controller: 'SigninCtrl'
             })
+            .when('/auth', {
+                templateUrl: 'static/views/auth/signin.html',
+                controller: 'SigninCtrl'
+            })
             .when('/signup', {
                 templateUrl: 'static/views/auth/signup.html',
                 controller: 'SignupCtrl'
-            })
-            .when('/forgot', {
-                templateUrl: 'static/views/auth/forgot.html',
-                controller: 'ForgotCtrl'
             });
     })
     .directive('usernameValidator', [function() {
