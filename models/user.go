@@ -82,7 +82,7 @@ func (user *User) Put(username string, passwd string, email string) error {
 		}
 
 		//检查邮箱合法性
-		validEmail := regexp.MustCompile(`^[a-z0-9A-Z]+([\-_\.][a-z0-9A-Z]+)*@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)*\.)+[a-zA-Z]+$`)
+		validEmail := regexp.MustCompile("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[a-zA-Z0-9](?:[\\w-]*[\\w])?")
 		if !validEmail.MatchString(email) {
 			return fmt.Errorf("Email 格式不合法")
 		}
