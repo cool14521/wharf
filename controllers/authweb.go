@@ -47,8 +47,12 @@ func (this *AuthWebController) Signin() {
 		return
 	}
 
-	//写入session中
-	this.SetSession("username", fmt.Sprint(u["username"]))
+	//处理用户头像
+	if user.Gravatar == "" {
+		user.Gravatar = "/static/images/default_user.jpg"
+	}
+	//将user信息写入session中
+	this.SetSession("user", *user)
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"登录成功\"}"))
@@ -90,5 +94,12 @@ func (this *AuthWebController) Signup() {
 	}
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户注册成功\"}"))
+	return
+}
+
+func (this *AuthWebController) Signout() {
+	this.DelSession("user")
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"用户退出成功\"}"))
 	return
 }

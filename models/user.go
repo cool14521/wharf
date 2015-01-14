@@ -3,11 +3,11 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dockercn/docker-bucket/utils"
 	"regexp"
 	"sort"
+	"strconv"
 	"time"
-
-	"github.com/dockercn/docker-bucket/utils"
 )
 
 const (
@@ -16,19 +16,19 @@ const (
 )
 
 type User struct {
-	Username      string //
-	Password      string //
-	Repositories  string //用户的所有 Respository
-	Organizations string //用户所属的所有组织
-	Email         string //Email 可以更换，全局唯一
-	Fullname      string //
-	Company       string //
-	Location      string //
-	Mobile        string //
-	URL           string //
-	Gravatar      string //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
-	Created       int64  //
-	Updated       int64  //
+	Username      string `json:"usernamne"`     //
+	Password      string `json:"password"`      //
+	Repositories  string `json:"repositories"`  //用户的所有 Respository
+	Organizations string `json:"organizaitons"` //用户所属的所有组织
+	Email         string `json:"email"`         //Email 可以更换，全局唯一
+	Fullname      string `json:"fullname"`      //
+	Company       string `json:"company"`       //
+	Location      string `json:"location"`      //
+	Mobile        string `json:"mobile"`        //
+	URL           string `json:"url"`           //
+	Gravatar      string `json:"gravatar"`      //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
+	Created       int64  `json:"created"`       //
+	Updated       int64  `json:"updated"`       //
 }
 
 //在全局 user 存储的的 Hash 中查询到 user 的 key，然后根据 key 再使用 Exists 方法查询是否存在数据
@@ -123,6 +123,49 @@ func (user *User) Get(username, passwd string) (bool, error) {
 		} else {
 			if string(password) != passwd {
 				return false, nil
+			}
+			//对user进行赋值
+			attrs, _ := LedisDB.HKeys(key)
+			for _, attr := range attrs {
+				attr2string := string(attr)
+				switch attr2string {
+				case "Company":
+					company, _ := LedisDB.HGet(key, []byte("Company"))
+					user.Company = string(company)
+				case "Created":
+					created, _ := LedisDB.HGet(key, []byte("Created"))
+					user.Created, _ = strconv.ParseInt(string(created), 0, 64)
+				case "Email":
+					email, _ := LedisDB.HGet(key, []byte("Email"))
+					user.Email = string(email)
+				case "Fullname":
+					fullName, _ := LedisDB.HGet(key, []byte("Fullname"))
+					user.Fullname = string(fullName)
+				case "Gravatar":
+					gravatar, _ := LedisDB.HGet(key, []byte("Gravatar"))
+					user.Gravatar = string(gravatar)
+				case "Location":
+					location, _ := LedisDB.HGet(key, []byte("Location"))
+					user.Location = string(location)
+				case "Mobile":
+					mobile, _ := LedisDB.HGet(key, []byte("Mobile"))
+					user.Mobile = string(mobile)
+				case "Organizations":
+					organizations, _ := LedisDB.HGet(key, []byte("Organizations"))
+					user.Organizations = string(organizations)
+				case "Repositories":
+					repositories, _ := LedisDB.HGet(key, []byte("Repositories"))
+					user.Repositories = string(repositories)
+				case "URL":
+					url, _ := LedisDB.HGet(key, []byte("URL"))
+					user.URL = string(url)
+				case "Updated":
+					updated, _ := LedisDB.HGet(key, []byte("Updated"))
+					user.Updated, _ = strconv.ParseInt(string(updated), 0, 64)
+				case "Username":
+					username, _ := LedisDB.HGet(key, []byte("Username"))
+					user.Username = string(username)
+				}
 			}
 			return true, nil
 		}

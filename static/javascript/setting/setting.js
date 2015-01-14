@@ -10,6 +10,19 @@
 //Auth Page Module
 angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'angularFileUpload'])
     .controller('SettingProfileCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', function($scope, $cookies, $http, growl, $location, $timeout, $upload) {
+        //init user info
+        $http.get('/w1/profile')
+            .success(function(data, status, headers, config) {
+                $scope.user = data
+            })
+            .error(function(data, status, headers, config) {
+
+                $timeout(function() {
+                    $window.location.href = '/auth';
+                }, 3000);
+            });
+
+        //deal with fileupload start
         var version = '1.3.8';
         $scope.fileReaderSupported = window.FileReader != null && (window.FileAPI == null || FileAPI.html5 != false);
         $scope.changeAngularVersion = function() {
@@ -80,9 +93,10 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             return confirm('Are you sure? Your local changes will be lost.');
         }
         $scope.getReqParams = function() {
-            return $scope.generateErrorOnServer ? "?errorCode=" + $scope.serverErrorCode +
-                "&errorMessage=" + $scope.serverErrorMsg : "";
-        }
+                return $scope.generateErrorOnServer ? "?errorCode=" + $scope.serverErrorCode +
+                    "&errorMessage=" + $scope.serverErrorMsg : "";
+            }
+            //deal with fileupload end
     }])
     //routes
     .config(function($routeProvider, $locationProvider) {

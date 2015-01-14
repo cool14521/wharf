@@ -9,6 +9,7 @@ func init() {
 	//Web Interface
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/auth", &controllers.AuthController{}, "get:Get")
+	beego.Router("/signout", &controllers.AuthWebController{}, "get:Signout")
 	beego.Router("/setting", &controllers.DashboardController{}, "get:GetSetting")
 	beego.Router("/dashboard", &controllers.DashboardController{}, "get:GetDashboard")
 	beego.Router("/admin", &controllers.AdminController{}, "get:GetAdmin")
@@ -22,6 +23,7 @@ func init() {
 		beego.NSRouter("/signin", &controllers.AuthWebController{}, "post:Signin"),
 		beego.NSRouter("/reset", &controllers.AuthWebController{}, "post:ResetPasswd"),
 		beego.NSRouter("/signup", &controllers.AuthWebController{}, "post:Signup"),
+		beego.NSRouter("/profile", &controllers.UsersWebController{}, "get:GetProfile"),
 		beego.NSRouter("/gravatar", &controllers.UsersWebController{}, "post:PostGravatar"),
 	)
 

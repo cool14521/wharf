@@ -2,8 +2,9 @@ package controllers
 
 import (
 	"fmt"
-
 	"github.com/astaxie/beego"
+	"github.com/dockercn/docker-bucket/models"
+	"net/http"
 )
 
 type DashboardController struct {
@@ -27,10 +28,18 @@ func (this *DashboardController) GetSetting() {
 }
 
 func (this *DashboardController) GetDashboard() {
+	//加载session
+	user, ok := this.GetSession("user").(models.User)
+	if !ok {
+		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"session加载失败\"}"))
+		return
+	}
 	this.TplNames = "dashboard.html"
-
 	this.Data["description"] = ""
 	this.Data["author"] = ""
+	this.Data["username"] = user.Username
 
 	this.Render()
 }
