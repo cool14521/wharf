@@ -3,11 +3,11 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dockercn/docker-bucket/utils"
 	"regexp"
 	"sort"
+	"strconv"
 	"time"
-
-	"github.com/dockercn/docker-bucket/utils"
 )
 
 const (
@@ -123,6 +123,49 @@ func (user *User) Get(username, passwd string) (bool, error) {
 		} else {
 			if string(password) != passwd {
 				return false, nil
+			}
+			//对user进行赋值
+			attrs, _ := LedisDB.HKeys(key)
+			for _, attr := range attrs {
+				attr2string := string(attr)
+				switch attr2string {
+				case "Company":
+					company, _ := LedisDB.HGet(key, []byte("Company"))
+					user.Company = string(company)
+				case "Created":
+					created, _ := LedisDB.HGet(key, []byte("Created"))
+					user.Created, _ = strconv.ParseInt(string(created), 0, 64)
+				case "Email":
+					email, _ := LedisDB.HGet(key, []byte("Email"))
+					user.Email = string(email)
+				case "Fullname":
+					fullName, _ := LedisDB.HGet(key, []byte("Fullname"))
+					user.Fullname = string(fullName)
+				case "Gravatar":
+					gravatar, _ := LedisDB.HGet(key, []byte("Gravatar"))
+					user.Gravatar = string(gravatar)
+				case "Location":
+					location, _ := LedisDB.HGet(key, []byte("Location"))
+					user.Location = string(location)
+				case "Mobile":
+					mobile, _ := LedisDB.HGet(key, []byte("Mobile"))
+					user.Mobile = string(mobile)
+				case "Organizations":
+					organizations, _ := LedisDB.HGet(key, []byte("Organizations"))
+					user.Organizations = string(organizations)
+				case "Repositories":
+					repositories, _ := LedisDB.HGet(key, []byte("Repositories"))
+					user.Repositories = string(repositories)
+				case "URL":
+					url, _ := LedisDB.HGet(key, []byte("URL"))
+					user.URL = string(url)
+				case "Updated":
+					updated, _ := LedisDB.HGet(key, []byte("Updated"))
+					user.Updated, _ = strconv.ParseInt(string(updated), 0, 64)
+				case "Username":
+					username, _ := LedisDB.HGet(key, []byte("Username"))
+					user.Username = string(username)
+				}
 			}
 			return true, nil
 		}
