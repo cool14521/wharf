@@ -13,7 +13,7 @@
                 <div class="form-image">
                     <div class="row">
                         <div class="col-md-2">
-                            <img alt="陈亮" class="avatar" ng-src="{{user.gravatar}}">
+                            <img class="avatar" ng-src="{{user.gravatar}}" style="height:100px;width:100px;">
                         </div>
                         <div class="col-md-5">
                             <div style="overflow: hidden;" accept="image/*" ng-file-select="" ng-model="files" class="upload-button ng-isolate-scope ng-pristine ng-valid" ng-file-change="upload(files)" ng-multiple="false" ng-accept="'image/*'" tabindex="0">Upload new picture
@@ -58,7 +58,7 @@
                     <lable>Name</lable>
                 </div>
                 <div class="form-content">
-                    <input type="text" size="30" />
+                    <input type="text" size="30" ng-model="user.username" />
                 </div>
             </div>
             <div class="form-group">
@@ -66,7 +66,7 @@
                     <lable>Email (will be public)</lable>
                 </div>
                 <div class="form-content">
-                    <input type="text" size="30" />
+                    <input type="text" size="30" ng-model="user.email" />
                 </div>
             </div>
             <div class="form-group">
@@ -74,7 +74,7 @@
                     <lable>Fullname</lable>
                 </div>
                 <div class="form-content">
-                    <input type="text" size="30" />
+                    <input type="text" size="30" ng-model="user.fullname" />
                 </div>
             </div>
             <div class="form-group">
@@ -82,7 +82,7 @@
                     <lable>Mobile</lable>
                 </div>
                 <div class="form-content">
-                    <input type="text" size="30" />
+                    <input type="text" size="30" ng-model="user.mobile" />
                 </div>
             </div>
             <div class="form-group">
@@ -90,7 +90,7 @@
                     <lable>Company</lable>
                 </div>
                 <div class="form-content">
-                    <input type="text" size="30" />
+                    <input type="text" size="30" ng-model="user.company" />
                 </div>
             </div>
             <div class="form-group">
@@ -98,7 +98,7 @@
                     <lable>URL</lable>
                 </div>
                 <div class="form-content">
-                    <input type="text" size="30" />
+                    <input type="text" size="30" ng-model="user.url" />
                 </div>
             </div>
             <div class="form-group">
