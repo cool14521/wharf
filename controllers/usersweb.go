@@ -95,6 +95,25 @@ func (this *UsersWebController) PostGravatar() {
 	case "jpeg":
 		jpeg.Encode(out, m, nil)
 	}
+
+	//加载session，更新user's gravatar
+	user, ok := this.GetSession("user").(models.User)
+	if !ok {
+		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"session加载失败\",\"url\":\"/auth\"}"))
+		return
+	} else {
+		var u map[string]interface{}
+		u = make(map[string]interface{})
+		u["gravatar"] = fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)
+		if success, err := (&user).Update(u); err != nil || !success {
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+			this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"上传图片处理失败\"}"))
+			return
+		}
+	}
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"文件上传成功！\",\"url\":\"" + fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix) + "\"}"))
@@ -119,5 +138,40 @@ func (this *UsersWebController) GetProfile() {
 	}
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body(user2json)
+	return
+}
+
+func (this *UsersWebController) PutProfile() {
+	//获得用户提交的信息
+	var u map[string]interface{}
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
+		beego.Error(fmt.Sprintf("[WEB 用户] 解码用户注册发送的 JSON 数据失败: %s", err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新用户数据失败\"}"))
+		return
+	}
+	//加载session
+	user, ok := this.GetSession("user").(models.User)
+	if !ok {
+		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新用户数据失败\"}"))
+		return
+	}
+	//根据session更新user
+	if success, err := (&user).Update(u); err != nil || !success {
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新用户数据失败\"}"))
+		return
+	}
+	//更新session中的user
+	this.SetSession("user", user)
+	//处理返回值
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新用户数据成功\"}"))
 	return
 }
