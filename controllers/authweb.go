@@ -47,7 +47,11 @@ func (this *AuthWebController) Signin() {
 		return
 	}
 
-	//写入session中
+	//处理用户头像
+	if user.Gravatar == "" {
+		user.Gravatar = "/static/images/default_user.jpg"
+	}
+	//将user信息写入session中
 	this.SetSession("user", *user)
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
