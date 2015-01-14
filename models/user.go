@@ -16,19 +16,19 @@ const (
 )
 
 type User struct {
-	Username      string //
-	Password      string //
-	Repositories  string //用户的所有 Respository
-	Organizations string //用户所属的所有组织
-	Email         string //Email 可以更换，全局唯一
-	Fullname      string //
-	Company       string //
-	Location      string //
-	Mobile        string //
-	URL           string //
-	Gravatar      string //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
-	Created       int64  //
-	Updated       int64  //
+	Username      string `json:"usernamne"`     //
+	Password      string `json:"password"`      //
+	Repositories  string `json:"repositories"`  //用户的所有 Respository
+	Organizations string `json:"organizaitons"` //用户所属的所有组织
+	Email         string `json:"email"`         //Email 可以更换，全局唯一
+	Fullname      string `json:"fullname"`      //
+	Company       string `json:"company"`       //
+	Location      string `json:"location"`      //
+	Mobile        string `json:"mobile"`        //
+	URL           string `json:"url"`           //
+	Gravatar      string `json:"gravatar"`      //如果是邮件地址使用 gravatar.org 的 API 显示头像，如果是上传的用户显示头像的地址。
+	Created       int64  `json:"created"`       //
+	Updated       int64  `json:"updated"`       //
 }
 
 //在全局 user 存储的的 Hash 中查询到 user 的 key，然后根据 key 再使用 Exists 方法查询是否存在数据
