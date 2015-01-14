@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
+	"github.com/dockercn/docker-bucket/models"
 	"github.com/nfnt/resize"
 	"image"
 	"image/jpeg"
@@ -96,5 +98,26 @@ func (this *UsersWebController) PostGravatar() {
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"文件上传成功！\",\"url\":\"" + fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix) + "\"}"))
+	return
+}
+
+func (this *UsersWebController) GetProfile() {
+	//加载session
+	user, ok := this.GetSession("user").(models.User)
+	if !ok {
+		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"session加载失败\",\"url\":\"/auth\"}"))
+		return
+	}
+	user2json, err := json.Marshal(user)
+	if err != nil {
+		beego.Error(fmt.Sprintf("[WEB 用户] session解码json失败"))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"session解码json失败\",\"url\":\"/auth\"}"))
+		return
+	}
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.Output.Body(user2json)
 	return
 }
