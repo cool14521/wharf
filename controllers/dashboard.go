@@ -31,6 +31,7 @@ func (this *DashboardController) GetDashboard() {
 
 	this.Data["description"] = ""
 	this.Data["author"] = ""
+	this.Data["username"] = fmt.Sprint(this.GetSession("username"))
 
 	this.Render()
 }
