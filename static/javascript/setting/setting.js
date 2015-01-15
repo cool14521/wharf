@@ -68,7 +68,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                                     file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
                                 }).success(function(data, status, headers, config) { // file is uploaded successfully
                                     growl.info(data.message);
-                                    $scope.user.gravatar=data.url
+                                    $scope.user.gravatar = data.url
                                 }).error(function(data, status, headers, config) {
                                     growl.error(data.message);
                                 });
@@ -138,7 +138,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             restrict: '',
             link: function(scope, element, attrs, ngModel) {
                 ngModel.$validators.urls = function(value) {
-                    return URL_REGEXP.test(value);
+                    return URL_REGEXP.test(value) || value == "";
                 }
             }
         };
@@ -151,7 +151,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             restrict: '',
             link: function(scope, element, attrs, ngModel) {
                 ngModel.$validators.mobiles = function(value) {
-                    return MOBILE_REGEXP.test(value);
+                    return MOBILE_REGEXP.test(value) || value == "";
                 }
             }
         };
@@ -164,7 +164,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             restrict: '',
             link: function(scope, element, attrs, ngModel) {
                 ngModel.$validators.usernames = function(value) {
-                    return USERNAME_REGEXP.test(value);
+                    return USERNAME_REGEXP.test(value) || value == "";
                 }
             }
         };
