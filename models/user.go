@@ -120,23 +120,21 @@ func (user *User) Update(u map[string]interface{}) (bool, error) {
 		//遍历map中元素，对存在元素进行更新
 		for attr, value := range u {
 			if result, ok := value.(string); ok {
-				if result != "" {
-					switch attr {
-					case "name":
+				switch attr {
+				case "name":
 
-					case "fullname":
-						user.Fullname = result
-					case "url":
-						user.URL = result
-					case "gravatar":
-						user.Gravatar = result
-					case "company":
-						user.Company = result
-					case "mobile":
-						user.Mobile = result
-					case "email":
-						user.Email = result
-					}
+				case "fullname":
+					user.Fullname = result
+				case "url":
+					user.URL = result
+				case "gravatar":
+					user.Gravatar = result
+				case "company":
+					user.Company = result
+				case "mobile":
+					user.Mobile = result
+				case "email":
+					user.Email = result
 				}
 			}
 
