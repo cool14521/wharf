@@ -101,16 +101,10 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 $http.put('/w1/profile', $scope.user)
                     .success(function(data, status, headers, config) {
                         growl.info(data.message);
-                        $timeout(function() {
-
-                        }, 1000);
                     })
                     .error(function(data, status, headers, config) {
                         $scope.submitting = false;
                         growl.error(data.message);
-                        $timeout(function() {
-
-                        }, 1000);
                     });
             }
         }
