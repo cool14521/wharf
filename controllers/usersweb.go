@@ -152,12 +152,10 @@ func (this *UsersWebController) PutProfile() {
 	}
 	//处理用户上传头像（判断头像是否更新，如果更新，删掉以前头像，然后重新命名新头像）
 	if strings.Contains(fmt.Sprint(u["gravatar"]), "resize") {
-		beego.Error("1111111")
 		//包含resize，则认为用户上传新头像
 		suffix := strings.Split(fmt.Sprint(u["gravatar"]), ".")[1]
 		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", user.Username, "_show.", suffix)
 		if _, err := os.Stat(gravatar); err == nil {
-			beego.Error("222222")
 			//删除掉用户之前的头像文件
 			os.Remove(gravatar)
 			//将新文件重新命名
