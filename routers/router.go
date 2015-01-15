@@ -13,7 +13,6 @@ func init() {
 	beego.Router("/setting", &controllers.DashboardController{}, "get:GetSetting")
 	beego.Router("/dashboard", &controllers.DashboardController{}, "get:GetDashboard")
 	beego.Router("/admin", &controllers.AdminController{}, "get:GetAdmin")
-	beego.Router("/p/:article", &controllers.ArticleController{}, "get:GetArticle")
 
 	//Static File
 	beego.Router("/favicon.ico", &controllers.StaticController{}, "get:GetFavicon")
