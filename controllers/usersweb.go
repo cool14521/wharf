@@ -43,7 +43,12 @@ func (this *UsersWebController) PostGravatar() {
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"文件的扩展名必须是jpg、jpeg或者png!\"}"))
 		return
 	}
-
+	//判断文件是否上传过，如果文件名和之前上传文件相同，则认为文件已经上传过
+	if _, err := os.Stat(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)); err == nil {
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"请不要上传重复图片！\"}"))
+		return
+	}
 	f, err := os.OpenFile(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		//处理文件错误
@@ -96,27 +101,12 @@ func (this *UsersWebController) PostGravatar() {
 		jpeg.Encode(out, m, nil)
 	}
 
-	//加载session，更新user's gravatar
-	user, ok := this.GetSession("user").(models.User)
-	if !ok {
-		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"session加载失败\",\"url\":\"/auth\"}"))
-		return
-	} else {
-		var u map[string]interface{}
-		u = make(map[string]interface{})
-		u["gravatar"] = fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)
-		if success, err := (&user).Update(u); err != nil || !success {
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-			this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"上传图片处理失败\"}"))
-			return
-		}
-	}
+	//删除用户自己上传的图片
+	os.Remove(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename))
+
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"文件上传成功！\",\"url\":\"" + fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix) + "\"}"))
+	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"请点击Update profile完成图片上传！\",\"url\":\"" + fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix) + "\"}"))
 	return
 }
 
@@ -159,6 +149,24 @@ func (this *UsersWebController) PutProfile() {
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新用户数据失败\"}"))
 		return
+	}
+	//处理用户上传头像（判断头像是否更新，如果更新，删掉以前头像，然后重新命名新头像）
+	if strings.Contains(fmt.Sprint(u["gravatar"]), "resize") {
+		beego.Error("1111111")
+		//包含resize，则认为用户上传新头像
+		suffix := strings.Split(fmt.Sprint(u["gravatar"]), ".")[1]
+		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", user.Username, "_show.", suffix)
+		if _, err := os.Stat(gravatar); err == nil {
+			beego.Error("222222")
+			//删除掉用户之前的头像文件
+			os.Remove(gravatar)
+			//将新文件重新命名
+			os.Rename(fmt.Sprint(u["gravatar"]), gravatar)
+			u["gravatar"] = gravatar
+		} else {
+			os.Rename(fmt.Sprint(u["gravatar"]), gravatar)
+			u["gravatar"] = gravatar
+		}
 	}
 	//根据session更新user
 	if success, err := (&user).Update(u); err != nil || !success {
