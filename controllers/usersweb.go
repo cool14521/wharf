@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
@@ -10,6 +11,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -43,11 +45,9 @@ func (this *UsersWebController) PostGravatar() {
 		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"文件的扩展名必须是jpg、jpeg或者png!\"}"))
 		return
 	}
-	//判断文件是否上传过，如果文件名和之前上传文件相同，则认为文件已经上传过
+	//删除名称重复的文件
 	if _, err := os.Stat(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)); err == nil {
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"请不要上传重复图片！\"}"))
-		return
+		os.Remove(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix))
 	}
 	f, err := os.OpenFile(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -156,6 +156,23 @@ func (this *UsersWebController) PutProfile() {
 		suffix := strings.Split(fmt.Sprint(u["gravatar"]), ".")[1]
 		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", user.Username, "_show.", suffix)
 		if _, err := os.Stat(gravatar); err == nil {
+			//文件存在，计算old_image文件的MD5的值
+			bytes, _ := ioutil.ReadFile(gravatar)
+			old2MD5 := md5.Sum(bytes)
+
+			//计算new_image文件的MD5的值
+			bytes, _ = ioutil.ReadFile(fmt.Sprint(u["gravatar"]))
+			newMD5 := md5.Sum(bytes)
+
+			//两个文件的MD5值相同，删除resize文件，返回错误，用户上传重复头像
+			if old2MD5 == newMD5 {
+				os.Remove(fmt.Sprint(u["gravatar"]))
+				u["gravatar"] = gravatar
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+				this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+				this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"上传头像与原头像相同！\"}"))
+				return
+			}
 			//删除掉用户之前的头像文件
 			os.Remove(gravatar)
 			//将新文件重新命名
