@@ -13,7 +13,6 @@ func init() {
 	beego.Router("/setting", &controllers.DashboardController{}, "get:GetSetting")
 	beego.Router("/dashboard", &controllers.DashboardController{}, "get:GetDashboard")
 	beego.Router("/admin", &controllers.AdminController{}, "get:GetAdmin")
-	beego.Router("/p/:article", &controllers.ArticleController{}, "get:GetArticle")
 
 	//Static File
 	beego.Router("/favicon.ico", &controllers.StaticController{}, "get:GetFavicon")
@@ -24,6 +23,7 @@ func init() {
 		beego.NSRouter("/reset", &controllers.AuthWebController{}, "post:ResetPasswd"),
 		beego.NSRouter("/signup", &controllers.AuthWebController{}, "post:Signup"),
 		beego.NSRouter("/profile", &controllers.UsersWebController{}, "get:GetProfile"),
+		beego.NSRouter("/profile", &controllers.UsersWebController{}, "put:PutProfile"),
 		beego.NSRouter("/gravatar", &controllers.UsersWebController{}, "post:PostGravatar"),
 	)
 

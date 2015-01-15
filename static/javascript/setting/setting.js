@@ -68,9 +68,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                                     file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
                                 }).success(function(data, status, headers, config) { // file is uploaded successfully
                                     growl.info(data.message);
-                                    $scope.user = {
-                                        gravatar: data.url
-                                    }
+                                    $scope.user.gravatar = data.url
                                 }).error(function(data, status, headers, config) {
                                     growl.error(data.message);
                                 });
@@ -97,6 +95,19 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                     "&errorMessage=" + $scope.serverErrorMsg : "";
             }
             //deal with fileupload end
+        $scope.submit = function() {
+            if ($scope.profileForm.$valid) {
+                $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+                $http.put('/w1/profile', $scope.user)
+                    .success(function(data, status, headers, config) {
+                        growl.info(data.message);
+                    })
+                    .error(function(data, status, headers, config) {
+                        $scope.submitting = false;
+                        growl.error(data.message);
+                    });
+            }
+        }
     }])
     //routes
     .config(function($routeProvider, $locationProvider) {
@@ -106,6 +117,45 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 controller: 'SettingProfileCtrl'
             });
     })
+    .directive('emailValidator', [function() {
+        var EMAIL_REGEXP = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+        return {
+            require: 'ngModel',
+            restrict: '',
+            link: function(scope, element, attrs, ngModel) {
+                ngModel.$validators.emails = function(value) {
+                    return EMAIL_REGEXP.test(value);
+                }
+            }
+        };
+    }])
+    .directive('urlValidator', [function() {
+        var URL_REGEXP = /(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?/;
+
+        return {
+            require: 'ngModel',
+            restrict: '',
+            link: function(scope, element, attrs, ngModel) {
+                ngModel.$validators.urls = function(value) {
+                    return URL_REGEXP.test(value) || value == "";
+                }
+            }
+        };
+    }])
+    .directive('mobileValidator', [function() {
+        var MOBILE_REGEXP = /^[0-9]{1,20}$/;
+
+        return {
+            require: 'ngModel',
+            restrict: '',
+            link: function(scope, element, attrs, ngModel) {
+                ngModel.$validators.mobiles = function(value) {
+                    return MOBILE_REGEXP.test(value) || value == "";
+                }
+            }
+        };
+    }])
     .directive('namespaceValidator', [function() {
         var NAMESPACE_REGEXP = /^([a-z0-9_]{6,30})$/;
 
@@ -114,7 +164,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             restrict: '',
             link: function(scope, element, attrs, ngModel) {
                 ngModel.$validators.usernames = function(value) {
-                    return USERNAME_REGEXP.test(value);
+                    return USERNAME_REGEXP.test(value) || value == "";
                 }
             }
         };

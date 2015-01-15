@@ -19,11 +19,20 @@ func (this *DashboardController) Prepare() {
 }
 
 func (this *DashboardController) GetSetting() {
+	//加载session
+	user, ok := this.GetSession("user").(models.User)
+	if !ok {
+		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"session加载失败\"}"))
+		return
+	}
+
 	this.TplNames = "setting.html"
 
 	this.Data["description"] = ""
 	this.Data["author"] = ""
-
+	this.Data["username"] = user.Username
 	this.Render()
 }
 

@@ -88,7 +88,10 @@ canvas {
     white-space: nowrap;
     width: 150px;
     margin-top: 15px;
-    margin-left:-30px;
+    margin-left: -30px;
+}
+.ng-active {
+    color: red;
 }
 <!-- .edit-profile-avatar .manual-file-chooser {
     position: absolute;

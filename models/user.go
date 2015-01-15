@@ -111,6 +111,42 @@ func (user *User) Put(username string, passwd string, email string) error {
 	}
 }
 
+//根据用户名更新用户数据
+func (user *User) Update(u map[string]interface{}) (bool, error) {
+	//获取用户唯一ID
+	if _, key, err := user.Has(user.Username); err != nil {
+		return false, err
+	} else {
+		//遍历map中元素，对存在元素进行更新
+		for attr, value := range u {
+			if result, ok := value.(string); ok {
+				switch attr {
+				case "name":
+
+				case "fullname":
+					user.Fullname = result
+				case "url":
+					user.URL = result
+				case "gravatar":
+					user.Gravatar = result
+				case "company":
+					user.Company = result
+				case "mobile":
+					user.Mobile = result
+				case "email":
+					user.Email = result
+				}
+			}
+
+		}
+		//保存 User 对象的数据
+		if err := Save(user, key); err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+}
+
 //根据用户名和密码获取用户
 func (user *User) Get(username, passwd string) (bool, error) {
 	//检查用户的 Key 是否存在
