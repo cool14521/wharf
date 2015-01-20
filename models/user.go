@@ -135,6 +135,8 @@ func (user *User) Update(u map[string]interface{}) (bool, error) {
 					user.Mobile = result
 				case "email":
 					user.Email = result
+				case "newPassword":
+					user.Password = result
 				}
 			}
 
@@ -201,6 +203,9 @@ func (user *User) Get(username, passwd string) (bool, error) {
 				case "Username":
 					username, _ := LedisDB.HGet(key, []byte("Username"))
 					user.Username = string(username)
+				case "Password":
+					password, _ := LedisDB.HGet(key, []byte("Password"))
+					user.Password = string(password)
 				}
 			}
 			return true, nil
