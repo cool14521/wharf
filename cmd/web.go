@@ -2,11 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
-
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/ledis"
 	"github.com/codegangsta/cli"
+	"strconv"
 
 	"github.com/dockercn/docker-bucket/email"
 	"github.com/dockercn/docker-bucket/models"
