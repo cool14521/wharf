@@ -198,3 +198,37 @@ func (this *UsersWebController) PutProfile() {
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新用户数据成功\"}"))
 	return
 }
+
+func (this *UsersWebController) PutAccount() {
+	var u map[string]interface{}
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
+		beego.Error(fmt.Sprintf("[WEB 用户] 解码用户注册发送的 JSON 数据失败: %s", err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新用户数据失败\"}"))
+		return
+	}
+	//读取session中的密码与用户提交的进行比对
+	user, ok := this.GetSession("user").(models.User)
+	if !ok {
+		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新用户数据失败\"}"))
+		return
+	}
+	if u["oldPassword"].(string) == user.Password {
+		if success, _ := user.Update(u); success {
+			//更新session中的user
+			this.SetSession("user", user)
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+			this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+			this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新密码成功\"}"))
+			return
+		}
+	}
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"更新用户数据失败\"}"))
+	return
+}
