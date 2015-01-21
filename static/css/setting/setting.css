@@ -26,7 +26,6 @@
     margin-top: 5px;
 }
 .form-content>input {
-    width: 66.7%;
     min-height: 34px;
     padding: 7px 8px;
     font-size: 13px;
@@ -39,6 +38,9 @@
     border-radius: 3px;
     outline: none;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.input-long>input {
+    width: 66.7%
 }
 .block-title-setting {
     margin-left: 3.5px;
@@ -92,6 +94,93 @@ canvas {
 }
 .ng-active {
     color: red;
+}
+/*emails.html*/
+
+.block-desc {
+    font-size: 13px;
+}
+.setting-emails {
+    font-size: 13px;
+    list-style: none;
+    margin-left: -60px;
+    margin-right: -20px;
+}
+.setting-emails>li {
+    display: block;
+    padding: 5px 10px;
+    line-height: 23px;
+    border-bottom: 1px solid #E5E5E5;
+}
+.setting-emails-email {
+    margin-left: 10px;
+    float: left;
+}
+.email-actions {
+    float: right;
+    margin-right: 10px;
+}
+.email-actions>a {
+    color: red;
+}
+.setting-emails-lable-default {
+    margin-left: 4px;
+    padding: 4px 6px;
+    background-color: #6CC644;
+    color: #FFF;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1;
+}
+.setting-emails-lable-visible {
+    margin-left: 4px;
+    padding: 4px 6px;
+    background-color: #999;
+    color: #FFF;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1;
+}
+.setting-email-add-btn {
+    color: #333;
+    background-color: #f9fafc;
+    position: relative;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 7px 12px;
+    white-space: nowrap;
+    border: 1px solid #D5D5D5;
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.9);
+    margin-left: 5px;
+    border-radius: 3px;
+}
+.setting-emails-add-boder {
+    border-bottom: 1px solid #E5E5E5;
+    margin-left: -20px;
+    margin-right: -20px;
+}
+.setting-emails-service {
+    margin-top: 20px;
+}
+.setting-emails-service-check {
+    min-height: 20px;
+}
+.setting-emails-service-check>input[type="checkbox"] {
+    float: left;
+    vertical-align: middle;
+    margin-top: 6px;
+}
+
+.checkbox-title {
+    margin-left: 5px;
+    margin-top: -2px;
+    font-weight:bold;
+    color:#666;
+}
+
+.checkbox-lable {
+    font-size:11px;
+    margin-left:20px;
 }
 <!-- .edit-profile-avatar .manual-file-chooser {
     position: absolute;

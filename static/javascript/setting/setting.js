@@ -125,6 +125,11 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             }
         }
     }])
+    .controller('SettingEmailsCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submit = function() {
+           
+        }
+    }])
     //routes
     .config(function($routeProvider, $locationProvider) {
         $routeProvider
@@ -139,6 +144,10 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             .when('/account', {
                 templateUrl: 'static/views/setting/account.html',
                 controller: 'SettingAccountCtrl'
+            })
+            .when('/emails', {
+                templateUrl: 'static/views/setting/emails.html',
+                controller: 'SettingEmailsCtrl'
             });
     })
     .directive('emailValidator', [function() {
