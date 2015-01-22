@@ -19,6 +19,7 @@ func (this *DashboardController) Prepare() {
 }
 
 func (this *DashboardController) GetSetting() {
+	beego.Error("ssssssss=", this.GetSession("user"))
 	//加载session
 	user, ok := this.GetSession("user").(models.User)
 	if !ok {

@@ -54,6 +54,9 @@ func (this *AuthWebController) Signin() {
 	//将user信息写入session中
 	this.SetSession("user", *user)
 
+	if user.Username == "genedna" {
+		beego.Error("ma login,session=", this.GetSession("user"))
+	}
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"登录成功\"}"))
 	return
