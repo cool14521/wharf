@@ -52,7 +52,7 @@ func runWeb(c *cli.Context) {
 	beego.SetStaticPath(beego.AppConfig.String("docker::StaticPath"), fmt.Sprintf("%s/images", beego.AppConfig.String("docker::BasePath")))
 	beego.SetStaticPath(beego.AppConfig.String("docker::Gravatar"), beego.AppConfig.String("docker::Gravatar"))
 	//初始化 Session
-	models.InitSession()
+	///models.InitSession()
 	//初始化 数据库
 	models.InitDb()
 	email.StartService()
