@@ -65,6 +65,10 @@ func (this *RepositoryAPIController) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
 
+	if true {
+		return
+	}
+
 	//检查 Authorization 的 Header 信息是否存在。
 	if len(this.Ctx.Input.Header("Authorization")) == 0 {
 		//不存在 Authorization 信息返回错误信息
@@ -107,6 +111,8 @@ func (this *RepositoryAPIController) Prepare() {
 				this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"HTTP Header 中的 Token 和 Session 的 Token 不同\"}"))
 				this.StopRun()
 			}
+
+			beego.Error("从Session取得用户名和组织")
 
 			this.Data["username"] = this.GetSession("username")
 			this.Data["org"] = this.GetSession("org")
@@ -166,16 +172,31 @@ func (this *RepositoryAPIController) Prepare() {
 }
 
 func (this *RepositoryAPIController) PutRepository() {
-	username := this.Data["username"].(string)
-	passwd := this.Data["passwd"].(string)
+
+	isAuth, errCode, errInfo := models.DoAuth(this.Ctx, models.AuthPutRepository)
+
+	if !isAuth {
+		this.Ctx.Output.Context.Output.SetStatus(errCode)
+		this.Ctx.Output.Context.Output.Body(errInfo)
+		this.StopRun()
+	}
+	username, passwd, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
+	this.Data["username"] = username
+	this.Data["passwd"] = passwd
+	//获取namespace/repository
+	namespace := string(this.Ctx.Input.Param(":namespace"))
+	repository := string(this.Ctx.Input.Param(":repo_name"))
+	this.Data["org"] = ""
+
+	orgModel := new(models.Organization)
+	has, _, _ := orgModel.Has(namespace)
+	if has == true {
+		this.Data["org"] = namespace
+	}
 	org := this.Data["org"].(string)
 
 	beego.Debug("[Username] " + username)
 	beego.Debug("[Org] " + org)
-
-	//获取namespace/repository
-	namespace := string(this.Ctx.Input.Param(":namespace"))
-	repository := string(this.Ctx.Input.Param(":repo_name"))
 
 	//判断namespace和username的关系，处理权限的问题
 	//TODO：组织的镜像仓库权限判断
@@ -237,128 +258,151 @@ func (this *RepositoryAPIController) PutRepository() {
 
 	//操作正常的输出
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
-
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 }
 
 func (this *RepositoryAPIController) PutTag() {
-	if this.GetSession("access") == "write" {
 
-		beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
-		beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
-		beego.Debug("[Tag] " + this.Ctx.Input.Param(":tag"))
+	//	beego.Debug("[CTX session attr] " + this.Ctx.Input.Session("username").(string))
 
-		username := this.Data["username"].(string)
-		org := this.Data["org"].(string)
+	isAuth, errCode, errInfo := models.DoAuth(this.Ctx, models.AuthPutRepositoryTag)
 
-		namespace := this.Ctx.Input.Param(":namespace")
-		repository := this.Ctx.Input.Param(":repo_name")
-
-		//加密签名
-		sign := ""
-		if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
-			sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
-		}
-
-		beego.Debug("[Sign] " + sign)
-
-		tag := this.Ctx.Input.Param(":tag")
-
-		//从 HTTP Body 中获取 Image 的 Value
-		r, _ := regexp.Compile(`"([[:alnum:]]+)"`)
-		imageIds := r.FindStringSubmatch(string(this.Ctx.Input.CopyBody()))
-
-		repo := new(models.Repository)
-		if err := repo.PutTag(username, repository, org, sign, tag, imageIds[1]); err != nil {
-			beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Tag [%s:%s] 错误: %s", namespace, repository, tag, imageIds[1], err.Error()))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Tag 数据错误\"}"))
-			this.StopRun()
-		}
-
-		//操作正常的输出
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.Ctx.Output.Context.Output.Body([]byte("\"\""))
-	} else {
-		beego.Error("[API 用户] 更新 Repository 的 Tag 信息时在 Session 中没有 write 的权限记录")
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有更新 Repository Tag 数据的写权限\"}"))
+	if !isAuth {
+		this.Ctx.Output.Context.Output.SetStatus(errCode)
+		this.Ctx.Output.Context.Output.Body(errInfo)
 		this.StopRun()
 	}
+
+	beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
+	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
+	beego.Debug("[Tag] " + this.Ctx.Input.Param(":tag"))
+	beego.Debug("[Session username] " + this.GetSession("username").(string))
+	beego.Debug("[Session org] " + this.GetSession("org").(string))
+
+	username := this.GetSession("username").(string)
+	org := this.GetSession("org").(string)
+
+	namespace := this.Ctx.Input.Param(":namespace")
+	repository := this.Ctx.Input.Param(":repo_name")
+
+	//加密签名
+	sign := ""
+	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+	}
+
+	beego.Debug("[Sign] " + sign)
+
+	tag := this.Ctx.Input.Param(":tag")
+
+	//从 HTTP Body 中获取 Image 的 Value
+	r, _ := regexp.Compile(`"([[:alnum:]]+)"`)
+	imageIds := r.FindStringSubmatch(string(this.Ctx.Input.CopyBody()))
+
+	repo := new(models.Repository)
+	if err := repo.PutTag(username, repository, org, sign, tag, imageIds[1]); err != nil {
+		beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Tag [%s:%s] 错误: %s", namespace, repository, tag, imageIds[1], err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Tag 数据错误\"}"))
+		this.StopRun()
+	}
+
+	//操作正常的输出
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 }
 
 //Push 命令的最后一步，所有的检查操作，通知操作都在此函数进行。
 func (this *RepositoryAPIController) PutRepositoryImages() {
-	if this.GetSession("access") == "write" {
-		beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
-		beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
 
-		username := this.Data["username"].(string)
-		org := this.Data["org"].(string)
+	isAuth, errCode, errInfo := models.DoAuth(this.Ctx, models.AuthPutRepositoryImage)
 
-		namespace := this.Ctx.Input.Param(":namespace")
-		repository := this.Ctx.Input.Param(":repo_name")
-
-		//加密签名
-		sign := ""
-		if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
-			sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
-		}
-
-		beego.Debug("[Sign] " + sign)
-
-		beego.Debug("[Body] " + string(this.Ctx.Input.CopyBody()))
-
-		repo := new(models.Repository)
-
-		//TODO 检查仓库所有镜像的 Tag 信息和上传的 Tag 信息是否一致。
-		//TODO 检查仓库所有镜像是否 Uploaded 为 True
-		//TODO 检查仓库所有镜像是否 Checksumed 为 True
-
-		//设定 repository 的 Uploaded
-		if err := repo.PutUploaded(username, repository, org, sign, true); err != nil {
-			beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Uploaded 标志错误: %s", namespace, repository, err.Error()))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Uploaded 标志错误\"}"))
-			this.StopRun()
-		}
-		//设定 repository 的 Checksumed
-		if err := repo.PutChecksumed(username, repository, org, sign, true); err != nil {
-			beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Checksumed 标志错误: %s", namespace, repository, err.Error()))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Checksumed 标志错误\"}"))
-			this.StopRun()
-		}
-		//设定 repository 的 Size
-		if err := repo.PutSize(username, repository, org, sign); err != nil {
-			beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Size 数据错误: %s", namespace, repository, err.Error()))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Size 数据错误\"}"))
-			this.StopRun()
-		}
-
-		//操作正常的输出
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
-		this.Ctx.Output.Context.Output.Body([]byte("\"\""))
-	} else {
-		beego.Error("[API 用户] 更新 Repository 的 Checksum 信息时在 Session 中没有 write 的权限记录")
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"error\":\"没有更新 Repository Checksum 数据的写权限\"}"))
+	if !isAuth {
+		this.Ctx.Output.Context.Output.SetStatus(errCode)
+		this.Ctx.Output.Context.Output.Body(errInfo)
 		this.StopRun()
 	}
+
+	beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
+	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
+	beego.Debug("[Session username] " + this.GetSession("username").(string))
+	beego.Debug("[Session org] " + this.GetSession("org").(string))
+
+	username := this.GetSession("username").(string)
+	org := this.GetSession("org").(string)
+
+	namespace := this.Ctx.Input.Param(":namespace")
+	repository := this.Ctx.Input.Param(":repo_name")
+
+	//加密签名
+	sign := ""
+	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+	}
+
+	beego.Debug("[Sign] " + sign)
+	beego.Debug("[Body] " + string(this.Ctx.Input.CopyBody()))
+
+	repo := new(models.Repository)
+
+	//TODO 检查仓库所有镜像的 Tag 信息和上传的 Tag 信息是否一致。
+	//TODO 检查仓库所有镜像是否 Uploaded 为 True
+	//TODO 检查仓库所有镜像是否 Checksumed 为 True
+
+	//设定 repository 的 Uploaded
+	if err := repo.PutUploaded(username, repository, org, sign, true); err != nil {
+		beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Uploaded 标志错误: %s", namespace, repository, err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Uploaded 标志错误\"}"))
+		this.StopRun()
+	}
+	//设定 repository 的 Checksumed
+	if err := repo.PutChecksumed(username, repository, org, sign, true); err != nil {
+		beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Checksumed 标志错误: %s", namespace, repository, err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Checksumed 标志错误\"}"))
+		this.StopRun()
+	}
+	//设定 repository 的 Size
+	if err := repo.PutSize(username, repository, org, sign); err != nil {
+		beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Size 数据错误: %s", namespace, repository, err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Size 数据错误\"}"))
+		this.StopRun()
+	}
+
+	//操作正常的输出
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
+	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 }
 
 //获取一个 Repository 的 Image 信息
 func (this *RepositoryAPIController) GetRepositoryImages() {
-	beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
-	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
 
-	username := this.Data["username"].(string)
-	org := this.Data["org"].(string)
+	isAuth, errCode, errInfo := models.DoAuth(this.Ctx, models.AuthGetRepositoryImages)
 
-	namespace := this.Ctx.Input.Param(":namespace")
-	repository := this.Ctx.Input.Param(":repo_name")
+	if !isAuth {
+		this.Ctx.Output.Context.Output.SetStatus(errCode)
+		this.Ctx.Output.Context.Output.Body(errInfo)
+		this.StopRun()
+	}
+	username, passwd, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
+	//获取namespace/repository
+	namespace := string(this.Ctx.Input.Param(":namespace"))
+	repository := string(this.Ctx.Input.Param(":repo_name"))
+
+	orgModel := new(models.Organization)
+	has, _, _ := orgModel.Has(namespace)
+	org := ""
+	if has == true {
+		org = namespace
+	}
+
+	beego.Debug("[Username] " + username)
+	beego.Debug("[Org] " + org)
+	beego.Debug("[Repository] " + repository)
+	beego.Debug("[namespace] " + namespace)
 
 	//TODO：私有和组织的镜像仓库权限判断问题
 
@@ -384,19 +428,19 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 		if this.Ctx.Input.Header("X-Docker-Token") == "true" {
 			//创建 token 并保存
 			//需要加密的字符串为 UserName + UserPassword + 时间戳
-			token := utils.GeneralToken(username + repository)
-			this.SetSession("token", token)
+			token := utils.GeneralToken(username + passwd)
+			this.Ctx.Input.CruSession.Set("token", token)
 			//在返回值 Header 里面设置 Token
 			this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
 			this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
 		}
 
-		this.SetSession("username", username)
-		this.SetSession("org", org)
-		this.SetSession("namespace", namespace)
-		this.SetSession("repository", repository)
+		this.Ctx.Input.CruSession.Set("username", username)
+		this.Ctx.Input.CruSession.Set("org", org)
+		this.Ctx.Input.CruSession.Set("namespace", namespace)
+		this.Ctx.Input.CruSession.Set("repository", repository)
 		//在 SetSession 中增加读权限
-		this.SetSession("access", "read")
+		this.Ctx.Input.CruSession.Set("access", "read")
 		//操作正常的输出
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.Ctx.Output.Context.Output.Body(json)
@@ -404,40 +448,42 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 }
 
 func (this *RepositoryAPIController) GetRepositoryTags() {
-	if this.GetSession("access") == "read" {
-		beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
-		beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
 
-		//username := this.Data["username"].(string)
-		org := this.Data["org"].(string)
+	isAuth, errCode, errInfo := models.DoAuth(this.Ctx, models.AuthGetRepositoryTags)
 
-		namespace := this.Ctx.Input.Param(":namespace")
-		repository := this.Ctx.Input.Param(":repo_name")
-
-		//加密签名
-		sign := ""
-		if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
-			sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
-		}
-
-		beego.Debug("[Sign] " + sign)
-
-		repo := new(models.Repository)
-		if tags, err := repo.GetTags(namespace, repository, org, sign, true, true); err != nil {
-			beego.Error(fmt.Sprintf("[API 用户] 读取 %s/%s 的 Tags 数据错误: %s", namespace, repository, err.Error()))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Tag 数据错误\"}"))
-			this.StopRun()
-		} else {
-			//TODO 私有镜像仓库权限判断
-			//操作正常的输出
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-			this.Ctx.Output.Context.Output.Body(tags)
-		}
-	} else {
-		beego.Error("[API 用户] 读取 Repository Tag 时在 Session 中没有 read 的权限记录")
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有读取 Repository Tag 的权限\"}"))
+	if !isAuth {
+		this.Ctx.Output.Context.Output.SetStatus(errCode)
+		this.Ctx.Output.Context.Output.Body(errInfo)
 		this.StopRun()
+	}
+
+	beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
+	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
+
+	//username := this.Data["username"].(string)
+	org := this.Ctx.Input.CruSession.Get("org").(string)
+
+	namespace := this.Ctx.Input.Param(":namespace")
+	repository := this.Ctx.Input.Param(":repo_name")
+
+	//加密签名
+	sign := ""
+	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
+		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
+	}
+
+	beego.Debug("[Sign] " + sign)
+
+	repo := new(models.Repository)
+	if tags, err := repo.GetTags(namespace, repository, org, sign, true, true); err != nil {
+		beego.Error(fmt.Sprintf("[API 用户] 读取 %s/%s 的 Tags 数据错误: %s", namespace, repository, err.Error()))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Tag 数据错误\"}"))
+		this.StopRun()
+	} else {
+		//TODO 私有镜像仓库权限判断
+		//操作正常的输出
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.Ctx.Output.Context.Output.Body(tags)
 	}
 }
