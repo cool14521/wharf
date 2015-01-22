@@ -57,7 +57,7 @@
                 <div class="form-title">
                     <lable>Name</lable>
                 </div>
-                <div class="form-content">
+                <div class="form-content input-long">
                     <input type="text" size="30" ng-model="user.username" />
                 </div>
             </div>
@@ -65,7 +65,7 @@
                 <div class="form-title">
                     <lable>Email (will be public)</lable>
                 </div>
-                <div class="form-content">
+                <div class="form-content input-long">
                     <input type="text" size="30" name="email" ng-model="user.email" required email-validator/>
                     <div class="error-message" ng-messages="profileForm.email.$error" ng-if="profileForm.email.$dirty">
                         <div ng-message="required">Please enter your email.</div>
@@ -77,7 +77,7 @@
                 <div class="form-title">
                     <lable>Fullname</lable>
                 </div>
-                <div class="form-content">
+                <div class="form-content input-long">
                     <input type="text" size="30" ng-model="user.fullname" />
                 </div>
             </div>
@@ -85,7 +85,7 @@
                 <div class="form-title">
                     <lable>Mobile</lable>
                 </div>
-                <div class="form-content">
+                <div class="form-content input-long">
                     <input type="text" size="30" name="mobile" ng-model="user.mobile" mobile-validator/>
                     <div class="error-message" ng-messages="profileForm.mobile.$error" ng-if="profileForm.mobile.$dirty">
                         <div ng-message="mobiles">Please enter a valid mobile.</div>
@@ -96,7 +96,7 @@
                 <div class="form-title">
                     <lable>Company</lable>
                 </div>
-                <div class="form-content">
+                <div class="form-content input-long">
                     <input type="text" size="30" ng-model="user.company" />
                 </div>
             </div>
@@ -104,7 +104,7 @@
                 <div class="form-title">
                     <lable>URL</lable>
                 </div>
-                <div class="form-content">
+                <div class="form-content input-long">
                     <input type="text" size="30" name="url" ng-model="user.url" url-validator/>
                     <div class="error-message" ng-messages="profileForm.url.$error" ng-if="profileForm.url.$dirty">
                         <div ng-message="urls">Please enter a valid url.</div>

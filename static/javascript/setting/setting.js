@@ -109,12 +109,45 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             }
         }
     }])
+    .controller('SettingAccountCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submit = function() {
+            if ($scope.accountForm.$valid) {
+                $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+                $http.put('/w1/account', $scope.user)
+                    .success(function(data, status, headers, config) {
+                        growl.info(data.message);
+                        $window.location.href = '/setting';
+                    })
+                    .error(function(data, status, headers, config) {
+                        $scope.submitting = false;
+                        growl.error(data.message);
+                    });
+            }
+        }
+    }])
+    .controller('SettingEmailsCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submit = function() {
+           
+        }
+    }])
     //routes
     .config(function($routeProvider, $locationProvider) {
         $routeProvider
             .when('/', {
                 templateUrl: 'static/views/setting/profile.html',
                 controller: 'SettingProfileCtrl'
+            })
+            .when('/profile', {
+                templateUrl: 'static/views/setting/profile.html',
+                controller: 'SettingProfileCtrl'
+            })
+            .when('/account', {
+                templateUrl: 'static/views/setting/account.html',
+                controller: 'SettingAccountCtrl'
+            })
+            .when('/emails', {
+                templateUrl: 'static/views/setting/emails.html',
+                controller: 'SettingEmailsCtrl'
             });
     })
     .directive('emailValidator', [function() {
@@ -153,6 +186,37 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 ngModel.$validators.mobiles = function(value) {
                     return MOBILE_REGEXP.test(value) || value == "";
                 }
+            }
+        };
+    }])
+    .directive('passwdValidator', [function() {
+        var NUMBER_REGEXP = /\d/;
+        var LETTER_REGEXP = /[A-z]/;
+
+        return {
+            require: 'ngModel',
+            restrict: '',
+            link: function(scope, element, attrs, ngModel) {
+                ngModel.$validators.passwd = function(value) {
+                    return NUMBER_REGEXP.test(value) && LETTER_REGEXP.test(value);
+                }
+            }
+        };
+    }])
+    .directive('confirmValidator', [function() {
+        return {
+            require: 'ngModel',
+            restrict: '',
+            scope: {
+                passwd: "=confirmData"
+            },
+            link: function(scope, element, attrs, ngModel) {
+                ngModel.$validators.repeat = function(value) {
+                    return value == scope.passwd;
+                };
+                scope.$watch('passwd', function() {
+                    ngModel.$validate();
+                });
             }
         };
     }])
