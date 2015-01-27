@@ -10,7 +10,7 @@ docker-bucket
 go get github.com/astaxie/beego
 go get github.com/codegangsta/cli
 go get github.com/siddontang/ledisdb/ledis
-go get github.com/garyburd/redigo/redis
+go get github.com/garyburd/redigo/redis                   <-好像还少一个库 忘了是什么了
 go build
 ```
 `TODO` 支持 **gopm** 编译程序
