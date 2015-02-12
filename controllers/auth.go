@@ -3,7 +3,7 @@ package controllers
 import (
 	"fmt"
 	"github.com/astaxie/beego"
-	"github.com/dockercn/docker-bucket/models"
+	"github.com/dockercn/wharf/models"
 	"log"
 	"net/http"
 )

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
-	"github.com/dockercn/docker-bucket/models"
+	"github.com/dockercn/wharf/models"
 	"net/http"
 )
 

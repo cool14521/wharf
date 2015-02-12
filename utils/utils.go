@@ -102,7 +102,7 @@ func GeneralToken(key string) string {
 }
 
 func EncodePassword(username string, password string) string {
-	md5String := fmt.Sprintf("%s%s%s", username, password, "docker-bucket")
+	md5String := fmt.Sprintf("%s%s%s", username, password, "wharf")
 	h := md5.New()
 	h.Write([]byte(md5String))
 
