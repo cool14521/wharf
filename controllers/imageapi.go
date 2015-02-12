@@ -10,8 +10,8 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"github.com/dockercn/docker-bucket/models"
-	"github.com/dockercn/docker-bucket/utils"
+	"github.com/dockercn/wharf/models"
+	"github.com/dockercn/wharf/utils"
 )
 
 type ImageAPIController struct {

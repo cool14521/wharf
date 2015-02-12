@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dockercn/docker-bucket/models"
+	"github.com/dockercn/wharf/models"
 )
 
 const (

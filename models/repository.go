@@ -8,7 +8,7 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"github.com/dockercn/docker-bucket/utils"
+	"github.com/dockercn/wharf/utils"
 )
 
 type Job struct {

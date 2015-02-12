@@ -18,7 +18,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/dockercn/docker-bucket/utils"
+	"github.com/dockercn/wharf/utils"
 )
 
 //邮件信息定义

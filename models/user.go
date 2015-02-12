@@ -3,7 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dockercn/docker-bucket/utils"
+	"github.com/dockercn/wharf/utils"
 	"regexp"
 	"sort"
 	"strconv"

@@ -5,7 +5,7 @@ import (
 
 	"github.com/codegangsta/cli"
 
-	"github.com/dockercn/docker-bucket/models"
+	"github.com/dockercn/wharf/models"
 )
 
 var CmdAccount = cli.Command{

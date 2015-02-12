@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/dockercn/docker-bucket/utils"
+	"github.com/dockercn/wharf/utils"
 )
 
 type Image struct {

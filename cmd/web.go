@@ -7,9 +7,9 @@ import (
 	"github.com/codegangsta/cli"
 	"strconv"
 
-	"github.com/dockercn/docker-bucket/email"
-	"github.com/dockercn/docker-bucket/models"
-	_ "github.com/dockercn/docker-bucket/routers"
+	"github.com/dockercn/wharf/email"
+	"github.com/dockercn/wharf/models"
+	_ "github.com/dockercn/wharf/routers"
 )
 
 var CmdWeb = cli.Command{
