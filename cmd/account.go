@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/codegangsta/cli"
 
@@ -55,13 +55,13 @@ func runAccount(c *cli.Context) {
 				user.Password = passwd
 				user.Email = email
 				if err := user.Save(); err != nil {
-					fmt.Println(fmt.Sprintf("Add user failure: %s", err.Error()))
+					log.Fatalln("Add user failure: %s", err.Error())
 				} else {
-					fmt.Println(fmt.Sprintf("Add user successful: %s", username))
+					log.Fatalln("Add user successful: %s", username)
 				}
 
 			} else {
-				fmt.Println("account add need username/email/passwd params")
+				log.Fatalln("account add need username/email/passwd params")
 			}
 
 			break
@@ -72,9 +72,9 @@ func runAccount(c *cli.Context) {
 		case "log":
 			break
 		default:
-			fmt.Println("account only support add/active/unactive actions")
+			log.Fatalln("account only support add/active/unactive actions")
 		}
 	} else {
-		fmt.Println("account only support add/active/unactive actions")
+		log.Fatalln("account only support add/active/unactive actions")
 	}
 }
