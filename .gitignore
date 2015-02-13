@@ -21,11 +21,10 @@ _testmain.go
 
 *.exe
 
-docker-bucket
+wharf
 .vendor/*
 nohup.out
 conf/bucket.conf
-conf/app.conf
 var/*
 cert/*
 data/gravatar/*

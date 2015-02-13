@@ -7,11 +7,11 @@ docker-bucket
 代码 **clone** 到 `$GOPATH/src/githhub.com/dockercn` 目录下，然后执行以下命令
 
 ```
-go get github.com/astaxie/beego
-go get github.com/codegangsta/cli
-go get github.com/siddontang/ledisdb/ledis
-go get github.com/garyburd/redigo/redis
-go get github.com/chliang2030598/go/github_flavored_markdown
+go get -u github.com/astaxie/beego
+go get -u github.com/codegangsta/cli
+go get -u github.com/siddontang/ledisdb/ledis
+go get -u github.com/garyburd/redigo/redis
+go get -u github.com/shurcooL/go/github_flavored_markdown
 
 go build
 ```
@@ -23,7 +23,7 @@ go build
 =======
 
 ```
-./docker-bucket account --action add --username docker --passwd docker --email bucket@docker.cn
+./wharf account --action add --username docker --passwd docker --email bucket@docker.cn
 ```
 
 
@@ -70,8 +70,8 @@ runmode = dev
 
 enablehttptls = true
 httpsport = 443
-httpcertfile = cert/docker-bucket.crt
-httpkeyfile = cert/docker-bucket.key
+httpcertfile = cert/wharf.crt
+httpkeyfile = cert/wharf.key
 
 [docker]
 BasePath = /tmp/registry
@@ -92,14 +92,15 @@ DB = 8
 FilePath = /tmp/log
 FileName = bucket-log
 
-[markdown]
-DataDir = /tmp/doc_data/
-Db = 6
+[session]
+Provider = ledis
+SavePath = /tmp/session
 
-[category]
-Prefix = doc
-Local = /tmp/category
-Remote = https://github.com/xxx/docs1.git
+[email]
+Host = smtp.exmail.qq.com
+Port = 465
+User = demo@demo.com
+Password = 123456
 
 ```
 
@@ -109,7 +110,7 @@ Nginx Conf
 Nginx 配置文件的示例，注意 **client_max_body_size** 对上传文件大小的限制。
 
 ```
-upstream bucket_upstream {
+upstream wharf_upstream {
   server 127.0.0.1:9911;
 }
 
@@ -144,7 +145,7 @@ server {
   proxy_http_version 1.1;
 
   location / {
-    proxy_pass         http://bucket_upstream;
+    proxy_pass         http://wharf_upstream;
   }
 }
 ```
