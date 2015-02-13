@@ -2,7 +2,7 @@
     <div class="container">
         <div>
             <!-- Logo -->
-            <a href="/"><img src="/static/images/logo.png" class="logo">
+            <a href="/"><img src="/static/images/logo.png" class="logo" style="height:43px;">
             </a>
             <!-- End Logo -->
 
@@ -41,8 +41,13 @@
                     <a href="/dashboard"><i class="fa fa-user fa-fw"></i>&nbsp;<<<.username>>></a>
                 </li>
                 <li>
-                    <a href="/dashboard"> <i class="fa fa-plus fa-3x"></i>
-                    </a>
+                    <i class="fa fa-plus fa-fw" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true"></i>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Add repository</a>
+                        </li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#organizationAdd">Add Organization</a>
+                        </li>
+                    </ul>
                 </li>
                 <li>
                     <a href="/setting"> <i class="fa fa-gear fa-3x"></i>

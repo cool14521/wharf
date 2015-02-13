@@ -19,7 +19,7 @@ Docker Registry & Login
 package controllers
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -60,32 +60,8 @@ func (this *UsersAPIController) Prepare() {
 //如果支持 docker 命令行创建账户，在创建成功后返回 201 状态吗。
 func (this *UsersAPIController) PostUsers() {
 	//根据配置文件中得是否可以注册处理逻辑
-	open, _ := beego.AppConfig.Bool("docker::OpenSignup")
-	if open == true {
-		//获得用户提交的登陆(注册)信息
-		var u map[string]interface{}
-		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
-			beego.Error(fmt.Sprintf("[API 用户] 解码用户注册发送的 JSON 数据失败: %s", err.Error()))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"解码用户发送的 JSON 数据失败\"}"))
-			this.StopRun()
-		}
-
-		user := new(models.User)
-		if err := user.Put(u["username"].(string), u["password"].(string), u["email"].(string)); err != nil {
-			beego.Error(fmt.Sprintf("[API 用户] 注册用户失败: %s", err.Error()))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"注册用户失败\"}"))
-			this.StopRun()
-		} else {
-			beego.Info(fmt.Sprintf("[API 用户] 注册用户成功: %s", u["username"].(string)))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusCreated)
-			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("{\"信息\": \"用户 %s 注册成功\"}", u["username"].(string))))
-		}
-	} else {
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"不支持从 docker 命令行创建用户\"}"))
-	}
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
+	this.Ctx.Output.Context.Output.Body([]byte("{\"错误\": \"不支持从 docker 命令行创建用户\"}"))
 }
 
 func (this *UsersAPIController) GetUsers() {
@@ -99,20 +75,13 @@ func (this *UsersAPIController) GetUsers() {
 	}
 
 	user := new(models.User)
-	has, err := user.Get(username, passwd)
+	err = user.Get(username, passwd)
 
 	if err != nil {
 		//查询用户数据失败，返回 401 错误
 		beego.Error(fmt.Sprintf("[API 用户] 查询用户错误： ", err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 		this.Ctx.Output.Body([]byte("{\"错误\":\"用户登录验证失败\"}"))
-		this.StopRun()
-	}
-
-	if has == false {
-		//没有查询到用户数据
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"没有查询到用户数据\"}"))
 		this.StopRun()
 	}
 

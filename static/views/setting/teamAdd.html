@@ -1,0 +1,86 @@
+<div class="block right-div">
+    <div class="block-title">
+        <h2><strong class="block-title-setting">
+Create new team
+</strong></h2>
+    </div>
+    <form name="profileForm" class="" ng-submit="submit()">
+        <div class="form-group">
+            <div class="form-title">
+                <lable>Organization name</lable>
+            </div>
+            <div class="form-content input-long organizationCheck">
+                <select ui-select2="vm.option1" ng-model="team.organization">
+                    <option value="{{organization.organization}}" ng-repeat="organization in organizations">{{organization.organization}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-title">
+                <lable>Team name</lable>
+            </div>
+            <div class="form-content input-long">
+                <input type="text" size="30" ng-model="team.team" />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-title">
+                <lable>Team description</lable>
+            </div>
+            <div class="form-content input-long">
+                <input type="text" size="30" ng-model="team.description" />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-title">
+                <lable>Team member</lable>
+            </div>
+             <div class="form-add-member">
+                    add<i class="fa fa-plus fa-fw" data-toggle="modal" data-target="#myModal"></i>
+            </div>
+            <input type="hidden" ng-model="team.users" name="users">
+            <div class="form-content input-long"> 
+                <div class="org-group-gravatar" ng-repeat="add in users">
+                    {{add.username}}<img ng-src="{{add.gravatar}}" class="team-profile-show team-profile">
+                </div>
+            </div>
+        </div>
+        <br>
+        <div class="form-group">
+            <button type="submit" class="button primary">Add team</button>
+        </div>
+    </form>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Add a member to team</h4>
+            </div>
+            <form>
+                <div class="modal-body">
+
+                    <div class="input-group">
+                        <!--
+                    <input id="searchKey" name="searchKey" ng-model="user.username" type="text" class="form-control" onkeydown="if(event.keyCode==13)Search()" placeholder="Search user" />
+                    <span class="input-group-btn">
+                       
+  							<a class="btn submit" id="userlable" href="javascript:void(0);" ng-click="Search();" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-search fw"></i></a>
+                    		<ul class="dropdown-menu" role="menu" aria-labelledby="userlable" ng-repeat="usermodel in users">
+                                <li>{{usermodel.username}}</li>
+                    		</ul>          
+                	</span>
+    -->
+                        <input autocomplete="off" class="ui-autocomplete-input" id="tags" value="" type="text">
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button ng-click="addUserFunc()" class="btn btn-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

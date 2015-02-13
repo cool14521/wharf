@@ -95,7 +95,7 @@ func GeneralKey(key string) []byte {
 }
 
 func GeneralToken(key string) string {
-	md5String := fmt.Sprintf("%v%v", key, string(time.Now().Unix()))
+	md5String := fmt.Sprintf("%v%v", key, time.Now())
 	h := md5.New()
 	h.Write([]byte(md5String))
 	return hex.EncodeToString(h.Sum(nil))

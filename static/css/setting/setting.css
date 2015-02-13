@@ -3,6 +3,7 @@
 }
 .right-div {
     margin-top: 20px;
+    padding-bottom: 30px;
 }
 .list-group {
     margin-left: -20px;
@@ -95,7 +96,7 @@ canvas {
 .ng-active {
     color: red;
 }
-/*emails.html*/
+/*emails.html start*/
 
 .block-desc {
     font-size: 13px;
@@ -170,18 +171,69 @@ canvas {
     vertical-align: middle;
     margin-top: 6px;
 }
-
 .checkbox-title {
     margin-left: 5px;
     margin-top: -2px;
-    font-weight:bold;
-    color:#666;
+    font-weight: bold;
+    color: #666;
 }
-
 .checkbox-lable {
-    font-size:11px;
-    margin-left:20px;
+    font-size: 11px;
+    margin-left: 20px;
 }
+/*emails.html end*/
+/*notification start */
+
+.notification-group>p {
+    font-size: 13px;
+    margin-top: -10px;
+}
+.notification-group-border {
+    margin-top: 15px;
+}
+.notification-checkbox-email {
+    float: left;
+}
+.notification-checkbox-web {
+    margin-left: 80px;
+}
+.notification-checkbox {
+    margin-top: -13px;
+}
+.notification-checkbox-web>input[type="checkbox"] {
+    margin-top: -7px;
+}
+.notification-group-end {
+    margin-bottom: 20px;
+}
+.notification-emailAddress>span {
+    font-weight: bold;
+    color: #666;
+}
+.notification-emailAddress-select {
+    font-size: 13px;
+}
+.notification-emailAddress-select-btn {
+    height: 30px;
+    padding: 4px 7px;
+}
+.notification-boder {
+    margin-top: 20px;
+}
+.notification-mailList>ul {
+    list-style: none;
+    margin-top: 10px;
+}
+.notification-mailList>ul>li {
+    margin-left: -40px;
+}
+.email-display {
+    float: right;
+    margin-top: -20px;
+    font-size: 13px;
+}
+/*notification end */
+
 <!-- .edit-profile-avatar .manual-file-chooser {
     position: absolute;
     top: 0;
@@ -201,3 +253,125 @@ canvas {
     width: 100px;
 }
 -->
+/* teamAdd.html */
+
+.organizationCheck>select {
+    min-height: 35px;
+    border-radius: 3px;
+    width: 66.7%;
+}
+/*organizaiton.html */
+
+.org-group {
+    border: 1px solid #bdc3c7;
+    margin-top: 20px;
+    border-radius: 5px;
+    padding: 15px;
+    padding-bottom: 70px;
+}
+.profile {
+    float: right;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+.org-group-name {
+    color: black;
+    font-size: 19px;
+    font-weight: bold;
+}
+.org-group-desc {
+    margin: 0 0 15px;
+    font-size: 14px;
+    line-height: 1.72222;
+    color: #434A54;
+}
+.org-group-teams {
+    margin-left: -20px;
+}
+.org-group-teams-team {
+    border: 1px solid #bdc3c7;
+    float: left;
+    padding: 10px;
+    margin-left: 20px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+.org-group-btn {
+    float: right;
+}
+.team-group-name {
+    color: black;
+    font-size: 17px;
+    font-weight: bold;
+}
+.team-profile {
+    margin-left: 5px;
+}
+.team-profile-show {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px
+}
+/*competence*/
+
+.competence-group {
+    margin-left: 15px;
+}
+.competence-group-team {
+    text-align: center;
+    border: 1px solid #bdc3c7;
+    float: left;
+    padding: 5px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 18px;
+    height: 40px;
+    margin-top: 20px;
+}
+.competence-group-add {
+    text-align: center;
+    border: 1px solid #bdc3c7;
+    float: left;
+    padding: 5px;
+    font-size: 16px;
+    margin-left: 20px;
+    height: 40px;
+    margin-top: 20px;
+}
+.competence-group-repoList {
+    margin-left: 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+.competence-group-repoList-repo {
+    border: 1px solid #bdc3c7;
+    margin-top: 20px;
+    margin-left: -15px;
+    margin-right: -15px;
+    height: 40px;
+    padding-top: 4px;
+    padding-right: 2px;
+    border-radius: 5px;
+    color: #4183c4;
+}
+.addIcon {
+    float: right;
+    margin-top: 5px;
+    margin-right: 5px;
+}
+.addRepoIcon {
+    color: #bdc3c7;
+}
+.form-competence-radio {
+    font-weight: bold;
+    font-size: 13px;
+}
+.form-competence-radio-p {
+    font-size: 12px;
+    font-weight: 100;
+}
+.iconActive {
+    color: #4183c4;
+}

@@ -1,0 +1,28 @@
+<div class="block right-div">
+    <div class="block-title">
+        <h2><strong class="block-title-setting">
+Organization
+</strong></h2>
+    </div>
+    <form name="profileForm" class="" ng-submit="submit()">
+        <div class="form-group">
+            <div class="form-title">
+                <lable>Organization name</lable>
+            </div>
+            <div class="form-content input-long">
+                <input type="text" size="30" ng-model="organization.organization" readOnly/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-title">
+                <lable>Organization description</lable>
+            </div>
+            <div class="form-content input-long">
+                <input type="text" size="30" ng-model="organization.description"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="button primary">Modify organization</button>
+        </div>
+    </form>
+</div>

@@ -56,7 +56,10 @@ func runAccount(c *cli.Context) {
 				passwd = c.String("passwd")
 
 				user := new(models.User)
-				if err := user.Put(username, passwd, email); err != nil {
+				user.Username = username
+				user.Password = passwd
+				user.Email = email
+				if err := user.Save(); err != nil {
 					fmt.Println(fmt.Sprintf("%s: %s", "添加用户失败", err.Error()))
 				} else {
 					fmt.Println(fmt.Sprintf("添加 %s 用户成功！", username))

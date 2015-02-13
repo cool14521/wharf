@@ -9,38 +9,50 @@ func init() {
 	//Web Interface
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/auth", &controllers.AuthController{}, "get:Get")
-	beego.Router("/signout", &controllers.AuthWebController{}, "get:Signout")
+	//beego.Router("/signout", &controllers.AuthWebController{}, "get:Signout")
 	beego.Router("/setting", &controllers.DashboardController{}, "get:GetSetting")
 	beego.Router("/dashboard", &controllers.DashboardController{}, "get:GetDashboard")
-	beego.Router("/admin", &controllers.AdminController{}, "get:GetAdmin")
+	//	beego.Router("/admin", &controllers.AdminController{}, "get:GetAdmin")
+	//beego.Router("/repositories/add", &controllers.RepositoryController{}, "get:GetRepositoryAdd")
 
-	//Static File
-	beego.Router("/favicon.ico", &controllers.StaticController{}, "get:GetFavicon")
-	//TODO sitemap/rss/robots.txt
+	// //Static File
+	// beego.Router("/favicon.ico", &controllers.StaticController{}, "get:GetFavicon")
+	// //TODO sitemap/rss/robots.txt
 
 	web := beego.NewNamespace("/w1",
 		beego.NSRouter("/signin", &controllers.AuthWebController{}, "post:Signin"),
-		beego.NSRouter("/reset", &controllers.AuthWebController{}, "post:ResetPasswd"),
+		//		beego.NSRouter("/reset", &controllers.AuthWebController{}, "post:ResetPasswd"),
 		beego.NSRouter("/signup", &controllers.AuthWebController{}, "post:Signup"),
 		beego.NSRouter("/profile", &controllers.UsersWebController{}, "get:GetProfile"),
-		beego.NSRouter("/profile", &controllers.UsersWebController{}, "put:PutProfile"),
-		beego.NSRouter("/account", &controllers.UsersWebController{}, "put:PutAccount"),
-		beego.NSRouter("/gravatar", &controllers.UsersWebController{}, "post:PostGravatar"),
+
+		//team routers
+		beego.NSRouter("/users/:username", &controllers.UsersWebController{}, "get:GetUserExist"),
+		beego.NSRouter("/team", &controllers.TeamWebController{}, "post:PostTeam"),
+
+		//organization routers
+		beego.NSRouter("/organizations", &controllers.OrganizationWebController{}, "get:GetOrganizations"),
+		beego.NSRouter("/organization", &controllers.OrganizationWebController{}, "post:PostOrganization"),
+		beego.NSRouter("/organization", &controllers.OrganizationWebController{}, "put:PutOrganization"),
+		beego.NSRouter("/organizations/:orgName", &controllers.OrganizationWebController{}, "get:GetOrganizationDetail"),
+
+		//		beego.NSRouter("/profile", &controllers.UsersWebController{}, "put:PutProfile"),
+		//		beego.NSRouter("/account", &controllers.UsersWebController{}, "put:PutAccount"),
+		//		beego.NSRouter("/gravatar", &controllers.UsersWebController{}, "post:PostGravatar"),
 	)
 
-	//CI Service API
-	drone := beego.NewNamespace("/d1",
-		beego.NSRouter("/yaml", &controllers.DroneAPIController{}, "post:PostYAML"),
-	)
+	// //CI Service API
+	// drone := beego.NewNamespace("/d1",
+	//	beego.NSRouter("/yaml", &controllers.DroneAPIController{}, "post:PostYAML"),
+	// )
 
 	//Docker Registry API V1 remain
 	beego.Router("/_ping", &controllers.PingAPIController{}, "get:GetPing")
-	beego.Router("/_status", &controllers.StatusAPIController{})
+	// beego.Router("/_status", &controllers.StatusAPIController{})
 
-	//Docker Registry API V1
+	// //Docker Registry API V1 目前不支持V2 协议
 	api := beego.NewNamespace("/v1",
 		beego.NSRouter("/_ping", &controllers.PingAPIController{}, "get:GetPing"),
-		beego.NSRouter("/_status", &controllers.StatusAPIController{}),
+		//	beego.NSRouter("/_status", &controllers.StatusAPIController{}),
 		beego.NSRouter("/users", &controllers.UsersAPIController{}, "get:GetUsers"),
 		beego.NSRouter("/users", &controllers.UsersAPIController{}, "post:PostUsers"),
 
@@ -63,6 +75,6 @@ func init() {
 	)
 
 	beego.AddNamespace(web)
-	beego.AddNamespace(drone)
+	//beego.AddNamespace(drone)
 	beego.AddNamespace(api)
 }

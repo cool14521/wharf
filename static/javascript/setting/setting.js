@@ -16,7 +16,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 $scope.user = data
             })
             .error(function(data, status, headers, config) {
-
                 $timeout(function() {
                     $window.location.href = '/auth';
                 }, 3000);
@@ -127,7 +126,167 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
     }])
     .controller('SettingEmailsCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
         $scope.submit = function() {
-           
+            $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+        }
+    }])
+    .controller('SettingNotificationCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submit = function() {
+
+        }
+    }])
+    .controller('SettingOrganizationCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
+        $http.get('/w1/organizations/' + $routeParams.orgName)
+            .success(function(data, status, headers, config) {
+                $scope.organization = data;
+                /*  if length(data) == 0 {
+                      $scope.organizationShow = false;
+                      return
+                  }
+                  $scope.organizationShow = true;*/
+            })
+            .error(function(data, status, headers, config) {
+                $timeout(function() {
+                    //$window.location.href = '/auth';
+                    alert(data);
+                }, 3000);
+            });
+
+        $scope.submit = function() {
+            if (true) {
+                $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+                $http.put('/w1/organization', $scope.organization)
+                    .success(function(data, status, headers, config) {
+                        growl.info(data.message);
+                    })
+                    .error(function(data, status, headers, config) {
+                        $scope.submitting = false;
+                        growl.error(data.message);
+                    });
+            }
+        }
+    }])
+    .controller('SettingOrganizationAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submit = function() {
+            if (true) {
+                $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+                $http.post('/w1/organization', $scope.organization)
+                    .success(function(data, status, headers, config) {
+                        growl.info(data.message);
+                    })
+                    .error(function(data, status, headers, config) {
+                        $scope.submitting = false;
+                        growl.error(data.message);
+                    });
+            }
+        }
+
+        $scope.createOrg = function() {
+            $window.location.href = '/setting#/organizationAdd';
+        }
+    }])
+    .controller('SettingTeamCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        //初始化加载user的organization信息
+        $http.get('/w1/organization')
+            .success(function(data, status, headers, config) {
+                $scope.team = data
+            })
+            .error(function(data, status, headers, config) {
+
+            });
+
+        $scope.submit = function() {
+
+        }
+
+        $scope.createTeam = function() {
+            $window.location.href = '/setting#/teamAdd';
+        }
+    }])
+    .controller('SettingTeamAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.users = [];
+        $scope.team = new Object();
+        $scope.team.users = [];
+        $scope.findUser = new Object();
+        //初始化organization数据
+        $http.get('/w1/organizations')
+            .success(function(data, status, headers, config) {
+                $scope.organizations = data;
+
+            })
+            .error(function(data, status, headers, config) {
+                $timeout(function() {
+                    //$window.location.href = '/auth';
+                    alert(data);
+                }, 3000);
+            });
+
+        $scope.submit = function() {
+            if (true) {
+                $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+                $http.post('/w1/team', $scope.team)
+                    .success(function(data, status, headers, config) {
+                        growl.info(data.message);
+                    })
+                    .error(function(data, status, headers, config) {
+                        $scope.submitting = false;
+                        growl.error(data.message);
+                    });
+            }
+        }
+
+        $scope.Search = function() {
+            /*
+            $http.get('/w1/users/'+$scope.user.username)
+                .success(function(data, status, headers, config) {
+                    $scope.users = data;
+
+                })
+                .error(function(data, status, headers, config) {
+                    $timeout(function() {
+                        //$window.location.href = '/auth';
+                        alert(data);
+                    }, 3000);
+                });
+            $('.dropdown-toggle').dropdown();
+            */
+        }
+
+        var availableTags = ["chliang2030598"];
+
+        $("#tags").autocomplete({
+            source: availableTags
+        });
+
+
+        $scope.addUserFunc = function() {
+            $scope.findUser.username = document.getElementById("tags").value;
+            $scope.users.push($scope.findUser);
+            $scope.team.users.push($scope.findUser.username);
+            $('#myModal').modal('hide');
+        }
+
+    }])
+    .controller('OrganizationListCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        //init organization  info
+        $http.get('/w1/organizations')
+            .success(function(data, status, headers, config) {
+                $scope.organizaitons = data;
+                /*  if length(data) == 0 {
+                      $scope.organizationShow = false;
+                      return
+                  }
+                  $scope.organizationShow = true;*/
+            })
+            .error(function(data, status, headers, config) {
+                $timeout(function() {
+                    //$window.location.href = '/auth';
+                    alert(data);
+                }, 3000);
+            });
+    }])
+    .controller('SettingCompetenceCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submit = function() {
+
         }
     }])
     //routes
@@ -148,6 +307,30 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             .when('/emails', {
                 templateUrl: 'static/views/setting/emails.html',
                 controller: 'SettingEmailsCtrl'
+            })
+            .when('/notification', {
+                templateUrl: 'static/views/setting/notification.html',
+                controller: 'SettingNotificationCtrl'
+            })
+            .when('/organization/:orgName', {
+                templateUrl: 'static/views/setting/organization.html',
+                controller: 'SettingOrganizationCtrl'
+            })
+            .when('/organizationAdd', {
+                templateUrl: 'static/views/setting/organizationAdd.html',
+                controller: 'SettingOrganizationAddCtrl'
+            })
+            .when('/team', {
+                templateUrl: 'static/views/setting/team.html',
+                controller: 'SettingTeamCtrl'
+            })
+            .when('/teamAdd', {
+                templateUrl: 'static/views/setting/teamAdd.html',
+                controller: 'SettingTeamAddCtrl'
+            })
+            .when('/competence', {
+                templateUrl: 'static/views/setting/competence.html',
+                controller: 'SettingCompetenceCtrl'
             });
     })
     .directive('emailValidator', [function() {

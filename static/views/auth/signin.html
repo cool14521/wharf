@@ -17,7 +17,7 @@
             <div class="input-group">
                 <!-- Password Input -->
                 <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
-                <input type="password" name="passwd" ng-model="user.passwd" class="form-control input-lg" placeholder="Password" ng-minlength="5" ng-maxlength="30" required passwd-validator>
+                <input type="password" name="passwd" ng-model="user.password" class="form-control input-lg" placeholder="Password" ng-minlength="5" ng-maxlength="30" required passwd-validator>
                 <div ng-messages="loginForm.passwd.$error" ng-if="loginForm.passwd.$dirty">
                     <div ng-message="required">Please enter your password.</div>
                     <div ng-message="minlength">Password can't be blank and is too short (minimum is 5 characters).</div>

@@ -27,12 +27,13 @@
     <link rel="apple-touch-icon" href="" sizes="152x152">
     <!-- END Icons -->
 
-    <link rel="stylesheet" href="static/bower_components/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="static/bower_components/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="static/bower_components/angular-growl-v2/build/angular-growl.min.css">
-    <link rel="stylesheet" href="static/css/bucket.css">
-    <link rel="stylesheet" href="static/css/header.css">
-    <link rel="stylesheet" href="static/css/dashboard/dashboard.css">
+    <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/bower_components/angular-growl-v2/build/angular-growl.min.css">
+    <link rel="stylesheet" href="/static/css/bucket.css">
+    <link rel="stylesheet" href="/static/css/header.css">
+    <link rel="stylesheet" href="/static/css/dashboard/dashboard.css">
+    <link rel="stylesheet" href="/static/css/repository.css">
 </head>
 
 <body ng-app="dashboard">
@@ -52,11 +53,11 @@
                 </strong></h2>
                             </div>
                             <div class="list-group">
-                                <span class="list-group-item"><a href="#"><i class="fa fa-database fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Repositories</a></span>
-                                <span class="list-group-item"><a href="#"><i class="fa fa-unlock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Public&nbsp;&nbsp;repositories</a></span>
-                                <span class="list-group-item"><a href="#"><i class="fa fa-lock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Private&nbsp;&nbsp;repositories</a></span>
-                                <span class="list-group-item"><a href="#"><i class="fa fa-star fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Starred&nbsp;&nbsp;repositories</a></span>
-                                <span class="list-group-item"><a href="#"><i class="fa fa-comments fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Comments</a></span>
+                                <span class="list-group-item"><a href="#repo"><i class="fa fa-database fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Repositories</a></span>
+                                <span class="list-group-item"><a href="#publicRepo"><i class="fa fa-unlock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Public&nbsp;&nbsp;repositories</a></span>
+                                <span class="list-group-item"><a href="#privateRepo"><i class="fa fa-lock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Private&nbsp;&nbsp;repositories</a></span>
+                                <span class="list-group-item"><a href="#starRepo"><i class="fa fa-star fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Starred&nbsp;&nbsp;repositories</a></span>
+                                <span class="list-group-item"><a href="#comment"><i class="fa fa-comments fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Comments</a></span>
                             </div>
                         </div>
                         <!-- End Personal List Group -->
@@ -107,21 +108,27 @@
 
 
                     </div>
+                    <div class="col-md-9" ng-view>
+                    </div>
+                    <!--manage end-->
+                    <div growl></div>
                 </div>
                 <!-- End Left Bar -->
+                <!--manage start-->
+
             </div>
     </div>
 
-    <script src="static/javascript/utils.js"></script>
-    <script src="static/bower_components/angular/angular.min.js"></script>
-    <script src="static/bower_components/angular-route/angular-route.min.js"></script>
-    <script src="static/bower_components/angular-messages/angular-messages.min.js"></script>
-    <script src="static/bower_components/angular-cookies/angular-cookies.min.js"></script>
-    <script src="static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-    <script src="static/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
-    <script src="static/bower_components/angular-growl-v2/build/angular-growl.min.js"></script>
-
-    <script src="static/javascript/dashboard/dashboard.js"></script>
+    <script src="/static/javascript/utils.js"></script>
+    <script src="/static/bower_components/angular/angular.min.js"></script>
+    <script src="/static/bower_components/angular-route/angular-route.min.js"></script>
+    <script src="/static/bower_components/angular-messages/angular-messages.min.js"></script>
+    <script src="/static/bower_components/angular-cookies/angular-cookies.min.js"></script>
+    <script src="/static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="/static/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
+    <script src="/static/bower_components/angular-growl-v2/build/angular-growl.min.js"></script>
+    <script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/static/javascript/dashboard/dashboard.js"></script>
 
 </body>
 
