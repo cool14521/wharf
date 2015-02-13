@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/ledis"
 	"github.com/codegangsta/cli"
-	"strconv"
 
 	"github.com/dockercn/wharf/email"
 	"github.com/dockercn/wharf/models"
@@ -14,24 +16,29 @@ import (
 
 var CmdWeb = cli.Command{
 	Name:        "web",
-	Usage:       "启动 Docker Bucket 的 Web 服务",
-	Description: "Docker Bucket 提供 Docker Registry 服务的同时，还提供 Build、 CI 和 CD 服务。",
+	Usage:       "Start Wharf Web Service",
+	Description: "Wharf is ContainerOps platform for the enterprise include Docker repositories storage, CI/CD and so on.",
 	Action:      runWeb,
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "address",
 			Value: "0.0.0.0",
-			Usage: "Web 服务监听的 IP，默认 0.0.0.0",
+			Usage: "Web listen IP, default: 0.0.0.0",
 		},
-		cli.IntFlag{
+		cli.StringFlag{
 			Name:  "port",
-			Value: 80,
-			Usage: "Web 服务监听的端口，默认 80",
+			Value: "80",
+			Usage: "Web listen port, default: 80",
+		},
+		cli.StringFlag{
+			Name:  "email",
+			Value: "false",
+			Usage: "Start email service",
 		},
 		cli.StringFlag{
 			Name:  "conf",
 			Value: "",
-			Usage: "Web 服务的配置文件路径",
+			Usage: "Web application conf path",
 		},
 	},
 }
@@ -39,23 +46,26 @@ var CmdWeb = cli.Command{
 func runWeb(c *cli.Context) {
 	var address, port string
 
-	//TODO 检查 address / port 的合法性
 	if len(c.String("address")) > 0 {
-		address = c.String("address")
+		address = strings.TrimSpace(c.String("address"))
 	}
 
 	if len(c.String("port")) > 0 {
 		port = strconv.Itoa(c.Int("port"))
 	}
 
-	//设定 HTTP 的静态文件处理地址
+	models.InitDb()
+
+	if len(c.String("email")) > 0 {
+		e, _ := strconv.ParseBool(c.String("email"))
+
+		if e == true {
+			email.StartService()
+		}
+	}
+
 	beego.SetStaticPath(beego.AppConfig.String("docker::StaticPath"), fmt.Sprintf("%s/images", beego.AppConfig.String("docker::BasePath")))
 	beego.SetStaticPath(beego.AppConfig.String("docker::Gravatar"), beego.AppConfig.String("docker::Gravatar"))
-	//初始化 Session
-	///models.InitSession()
-	//初始化 数据库
-	models.InitDb()
-	email.StartService()
-	//运行 Application
+
 	beego.Run(fmt.Sprintf("%v:%v", address, port))
 }

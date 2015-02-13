@@ -7,140 +7,182 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
+
 	"github.com/dockercn/wharf/models"
 )
 
 var CmdEmail = cli.Command{
 	Name:        "email",
-	Usage:       "通过命令完成邮件模块的初始化",
-	Description: "通过命令可以管理邮件服务器设置，邮件模板设置，邮件内容设置",
+	Usage:       "email and email template configuration through CLI",
+	Description: "Initlization email configuration and manage email template content through CLI",
 	Action:      runEmail,
 	Flags: []cli.Flag{
-		cli.StringFlag{"object", "", "选择设置的对象[server 邮件服务器;template 邮件模板; message 邮件信息", ""},
-		cli.StringFlag{"action", "", "选择操作类型[add 添加;del 删除;update 更新;query 查询] 注：message只提供add和query操作", ""},
-		cli.StringFlag{"host", "", "输入邮件服务器的地址,例如：smtp.exmail.qq.com", ""},
-		cli.IntFlag{"port", 0, "输入邮件服务器的端口", ""},
-		cli.StringFlag{"user", "", "输入邮件服务器的用户名", ""},
-		cli.StringFlag{"password", "", "输入邮件服务器的密码", ""},
-		cli.StringFlag{"prefix", "", "邮件模板的前缀名", ""},
-		cli.StringFlag{"path", "", "前缀模板的路径", ""},
-		cli.StringFlag{"to", "", "收件人", ""},
-		cli.StringFlag{"cc", "", "抄送", ""},
-		cli.StringFlag{"bcc", "", "密送", ""},
-		cli.StringFlag{"from", "", "发件人", ""},
-		cli.StringFlag{"subject", "", "主题", ""},
-		cli.StringFlag{"body", "", "邮件内容", ""},
-		cli.StringFlag{"type", "", "邮件内容类型[注：html代表html类型 text代表文本类型]", ""},
+		cli.StringFlag{"object", "", "[server: Email Server Config; template: Email Template; message: Email Content", ""},
+		cli.StringFlag{"action", "", "[add/del/update/query] Tip: message object only support add and query action.", ""},
+		cli.StringFlag{"host", "", "Email server, like：smtp.exmail.qq.com", ""},
+		cli.IntFlag{"port", 0, "Email server port, like 443", ""},
+		cli.StringFlag{"user", "", "Email account", ""},
+		cli.StringFlag{"password", "", "Email account passwd", ""},
+		cli.StringFlag{"prefix", "", "Email tempalte prrefix", ""},
+		cli.StringFlag{"path", "", "Email template prefix template", ""},
+		cli.StringFlag{"to", "", "Email to", ""},
+		cli.StringFlag{"cc", "", "Email cc", ""},
+		cli.StringFlag{"bcc", "", "Email bcc", ""},
+		cli.StringFlag{"from", "", "Email send from", ""},
+		cli.StringFlag{"subject", "", "Email subject", ""},
+		cli.StringFlag{"body", "", "Email body", ""},
+		cli.StringFlag{"type", "", "Email type [html/text]", ""},
 	},
 }
 
 func runEmail(c *cli.Context) {
 	object := strings.TrimSpace(c.String("object"))
 	action := strings.TrimSpace(c.String("action"))
+
 	if len(object) == 0 {
-		log.Fatalln("未选择处理的对象，请输入object的值")
+		log.Fatalln("Please input --objcet value")
 	} else if len(action) == 0 {
-		log.Fatalln("未选择对象操作类型，请输入action的值")
+		log.Fatalln("Please input --action value")
 	}
+
 	models.InitDb()
+
 	switch object {
+
 	case "server":
+
 		switch action {
 		case "add":
-			//对输入参数进行验证，看是否符合要求
 			if err := validate4email(c.String("host"), c.String("user"), c.String("password")); err != nil {
 				log.Fatalln(err)
 			} else if c.Int("port") == 0 {
-				log.Fatalln("邮件服务器端口未设置，请对port参数赋值")
+				log.Fatalln("Please input the --port value")
 			}
+
 			mailServer := new(models.MailServer)
+
 			if err := mailServer.Add(c.String("host"), c.Int("port"), c.String("user"), c.String("password")); err != nil {
 				log.Fatalln(err)
 			}
-			log.Println("邮件服务器添加成功")
+
+			log.Println("Add email server config successfully")
+
+			break
+
 		case "del":
 			if err := validate4email(c.String("host")); err != nil {
 				log.Fatalln(err)
 			}
+
 			mailServer := new(models.MailServer)
+
 			if err := mailServer.Delete(c.String("host")); err != nil {
 				log.Fatalln(err)
 			}
-			log.Println("邮件服务器删除成功")
+
+			log.Println("Del email server config successfully")
+
+			break
+
 		case "update":
 			if err := validate4email(c.String("host"), c.String("user"), c.String("password")); err != nil {
 				log.Fatalln(err)
 			} else if c.Int("port") == 0 {
-				log.Fatalln("邮件服务器端口未设置，请对port参数赋值")
+				log.Fatalln("Please input the --port value")
 			}
+
 			mailServer := new(models.MailServer)
+
 			if err := mailServer.Add(c.String("host"), c.Int("port"), c.String("user"), c.String("password")); err != nil {
 				log.Fatalln(err)
 			}
-			log.Println("邮件服务器更新成功")
+
+			log.Println("Update email server config successfully")
+
+			break
+
 		case "query":
-			//如果host为空，则显示全部列表
-			mailServer := new(models.MailServer)
 			if len(strings.TrimSpace(c.String("host"))) == 0 {
-				mailServers := mailServer.Query()
-				for _, server := range mailServers {
-					fmt.Printf("%v\n", server)
-				}
-				log.Println("邮件服务器查询完成")
-				return
+				log.Fatalln("Please input the --host value")
 			}
-			mailServers := mailServer.Query(c.String("host"))
-			fmt.Printf("%v\n", mailServers[0])
-			log.Println("邮件服务器查询完成")
+
+			mail := new(models.MailServer)
+			servers := mail.Query(c.String("host"))
+
+			fmt.Printf("%v\n", servers[0])
+
+			break
+
 		default:
-			log.Fatalln("输入的action值非法，无法执行")
+			log.Fatalln("Illegal --action value")
 		}
+
 	case "template":
+
 		switch action {
 		case "add":
 			if err := validate4email(c.String("path"), c.String("prefix")); err != nil {
 				log.Fatalln(err)
 			}
+
 			tmpl := new(models.TemplateHtml)
+
 			if err := tmpl.Add(c.String("prefix"), c.String("path")); err != nil {
 				log.Fatalln(err)
 			}
-			log.Println("邮件模板添加成功")
+
+			log.Println("Add email template config successfully")
+
+			break
+
 		case "del":
 			if err := validate4email(c.String("prefix")); err != nil {
 				log.Fatalln(err)
 			}
+
 			tmpl := new(models.TemplateHtml)
+
 			if err := tmpl.Delete(c.String("prefix")); err != nil {
 				log.Fatalln(err)
 			}
-			log.Println("删除模板成功")
+
+			log.Println("Del email template config successfully")
+
+			break
+
 		case "update":
 			if err := validate4email(c.String("path"), c.String("prefix")); err != nil {
 				log.Fatalln(err)
 			}
+
 			tmpl := new(models.TemplateHtml)
+
 			if err := tmpl.Add(c.String("prefix"), c.String("path")); err != nil {
 				log.Fatalln(err)
 			}
-			log.Println("邮件模板更新成功")
+
+			log.Println("Update email template config successfully")
+
+			break
+
 		case "query":
-			tmpl := new(models.TemplateHtml)
 			if len(strings.TrimSpace(c.String("prefix"))) == 0 {
-				tmpls := tmpl.Query()
-				for _, vtmpl := range tmpls {
-					fmt.Printf("%v\n", vtmpl)
-				}
-				log.Println("模板查询成功")
-				return
+				log.Fatalln("Please input the --prefix value")
 			}
+
+			tmpl := new(models.TemplateHtml)
 			tmpls := tmpl.Query(c.String("prefix"))
+
 			fmt.Printf("%v\n", tmpls[0])
-			log.Println("邮件模板查询成功")
+
+			break
+
 		default:
-			log.Fatalln("输入的action值非法，无法执行")
+			log.Fatalln("Illegal --action value")
 		}
+
 	case "message":
+
 		switch action {
 		case "add":
 			cc := strings.Split(c.String("cc"), ",")
@@ -148,43 +190,50 @@ func runEmail(c *cli.Context) {
 			if err := validate4email(c.String("to"), c.String("from"), c.String("type"), c.String("host"), c.String("prefix")); err != nil {
 				log.Fatalln(err)
 			}
-			//检查邮件依赖模板是否存在
+
 			tmpl := new(models.TemplateHtml)
 			if tmpls := tmpl.Query(c.String("prefix")); len(tmpls) == 0 {
-				log.Fatalln(errors.New("邮件依赖模板未添加，请先添加模板"))
+				log.Fatalln(errors.New("Please add email template first"))
 			}
-			//检查邮件内容发送服务器是否已添加
+
 			server := new(models.MailServer)
 			if servers := server.Query(c.String("host")); len(servers) == 0 {
-				log.Fatalln(errors.New("邮件选择发送服务器未添加到数据库中，请先添加再发送"))
+				log.Fatalln(errors.New("Please add email server first"))
 			}
+
 			msg := new(models.Message)
-			if err := msg.Add(c.String("to"), c.String("from"), "测试中文主题", c.String("body"), c.String("type"), c.String("prefix"), c.String("host"), cc, bcc); err != nil {
+			if err := msg.Add(c.String("to"), c.String("from"), "Testing UTF-8 Subject And Email", c.String("body"), c.String("type"), c.String("prefix"), c.String("host"), cc, bcc); err != nil {
 				log.Fatalln(err)
 			}
-			log.Println("信息添加成功")
+
+			log.Println("Add email successfully")
+
+			break
+
 		case "query":
-			msg := new(models.Message)
 			if err := validate4email(c.String("prefix")); err != nil {
 				log.Fatalln(err)
 			}
+
+			msg := new(models.Message)
 			msgs := msg.Query(c.String("prefix"))
+
 			for _, vmsg := range msgs {
 				fmt.Printf("%v\n", vmsg)
 			}
-			log.Println("信息查询完成")
+
 		default:
-			log.Fatalln("输入的action值非法，无法执行")
+			log.Fatalln("Illegal --action value")
 		}
 	default:
-		log.Fatalln("输入的object值非法，无法执行")
+		log.Fatalln("Illegal --object value")
 	}
 }
 
 func validate4email(attrs ...string) error {
 	for _, attr := range attrs {
 		if len(strings.TrimSpace(attr)) == 0 {
-			return errors.New(fmt.Sprint(attr, "的值不能为空"))
+			return errors.New(fmt.Sprint(attr, " value is not be null"))
 		}
 	}
 	return nil

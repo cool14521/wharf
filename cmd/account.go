@@ -10,34 +10,29 @@ import (
 
 var CmdAccount = cli.Command{
 	Name:        "account",
-	Usage:       "通过命令行管理系统的账户",
-	Description: "通过命令行添加、激活、停用 Bucket 中的用户账户，账户停用后该账户下公开的 Repository 依旧可以下载。",
+	Usage:       "Manage account through CLI",
+	Description: "Manage account in the wharf throught CLI.",
 	Action:      runAccount,
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "action",
 			Value: "",
-			Usage: "Action 参数: add/active/unactive/log，添加激活的账户/添加待激活的账户/停用账户/查看用户日志",
+			Usage: "Action[add/active/unactive/log]",
 		},
 		cli.StringFlag{
 			Name:  "email",
 			Value: "",
-			Usage: "账户邮件地址",
+			Usage: "Account's email",
 		},
 		cli.StringFlag{
 			Name:  "username",
 			Value: "",
-			Usage: "账户名",
+			Usage: "Account's username",
 		},
 		cli.StringFlag{
 			Name:  "passwd",
 			Value: "",
-			Usage: "账户初始密码",
-		},
-		cli.StringFlag{
-			Name:  "conf",
-			Value: "",
-			Usage: "Web 服务的配置文件路径",
+			Usage: "Account's passwd",
 		},
 	},
 }
@@ -60,14 +55,13 @@ func runAccount(c *cli.Context) {
 				user.Password = passwd
 				user.Email = email
 				if err := user.Save(); err != nil {
-					fmt.Println(fmt.Sprintf("%s: %s", "添加用户失败", err.Error()))
+					fmt.Println(fmt.Sprintf("Add user failure: %s", err.Error()))
 				} else {
-					fmt.Println(fmt.Sprintf("添加 %s 用户成功！", username))
-					//TODO 发送注册邮件
+					fmt.Println(fmt.Sprintf("Add user successful: %s", username))
 				}
 
 			} else {
-				fmt.Println("account add 命令必须指定 username/email/passwd 参数")
+				fmt.Println("account add need username/email/passwd params")
 			}
 
 			break
@@ -78,9 +72,9 @@ func runAccount(c *cli.Context) {
 		case "log":
 			break
 		default:
-			fmt.Println("目前只支持 add/active/unactive 三个指令。")
+			fmt.Println("account only support add/active/unactive actions")
 		}
 	} else {
-		fmt.Println("需要指定操作用户的指令，仅支持 add/active/unactive 三个指令")
+		fmt.Println("account only support add/active/unactive actions")
 	}
 }

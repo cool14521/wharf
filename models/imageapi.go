@@ -3,10 +3,11 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	//"reflect"
-	"github.com/astaxie/beego"
-	"github.com/dockercn/wharf/utils"
 	"time"
+
+	"github.com/astaxie/beego"
+
+	"github.com/dockercn/wharf/utils"
 )
 
 //验证Auth使用

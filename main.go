@@ -22,6 +22,8 @@ func main() {
 	app.Name = beego.AppConfig.String("appname")
 	app.Usage = beego.AppConfig.String("usage")
 	app.Version = beego.AppConfig.String("version")
+	app.Author = "Meaglit Ma"
+	app.Email = "genedna@gmail.com"
 
 	app.Commands = []cli.Command{
 		cmd.CmdWeb,
