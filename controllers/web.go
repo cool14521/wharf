@@ -5,21 +5,33 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego"
+
 	"github.com/dockercn/wharf/models"
 )
 
-type DashboardController struct {
+type WebController struct {
 	beego.Controller
 }
 
-func (this *DashboardController) Prepare() {
+func (this *WebController) Prepare() {
 	beego.Debug(fmt.Sprintf("[%s] %s | %s", this.Ctx.Input.Host(), this.Ctx.Input.Request.Method, this.Ctx.Input.Request.RequestURI))
 
 	beego.Debug("[Header] ")
 	beego.Debug(this.Ctx.Request.Header)
 }
 
-func (this *DashboardController) GetDashboard() {
+func (this *WebController) GetIndex() {
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.Output.Body([]byte("{\"status\":\"OK\"}"))
+}
+
+func (this *WebController) GetAuth() {
+	this.TplNames = "auth.html"
+	this.Render()
+}
+
+func (this *WebController) GetDashboard() {
 	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if !ok {
 		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
@@ -34,7 +46,7 @@ func (this *DashboardController) GetDashboard() {
 	this.Render()
 }
 
-func (this *DashboardController) GetSetting() {
+func (this *WebController) GetSetting() {
 	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if !ok {
 		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
