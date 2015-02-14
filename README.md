@@ -23,7 +23,7 @@ go build
 =======
 
 ```
-./wharf account --action add --username docker --passwd docker --email bucket@docker.cn
+./wharf account --action add --username container --passwd container --email container@containerops.com
 ```
 
 
