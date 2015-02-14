@@ -2,9 +2,10 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/dockercn/wharf/models"
-	"net/http"
 )
 
 func (this *RepositoryController) Prepare() {
@@ -19,7 +20,6 @@ type RepositoryController struct {
 }
 
 func (this RepositoryController) GetRepositoryAdd() {
-	//加载session
 	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if !ok {
 		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
@@ -27,6 +27,7 @@ func (this RepositoryController) GetRepositoryAdd() {
 		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "session加载失败")))
 		return
 	}
+
 	this.TplNames = "repositoryAdd.html"
 	this.Data["username"] = user.Username
 

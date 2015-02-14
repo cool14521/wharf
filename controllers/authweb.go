@@ -3,10 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
-	"net/http"
 )
 
 type AuthWebController struct {
@@ -19,11 +20,9 @@ func (this *AuthWebController) Prepare() {
 	beego.Debug("[Headers]")
 	beego.Debug(this.Ctx.Input.Request.Header)
 
-	//设置 Response 的 Header 信息，在处理函数中可以覆盖
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 }
 
-//用户注册处理逻辑
 func (this *AuthWebController) Signup() {
 	var user models.User
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {

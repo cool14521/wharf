@@ -3,9 +3,10 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/dockercn/wharf/models"
-	"net/http"
 )
 
 type TeamWebController struct {
@@ -19,7 +20,6 @@ func (this *TeamWebController) Prepare() {
 }
 
 func (this *TeamWebController) PostTeam() {
-	//获得用户提交的team相关信息
 	var team models.Team
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &team); err != nil {
@@ -31,8 +31,8 @@ func (this *TeamWebController) PostTeam() {
 
 	beego.Debug(fmt.Sprintf("[Web 用户] 用户增加团队: %s", string(this.Ctx.Input.CopyBody())))
 
-	fmt.Printf("%#v", team)
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "Ok")))
+
 	return
 }

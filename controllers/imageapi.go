@@ -5,8 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	//"regexp"
-	//"strings"
+
 	"github.com/astaxie/beego"
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"

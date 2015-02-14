@@ -3,16 +3,10 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/dockercn/wharf/models"
-	//"github.com/nfnt/resize"
-	//"image"
-	//"image/jpeg"
-	//"image/png"
-	//"io"
-	"net/http"
-	//"os"
-	//"strings"
 )
 
 type UsersWebController struct {
@@ -26,7 +20,6 @@ func (this *UsersWebController) Prepare() {
 }
 
 func (this *UsersWebController) GetProfile() {
-	//加载session
 	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if !ok {
 		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
@@ -41,16 +34,12 @@ func (this *UsersWebController) GetProfile() {
 		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s","url":"/auth"}`, err.Error)))
 		return
 	}
-	fmt.Println(string(user2json))
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body(user2json)
 	return
 }
 
 func (this *UsersWebController) GetUserExist() {
-	///验证
-
-	//
 	users := make([]models.User, 0)
 
 	user := new(models.User)

@@ -3,10 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
-	"net/http"
 )
 
 type OrganizationWebController struct {
@@ -20,7 +21,6 @@ func (this *OrganizationWebController) Prepare() {
 }
 
 func (this *OrganizationWebController) PostOrganization() {
-	//加载session
 	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if !ok {
 		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
@@ -29,7 +29,6 @@ func (this *OrganizationWebController) PostOrganization() {
 		return
 	}
 
-	//获得用户提交的organization name 以及 organization describtion name
 	var org models.Organization
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {

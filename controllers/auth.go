@@ -18,9 +18,5 @@ func (this *AuthController) Prepare() {
 
 func (this *AuthController) Get() {
 	this.TplNames = "auth.html"
-
-	this.Data["description"] = ""
-	this.Data["author"] = ""
-
 	this.Render()
 }
