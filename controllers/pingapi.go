@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-
 	"github.com/astaxie/beego"
 )
 
@@ -10,12 +8,7 @@ type PingAPIController struct {
 	beego.Controller
 }
 
-type PingResult struct {
-	Result bool
-}
-
 func (this *PingAPIController) Prepare() {
-	beego.Debug(fmt.Sprintf("[%s] %s | %s", this.Ctx.Input.Host(), this.Ctx.Input.Request.Method, this.Ctx.Input.Request.RequestURI))
 
 	beego.Debug("[Headers]")
 	beego.Debug(this.Ctx.Input.Request.Header)
@@ -30,10 +23,9 @@ func (this *PingAPIController) Prepare() {
 }
 
 func (this *PingAPIController) GetPing() {
+	result := map[string]bool{"result": true}
+	this.Data["json"] = &result
+
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-
-	pingResult := PingResult{Result: true}
-	this.Data["json"] = &pingResult
-
 	this.ServeJson()
 }

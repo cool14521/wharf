@@ -15,8 +15,6 @@ type AuthWebController struct {
 }
 
 func (this *AuthWebController) Prepare() {
-	beego.Debug(fmt.Sprintf("[%s] %s | %s", this.Ctx.Input.Host(), this.Ctx.Input.Request.Method, this.Ctx.Input.Request.RequestURI))
-
 	beego.Debug("[Headers]")
 	beego.Debug(this.Ctx.Input.Request.Header)
 

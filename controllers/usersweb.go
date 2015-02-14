@@ -13,8 +13,12 @@ type UsersWebController struct {
 	beego.Controller
 }
 
+func (u *UsersWebController) URLMapping() {
+	u.Mapping("GetProfile", u.GetProfile)
+	u.Mapping("GetUserExist", u.GetUserExist)
+}
+
 func (this *UsersWebController) Prepare() {
-	beego.Debug(fmt.Sprintf("[%s] %s | %s", this.Ctx.Input.Host(), this.Ctx.Input.Request.Method, this.Ctx.Input.Request.RequestURI))
 	beego.Debug("[Header] ")
 	beego.Debug(this.Ctx.Request.Header)
 }
@@ -22,14 +26,14 @@ func (this *UsersWebController) Prepare() {
 func (this *UsersWebController) GetProfile() {
 	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if !ok {
-		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
+		beego.Error(fmt.Sprintf("[WEB] Load session failure"))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s","url":"/auth"}`, "session加载失败")))
 		return
 	}
 	user2json, err := json.Marshal(user)
 	if err != nil {
-		beego.Error(fmt.Sprintf("[WEB 用户] session解码json失败"))
+		beego.Error(fmt.Sprintf("[WEB] session解码json失败"))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s","url":"/auth"}`, err.Error)))
 		return
