@@ -6,22 +6,73 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego"
+
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
 )
 
-type AuthWebController struct {
+type UserWebAPIV1Controller struct {
 	beego.Controller
 }
 
-func (this *AuthWebController) Prepare() {
-	beego.Debug("[Headers]")
-	beego.Debug(this.Ctx.Input.Request.Header)
+func (u *UserWebAPIV1Controller) URLMapping() {
+	u.Mapping("GetProfile", u.GetProfile)
+	u.Mapping("GetUserExist", u.GetUserExist)
+}
+
+func (this *UserWebAPIV1Controller) Prepare() {
+	beego.Debug("[Header] ")
+	beego.Debug(this.Ctx.Request.Header)
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 }
 
-func (this *AuthWebController) Signup() {
+func (this *UserWebAPIV1Controller) GetProfile() {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+
+	} else {
+
+		this.Data["json"] = user
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.ServeJson()
+
+	}
+}
+
+func (this *UserWebAPIV1Controller) GetUserExist() {
+	users := make([]models.User, 0)
+
+	user := new(models.User)
+	if _, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		beego.Error(fmt.Sprintf("err=,", err))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "用户查询不存在")))
+		return
+	}
+
+	users = append(users, *user)
+
+	users4Json, err := json.Marshal(users)
+	if err != nil {
+		beego.Error(fmt.Sprintf("用户列表json序列化失败，err=,", err))
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "用户列表json序列化失败")))
+	}
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.Output.Body(users4Json)
+	return
+}
+
+func (this *UserWebAPIV1Controller) Signup() {
 	var user models.User
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
 		beego.Error(fmt.Sprintf(`{"error":"%s"`, err.Error()))
@@ -56,7 +107,7 @@ func (this *AuthWebController) Signup() {
 }
 
 //用户登录处理逻辑
-func (this *AuthWebController) Signin() {
+func (this *UserWebAPIV1Controller) Signin() {
 	//获得用户提交的登陆(注册)信息
 	var user models.User
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {

@@ -9,16 +9,16 @@ import (
 	"github.com/dockercn/wharf/utils"
 )
 
-type UsersAPIController struct {
+type UserAPIV1Controller struct {
 	beego.Controller
 }
 
-func (u *UsersAPIController) URLMapping() {
+func (u *UserAPIV1Controller) URLMapping() {
 	u.Mapping("PostUsers", u.PostUsers)
 	u.Mapping("GetUsers", u.GetUsers)
 }
 
-func (this *UsersAPIController) Prepare() {
+func (this *UserAPIV1Controller) Prepare() {
 	beego.Debug("[Headers]")
 	beego.Debug(this.Ctx.Input.Request.Header)
 
@@ -31,7 +31,7 @@ func (this *UsersAPIController) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
 }
 
-func (this *UsersAPIController) PostUsers() {
+func (this *UserAPIV1Controller) PostUsers() {
 	result := map[string]string{"error": "Don't support create user from docker command."}
 	this.Data["json"] = &result
 
@@ -39,7 +39,7 @@ func (this *UsersAPIController) PostUsers() {
 	this.ServeJson()
 }
 
-func (this *UsersAPIController) GetUsers() {
+func (this *UserAPIV1Controller) GetUsers() {
 	if username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization")); err != nil {
 
 		beego.Error("[USER API] Decode Basic Auth Error:", err.Error())

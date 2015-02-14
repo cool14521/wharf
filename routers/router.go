@@ -15,12 +15,12 @@ func init() {
 
 	//Web API
 	web := beego.NewNamespace("/w1",
-		beego.NSRouter("/signin", &controllers.AuthWebController{}, "post:Signin"),
-		beego.NSRouter("/signup", &controllers.AuthWebController{}, "post:Signup"),
-		beego.NSRouter("/profile", &controllers.UsersWebController{}, "get:GetProfile"),
+		beego.NSRouter("/signin", &controllers.UserWebAPIV1Controller{}, "post:Signin"),
+		beego.NSRouter("/signup", &controllers.UserWebAPIV1Controller{}, "post:Signup"),
+		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "get:GetProfile"),
 
 		//team routers
-		beego.NSRouter("/users/:username", &controllers.UsersWebController{}, "get:GetUserExist"),
+		beego.NSRouter("/users/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUserExist"),
 		beego.NSRouter("/team", &controllers.TeamWebController{}, "post:PostTeam"),
 
 		//organization routers
@@ -36,8 +36,8 @@ func init() {
 	//Docker Registry API V1
 	apiv1 := beego.NewNamespace("/v1",
 		beego.NSRouter("/_ping", &controllers.PingAPIController{}, "get:GetPing"),
-		beego.NSRouter("/users", &controllers.UsersAPIController{}, "get:GetUsers"),
-		beego.NSRouter("/users", &controllers.UsersAPIController{}, "post:PostUsers"),
+		beego.NSRouter("/users", &controllers.UserAPIV1Controller{}, "get:GetUsers"),
+		beego.NSRouter("/users", &controllers.UserAPIV1Controller{}, "post:PostUsers"),
 
 		beego.NSNamespace("/repositories",
 			beego.NSRouter("/:namespace/:repo_name/tags/:tag", &controllers.RepositoryAPIController{}, "put:PutTag"),

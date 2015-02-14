@@ -1,57 +1,17 @@
 package models
 
 import (
-	//	"errors"
 	"fmt"
+	"net/http"
+	"regexp"
+	"strings"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
+
 	"github.com/dockercn/wharf/utils"
-	"net/http"
-	//	"reflect"
-	"regexp"
-	//	"strconv"
-	"strings"
 )
 
-//
-//const (
-//	AuthPutRepository       = "DoAuthPutRepository"
-//	AuthPutRepositoryTag    = "DoAuthPutRepositoryTag"
-//	AuthPutRepositoryImage  = "DoAuthPutRepositoryImage"
-//	AuthGetRepositoryImages = "DoAuthGetRepositoryImages"
-//	AuthGetRepositoryTags   = "DoAuthGetRepositoryTags"
-//
-//	//-----------------------------------------------------------
-//	AuthGetImageJSON     = "DoAuthGetImageJSON"
-//	AuthPutImageJSON     = "DoAuthPutImageJSON"
-//	AuthGetImageAncestry = "DoAuthGetImageAncestry"
-//	AuthGetImageLayer    = "DoAuthGetImageLayer"
-//	AuthPutImageLayer    = "DoAuthPutImageLayer"
-//	AuthPutChecksum      = "DoAuthPutChecksum"
-//)
-//
-//type AuthModel struct {
-//}
-
-//
-//func DoAuth(Ctx *context.Context, callFunc string) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-//
-//	authModel := new(AuthModel)
-//
-//	params := make([]reflect.Value, 1)
-//	params[0] = reflect.ValueOf(Ctx)
-//	result := reflect.ValueOf(authModel).MethodByName(callFunc).Call(params)
-//
-//	IsAuth = result[0].Bool()
-//
-//	strErrCode := strconv.FormatInt(result[1].Int(), 10)
-//	ErrCode, _ = strconv.Atoi(strErrCode)
-//
-//	ErrInfo = result[2].Bytes()
-//
-//	return
-//}
-//
 func DoAuthBasic(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
 	if len(Ctx.Input.Header("Authorization")) == 0 {
