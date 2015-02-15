@@ -9,7 +9,6 @@ import (
 	_ "github.com/astaxie/beego/session/ledis"
 	"github.com/codegangsta/cli"
 
-	"github.com/dockercn/wharf/email"
 	"github.com/dockercn/wharf/models"
 	_ "github.com/dockercn/wharf/routers"
 )
@@ -31,11 +30,6 @@ var CmdWeb = cli.Command{
 			Usage: "Web listen port, default: 80",
 		},
 		cli.StringFlag{
-			Name:  "email",
-			Value: "false",
-			Usage: "Start email service",
-		},
-		cli.StringFlag{
 			Name:  "conf",
 			Value: "",
 			Usage: "Web application conf path",
@@ -55,14 +49,6 @@ func runWeb(c *cli.Context) {
 	}
 
 	models.InitDb()
-
-	if len(c.String("email")) > 0 {
-		e, _ := strconv.ParseBool(c.String("email"))
-
-		if e == true {
-			email.StartService()
-		}
-	}
 
 	beego.SetStaticPath(beego.AppConfig.String("docker::StaticPath"), fmt.Sprintf("%s/images", beego.AppConfig.String("docker::BasePath")))
 	beego.SetStaticPath(beego.AppConfig.String("docker::Gravatar"), beego.AppConfig.String("docker::Gravatar"))
