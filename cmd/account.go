@@ -59,11 +59,9 @@ func runAccount(c *cli.Context) {
 				} else {
 					log.Fatalln("Add user successful: %s", username)
 				}
-
 			} else {
 				log.Fatalln("account add need username/email/passwd params")
 			}
-
 			break
 		case "active":
 			break
