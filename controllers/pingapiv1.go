@@ -4,11 +4,11 @@ import (
 	"github.com/astaxie/beego"
 )
 
-type PingAPIController struct {
+type PingAPIV1Controller struct {
 	beego.Controller
 }
 
-func (this *PingAPIController) Prepare() {
+func (this *PingAPIV1Controller) Prepare() {
 
 	beego.Debug("[Headers]")
 	beego.Debug(this.Ctx.Input.Request.Header)
@@ -22,7 +22,7 @@ func (this *PingAPIController) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
 }
 
-func (this *PingAPIController) GetPing() {
+func (this *PingAPIV1Controller) GetPing() {
 	result := map[string]bool{"result": true}
 	this.Data["json"] = &result
 

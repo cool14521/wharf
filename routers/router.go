@@ -31,11 +31,11 @@ func init() {
 	)
 
 	//Docker Registry API V1 remain
-	beego.Router("/_ping", &controllers.PingAPIController{}, "get:GetPing")
+	beego.Router("/_ping", &controllers.PingAPIV1Controller{}, "get:GetPing")
 
 	//Docker Registry API V1
 	apiv1 := beego.NewNamespace("/v1",
-		beego.NSRouter("/_ping", &controllers.PingAPIController{}, "get:GetPing"),
+		beego.NSRouter("/_ping", &controllers.PingAPIV1Controller{}, "get:GetPing"),
 		beego.NSRouter("/users", &controllers.UserAPIV1Controller{}, "get:GetUsers"),
 		beego.NSRouter("/users", &controllers.UserAPIV1Controller{}, "post:PostUsers"),
 
