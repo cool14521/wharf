@@ -1,9 +1,7 @@
 package models
 
 import (
-	//	"encoding/json"
 	"fmt"
-	//	"reflect"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -12,13 +10,11 @@ import (
 )
 
 func (repo *Repository) DoPut(namespace, repository, json, agent string) error {
-	beego.Debug(":::::::::::::::::::::::::::::::::::::::::-2")
-	//判断是否有原来保存过的仓库，如果有原来的内容将被取出
 	isHas, _, err := repo.Has(namespace, repository)
 	if err != nil {
 		return err
 	}
-	beego.Debug(":::::::::::::::::::::::::::::::::::::::::-1")
+
 	if !isHas {
 		repo.UUID = string(utils.GeneralKey(fmt.Sprintf("%s:%s", namespace, repository)))
 		repo.Created = time.Now().Unix()
@@ -38,7 +34,7 @@ func (repo *Repository) DoPut(namespace, repository, json, agent string) error {
 	if err != nil {
 		return err
 	}
-	beego.Debug(":::::::::::::::::::::::::::::::::::::::::1")
+
 	return nil
 }
 

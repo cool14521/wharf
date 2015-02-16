@@ -27,13 +27,17 @@ type User struct {
 
 func (user *User) Has(username string) (isHas bool, UUID []byte, err error) {
 	UUID, err = GetUUID("user", username)
+
 	if err != nil {
 		return false, nil, err
 	}
+
 	if len(UUID) <= 0 {
 		return false, nil, nil
 	}
+
 	err = Get(user, UUID)
+
 	return true, UUID, err
 }
 
@@ -41,16 +45,16 @@ func (user *User) Save() (err error) {
 	//https://github.com/docker/docker/blob/28f09f06326848f4117baf633ec9fc542108f051/registry/registry.go#L27
 	validNamespace := regexp.MustCompile(`^([a-z0-9_]{4,30})$`)
 	if !validNamespace.MatchString(user.Username) {
-		return fmt.Errorf("用户名必须是 4 - 30 位之间，且只能由 a-z，0-9 和 下划线组成")
+		return fmt.Errorf("Username must be 4 - 30, include a-z, 0-9 and '_'")
 	}
 
 	if len(user.Password) < 5 {
-		return fmt.Errorf("密码必须等于或大于 5 位字符以上")
+		return fmt.Errorf("Password length should be more than 5")
 	}
 
 	validEmail := regexp.MustCompile("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[a-zA-Z0-9](?:[\\w-]*[\\w])?")
 	if !validEmail.MatchString(user.Email) {
-		return fmt.Errorf("Email 格式不合法")
+		return fmt.Errorf("Email illegal")
 	}
 
 	err = Save(user, []byte(user.UUID))
@@ -62,6 +66,7 @@ func (user *User) Save() (err error) {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -70,27 +75,41 @@ func (user *User) Remove() (err error) {
 	if err != nil {
 		return err
 	}
+
 	_, err = LedisDB.HDel([]byte(GLOBAL_USER_INDEX), []byte(user.Username))
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (user *User) Get(username, password string) (err error) {
-	isHas, UUID, err := user.Has(username)
-	if err != nil {
+
+	if exist, UUID, err := user.Has(username); err != nil {
+
 		return err
+
+	} else if exist == false && err == nil {
+
+		return fmt.Errorf("User is not exist: %s", username)
+
+	} else if exist == true && err == nil {
+
+		if err := Get(user, UUID); err != nil {
+
+			return err
+
+		} else {
+
+			if user.Password != password {
+				return fmt.Errorf("User password error.")
+			} else {
+				return nil
+			}
+
+		}
 	}
-	if !isHas {
-		return fmt.Errorf("用户不存在 %s", username)
-	}
-	err = Get(user, UUID)
-	if err != nil {
-		return err
-	}
-	if user.Password != password {
-		return fmt.Errorf("密码不对 %s", username)
-	}
+
 	return nil
 }

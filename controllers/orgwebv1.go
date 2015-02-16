@@ -10,16 +10,25 @@ import (
 	"github.com/dockercn/wharf/utils"
 )
 
-type OrganizationWebController struct {
+type OrganizationWebV1Controller struct {
 	beego.Controller
 }
 
-func (this *OrganizationWebController) Prepare() {
-	beego.Debug("[Header] ")
-	beego.Debug(this.Ctx.Request.Header)
+func (u *OrganizationWebV1Controller) URLMapping() {
+	u.Mapping("PostOrganization", u.PostOrganization)
+	u.Mapping("PutOrganization", u.PutOrganization)
+	u.Mapping("GetOrganizations", u.GetOrganizations)
+	u.Mapping("GetOrganizationDetail", u.GetOrganizationDetail)
 }
 
-func (this *OrganizationWebController) PostOrganization() {
+func (this *OrganizationWebV1Controller) Prepare() {
+	beego.Debug("[Header] ")
+	beego.Debug(this.Ctx.Request.Header)
+
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+}
+
+func (this *OrganizationWebV1Controller) PostOrganization() {
 	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if !ok {
 		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
@@ -72,7 +81,7 @@ func (this *OrganizationWebController) PostOrganization() {
 	return
 }
 
-func (this *OrganizationWebController) PutOrganization() {
+func (this *OrganizationWebV1Controller) PutOrganization() {
 	//权限控制（操作权限，仓库是否存在）
 
 	//更新仓库
@@ -99,7 +108,7 @@ func (this *OrganizationWebController) PutOrganization() {
 	return
 }
 
-func (this *OrganizationWebController) GetOrganizations() {
+func (this *OrganizationWebV1Controller) GetOrganizations() {
 	//获取session中的user
 	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if !ok {
@@ -131,10 +140,10 @@ func (this *OrganizationWebController) GetOrganizations() {
 
 }
 
-func (this *OrganizationWebController) GetOrganizationDetail() {
+func (this *OrganizationWebV1Controller) GetOrganizationDetail() {
 	organization := new(models.Organization)
 
-	if _, _, err := organization.Has(this.Ctx.Input.Param(":orgName")); err != nil {
+	if _, _, err := organization.Has(this.Ctx.Input.Param(":org")); err != nil {
 		beego.Error(fmt.Sprintf("[WEB 用户] 获取用户组织信息失败，err=", err))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "获取用户组织信息失败")))

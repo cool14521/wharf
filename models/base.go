@@ -2,73 +2,35 @@ package models
 
 import (
 	"fmt"
-	"strings"
 )
 
-const (
-	GLOBAL_USER_INDEX         = "GLOBAL_USER_INDEX"
-	GLOBAL_REPOSITORY_INDEX   = "GLOBAL_REPOSITORY_INDEX"
-	GLOBAL_ORGANIZATION_INDEX = "GLOBAL_ORGANIZATION_INDEX"
-	GLOBAL_TEAM_INDEX         = "GLOBAL_TEAM_INDEX"
-	GLOBAL_IMAGE_INDEX        = "GLOBAL_IMAGE_INDEX"
-	GLOBAL_TAG_INDEX          = "GLOBAL_TAG_INDEX"
-)
-
-func GetUUID(ObjectType, Object string) (UUID []byte, err error) {
-	NOW_INDEX := ""
-	switch strings.TrimSpace(ObjectType) {
-	case "user":
-		NOW_INDEX = GLOBAL_USER_INDEX
-	case "repository":
-		NOW_INDEX = GLOBAL_REPOSITORY_INDEX
-	case "organization":
-		NOW_INDEX = GLOBAL_ORGANIZATION_INDEX
-	case "team":
-		NOW_INDEX = GLOBAL_TEAM_INDEX
-	case "image":
-		NOW_INDEX = GLOBAL_IMAGE_INDEX
-	case "tag":
-		NOW_INDEX = GLOBAL_TAG_INDEX
-	default:
-	}
-	UUID, err = LedisDB.HGet([]byte(NOW_INDEX), []byte(Object))
-	if err != nil {
-		return nil, err
-	}
-	return UUID, nil
-}
-
-//************************************************************************************************
 type Repository struct {
-	UUID string `json:"UUID"` //全局唯一的索引
-	//LedisDB中 RepositoryList 保存全局所有的仓库名列表信息。 LedisDB 独立保存每个Repository信息到一个HASH，名字为{UUID}
-	Repository    string `json:"repository"`    //仓库名称 全局唯一，不可修改
-	Namespace     string `json:"namespace"`     //仓库所有者的名字
-	NamespaceType bool   `json:"namespacetype"` // false 为普通用户，true为组织
-	Organization  string `json:"organization"`  //如果仓库属于一个team，那么在此记录team所属组织
-
-	Tags     []string `json:"tags"`     //保存此仓库所有tag的对应UUID
-	Starts   []string `json:"starts"`   //此仓库Start的UUID列表
-	Comments []string `json:"comments"` //此仓库Comment的对应UUID列表
-	//--下面是仓库原来的已有信息----------------------------------------------------------------------------
-	Description string `json:"description"` //保存 Markdown 格式
-	JSON        string `json:"json"`        //Docker 客户端上传的 Images 信息，JSON 格式。
-	Dockerfile  string `json:"dockerfile"`  //生产 Repository 的 Dockerfile 文件内容
-	Agent       string `json:"agent"`       //docker 命令产生的 agent 信息
-	Links       string `json:"links"`       //保存 JSON 的信息，保存官方库的 Link，产生 repository 库的 Git 库地址
-	Size        int64  `json:"size"`        //仓库所有 Image 的大小 byte
-	Uploaded    bool   `json:"uploaded"`    //上传完成标志
-	Checksum    string `json:"checksum"`    //
-	Checksumed  bool   `json:"checksumed"`  //Checksum 检查标志
-	Labels      string `json:"labels"`      //用户设定的标签，和库的 Tag 是不一样
-	Icon        string `json:"icon"`        //
-	Sign        string `json:"sign"`        //
-	Privated    bool   `json:"privated"`    //私有 Repository
-	Clear       string `json:"clear"`       //对 Repository 进行了杀毒，杀毒的结果和 status 等信息以 JSON 格式保存
-	Cleared     bool   `json:"cleared"`     //对 Repository 是否进行了杀毒处理
-	Encrypted   bool   `json:"encrypted"`   //是否加密
-	Created     int64  `json:"created"`     //
-	Updated     int64  `json:"updated"`     //
+	UUID          string   `json:"UUID"`          //全局唯一的索引, LedisDB中 RepositoryList 保存全局所有的仓库名列表信息。 LedisDB 独立保存每个Repository信息到一个HASH，名字为{UUID}
+	Repository    string   `json:"repository"`    //仓库名称 全局唯一，不可修改
+	Namespace     string   `json:"namespace"`     //仓库所有者的名字
+	NamespaceType bool     `json:"namespacetype"` // false 为普通用户，true为组织
+	Organization  string   `json:"organization"`  //如果仓库属于一个team，那么在此记录team所属组织
+	Tags          []string `json:"tags"`          //保存此仓库所有tag的对应UUID
+	Starts        []string `json:"starts"`        //此仓库Start的UUID列表
+	Comments      []string `json:"comments"`      //此仓库Comment的对应UUID列表
+	Description   string   `json:"description"`   //保存 Markdown 格式
+	JSON          string   `json:"json"`          //Docker 客户端上传的 Images 信息，JSON 格式。
+	Dockerfile    string   `json:"dockerfile"`    //生产 Repository 的 Dockerfile 文件内容
+	Agent         string   `json:"agent"`         //docker 命令产生的 agent 信息
+	Links         string   `json:"links"`         //保存 JSON 的信息，保存官方库的 Link，产生 repository 库的 Git 库地址
+	Size          int64    `json:"size"`          //仓库所有 Image 的大小 byte
+	Uploaded      bool     `json:"uploaded"`      //上传完成标志
+	Checksum      string   `json:"checksum"`      //
+	Checksumed    bool     `json:"checksumed"`    //Checksum 检查标志
+	Labels        string   `json:"labels"`        //用户设定的标签，和库的 Tag 是不一样
+	Icon          string   `json:"icon"`          //
+	Sign          string   `json:"sign"`          //
+	Privated      bool     `json:"privated"`      //私有 Repository
+	Clear         string   `json:"clear"`         //对 Repository 进行了杀毒，杀毒的结果和 status 等信息以 JSON 格式保存
+	Cleared       bool     `json:"cleared"`       //对 Repository 是否进行了杀毒处理
+	Encrypted     bool     `json:"encrypted"`     //是否加密
+	Created       int64    `json:"created"`       //
+	Updated       int64    `json:"updated"`       //
 }
 
 func (repository *Repository) Has(namespace, repositoryName string) (isHas bool, UUID []byte, err error) {

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -17,7 +16,10 @@ type UserWebAPIV1Controller struct {
 
 func (u *UserWebAPIV1Controller) URLMapping() {
 	u.Mapping("GetProfile", u.GetProfile)
-	u.Mapping("GetUserExist", u.GetUserExist)
+	u.Mapping("GetUser", u.GetUser)
+	u.Mapping("Signup", u.Signup)
+	u.Mapping("Signin", u.Signin)
+
 }
 
 func (this *UserWebAPIV1Controller) Prepare() {
@@ -48,93 +50,144 @@ func (this *UserWebAPIV1Controller) GetProfile() {
 	}
 }
 
-func (this *UserWebAPIV1Controller) GetUserExist() {
-	users := make([]models.User, 0)
+func (this *UserWebAPIV1Controller) GetUser() {
+	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 
-	user := new(models.User)
-	if _, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
-		beego.Error(fmt.Sprintf("err=,", err))
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "用户查询不存在")))
-		return
+		this.ServeJson()
+
+	} else {
+
+		user := new(models.User)
+
+		if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+
+			beego.Error("[WEB API] Search user error:", err.Error())
+
+			result := map[string]string{"message": "Search user error"}
+			this.Data["json"] = &result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+
+		} else if exist == false && err == nil {
+
+			beego.Info("[WEB API] Search user none:", this.Ctx.Input.Param(":username"))
+
+			result := map[string]string{"message": "Search user error"}
+			this.Data["json"] = &result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+
+		} else {
+
+			users := make([]models.User, 0)
+			users = append(users, *user)
+
+			this.Data["json"] = users
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+			this.ServeJson()
+
+		}
 	}
+}
 
-	users = append(users, *user)
+func (this *UserWebAPIV1Controller) Signin() {
+	var user models.User
 
-	users4Json, err := json.Marshal(users)
-	if err != nil {
-		beego.Error(fmt.Sprintf("用户列表json序列化失败，err=,", err))
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
+
+		beego.Error("[WEB API] Unmarshal user signin data error:", err.Error())
+
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "用户列表json序列化失败")))
+		this.ServeJson()
+
+	} else {
+
+		beego.Debug("[WEB API] User signin:", string(this.Ctx.Input.CopyBody()))
+
+		if err := user.Get(user.Username, user.Password); err != nil {
+			beego.Error("[WEB API] User singin error: ", err.Error())
+
+			result := map[string]string{"message": err.Error()}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+		}
+
+		if user.Gravatar == "" {
+			user.Gravatar = "/static/images/default_user.jpg"
+		}
+
+		this.Ctx.Input.CruSession.Set("user", user)
+
+		result := map[string]string{"message": "User Singin Successfully!"}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.ServeJson()
 	}
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body(users4Json)
-	return
 }
 
 func (this *UserWebAPIV1Controller) Signup() {
 	var user models.User
+
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
-		beego.Error(fmt.Sprintf(`{"error":"%s"`, err.Error()))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"error":"%s"}`, err.Error)))
-		this.StopRun()
-	}
-	beego.Debug(fmt.Sprintf("[Web 用户] 用户注册: %s", string(this.Ctx.Input.CopyBody())))
-	//判断用户是否存在，存在返回错误
-	if has, _, err := user.Has(user.Username); err != nil {
-		beego.Error(fmt.Sprintf("[WEB 用户] 注册用户错误: %s", err.Error()))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, err.Error())))
-		return
-	} else if has {
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "用户名已经存在，请重新注册！")))
-		return
-	}
-	//生成UUID
-	user.UUID = string(utils.GeneralKey(user.Username))
+		beego.Error("[WEB API] Unmarshal user signup data error:", err.Error())
 
-	if err := user.Save(); err != nil {
-		beego.Error(fmt.Sprintf("[WEB 用户] 存入ledis错误: %s", err.Error()))
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, err.Error())))
-		return
-	}
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "用户注册成功！")))
-	return
-}
+		this.ServeJson()
+	} else {
 
-//用户登录处理逻辑
-func (this *UserWebAPIV1Controller) Signin() {
-	//获得用户提交的登陆(注册)信息
-	var user models.User
-	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
-		beego.Error(fmt.Sprintf(`{"error":"%s"`, err.Error))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, err.Error)))
-		this.StopRun()
-	}
+		beego.Debug("[WEB API] User signup:", string(this.Ctx.Input.CopyBody()))
 
-	beego.Debug(fmt.Sprintf("[Web 用户] 用户登陆: %s", string(this.Ctx.Input.CopyBody())))
-	//验证用户登陆
-	if err := user.Get(user.Username, user.Password); err != nil {
-		fmt.Println(err)
-		beego.Error(fmt.Sprintf(`{"error":"%s"`, err.Error()))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, err.Error())))
-		return
-	}
-	//处理用户头像
-	if user.Gravatar == "" {
-		user.Gravatar = "/static/images/default_user.jpg"
-	}
+		if exist, _, err := user.Has(user.Username); err != nil {
+			beego.Error("[WEB API] User singup error: ", err.Error())
 
-	//将user信息写入session中
-	this.Ctx.Input.CruSession.Set("user", user)
+			result := map[string]string{"message": err.Error()}
+			this.Data["json"] = result
 
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte("{\"message\":\"登录成功\"}"))
-	return
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+		} else if exist == true {
+			beego.Error("[WEB API] User already exist:", user.Username)
+
+			result := map[string]string{"message": "User already exist."}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+		} else {
+			user.UUID = string(utils.GeneralKey(user.Username))
+
+			if err := user.Save(); err != nil {
+				beego.Error("[WEB API] User save error:", err.Error())
+
+				result := map[string]string{"message": "User save error."}
+				this.Data["json"] = result
+
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+				this.ServeJson()
+			}
+
+			result := map[string]string{"message": "User Singup Successfully!"}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+		}
+	}
 }
