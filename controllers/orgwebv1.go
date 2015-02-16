@@ -74,7 +74,6 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 		user.Organizations = append(user.Organizations, org.UUID)
 
-		//保存user
 		if err := user.Save(); err != nil {
 			beego.Error("[WEB API] User save error:", err.Error())
 
