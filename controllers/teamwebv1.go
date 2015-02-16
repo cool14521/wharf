@@ -25,23 +25,35 @@ func (this *TeamWebV1Controller) Prepare() {
 }
 
 func (this *TeamWebV1Controller) PostTeam() {
-	var team models.Team
+	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 
-	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &team); err != nil {
-		beego.Error("[WEB API] Unmarshal team data error.", err.Error())
+		beego.Error("[WEB API] Load session failure")
 
-		result := map[string]string{"message": err.Error()}
-		this.Data["json"] = result
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+
 	} else {
-		beego.Info("[Web API] Add team successfully: ", string(this.Ctx.Input.CopyBody()))
+		var team models.Team
 
-		result := map[string]string{"message": "OK"}
-		this.Data["json"] = result
+		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &team); err != nil {
+			beego.Error("[WEB API] Unmarshal team data error.", err.Error())
 
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.ServeJson()
+			result := map[string]string{"message": err.Error()}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+		} else {
+			beego.Info("[Web API] Add team successfully: ", string(this.Ctx.Input.CopyBody()))
+
+			result := map[string]string{"message": "OK"}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+			this.ServeJson()
+		}
 	}
 }

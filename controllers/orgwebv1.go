@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -29,134 +28,183 @@ func (this *OrganizationWebV1Controller) Prepare() {
 }
 
 func (this *OrganizationWebV1Controller) PostOrganization() {
-	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if !ok {
-		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
+
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "session加载失败，无法新建组织")))
-		return
+		this.ServeJson()
+
+	} else {
+
+		var org models.Organization
+
+		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
+
+			beego.Error("[WEB API] Unmarshal organization data error:", err.Error())
+
+			result := map[string]string{"message": err.Error()}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+		}
+
+		beego.Debug("[WEB API] organization create: %s", string(this.Ctx.Input.CopyBody()))
+
+		org.UUID = utils.GeneralToken(org.Organization)
+
+		org.Username = user.Username
+
+		if err := org.Save(); err != nil {
+			beego.Error("[WEB API] Organization save error:", err.Error())
+
+			result := map[string]string{"message": "Organization save error."}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+
+			return
+		}
+
+		user.Organizations = append(user.Organizations, org.UUID)
+
+		//保存user
+		if err := user.Save(); err != nil {
+			beego.Error("[WEB API] User save error:", err.Error())
+
+			result := map[string]string{"message": "User save error."}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+
+			return
+		}
+
+		user.Get(user.Username, user.Password)
+		this.Ctx.Input.CruSession.Set("user", user)
+
+		result := map[string]string{"message": "Create organization successfully."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.ServeJson()
 	}
-
-	var org models.Organization
-
-	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
-		beego.Error(fmt.Sprintf(`{"error":"%s"`, err.Error))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, err.Error)))
-		this.StopRun()
-	}
-
-	beego.Debug(fmt.Sprintf("[Web 用户] 用户增加组织: %s", string(this.Ctx.Input.CopyBody())))
-
-	//生成UUID
-	org.UUID = utils.GeneralToken(org.Organization)
-
-	//关联user
-	org.Username = user.Username
-	if err := org.Save(); err != nil {
-		beego.Error(fmt.Sprintf(`{"error":"%s"`, err.Error()))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, err.Error())))
-		return
-	}
-
-	//更新user中organzation slice中的值
-	user.Organizations = append(user.Organizations, org.UUID)
-
-	//保存user
-	if err := user.Save(); err != nil {
-		beego.Error(fmt.Sprintf(`{"error":"%s"`, err.Error()))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, err.Error())))
-		return
-	}
-
-	//获取最新User
-	user.Get(user.Username, user.Password)
-
-	this.Ctx.Input.CruSession.Set("user", user)
-
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "新建组织成功！")))
-	return
 }
 
 func (this *OrganizationWebV1Controller) PutOrganization() {
-	//权限控制（操作权限，仓库是否存在）
 
-	//更新仓库
-	var org models.Organization
+	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 
-	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
-		beego.Error(fmt.Sprintf(`{"error":"%s"`, err.Error))
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, err.Error)))
-		this.StopRun()
+		this.ServeJson()
+
+	} else {
+
+		var org models.Organization
+
+		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
+			beego.Error("[WEB API] Unmarshal organization data error:", err.Error())
+
+			result := map[string]string{"message": err.Error()}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+		}
+
+		beego.Debug("[WEB API] organization update: %s", string(this.Ctx.Input.CopyBody()))
+
+		if err := org.Save(); err != nil {
+			beego.Error("[WEB API] Organization save error:", err.Error())
+
+			result := map[string]string{"message": "Organization save error."}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+		}
+
+		result := map[string]string{"message": "Update organization successfully."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.ServeJson()
 	}
-
-	beego.Debug(fmt.Sprintf("[Web 用户] 用户更新组织: %s", string(this.Ctx.Input.CopyBody())))
-
-	if err := org.Save(); err != nil {
-		beego.Error(fmt.Sprintf(`{"error":"%s"`, err.Error()))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, err.Error())))
-		return
-	}
-
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "更新组织成功！")))
-	return
 }
 
 func (this *OrganizationWebV1Controller) GetOrganizations() {
-	//获取session中的user
-	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if !ok {
-		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "session加载失败")))
-		return
-	}
-	organizations := make([]models.Organization, len(user.Organizations))
-	for i, UUID := range user.Organizations {
-		if err := organizations[i].Get(UUID); err != nil {
-			beego.Error(fmt.Sprintf("[WEB 用户] 获取组织列表失败，err=", err))
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "[WEB 用户] 获取组织列表失败")))
-			return
-		}
-	}
-	organizations4Json, err := json.Marshal(organizations)
-	if err != nil {
-		beego.Error(fmt.Sprintf("[WEB 用户] 组织Json序列化失败，err=", err))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "[WEB 用户] 组织Json序列化失败")))
-		return
-	}
-	fmt.Println(string(organizations4Json))
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body(organizations4Json)
-	return
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+
+	} else {
+
+		organizations := make([]models.Organization, len(user.Organizations))
+
+		for i, UUID := range user.Organizations {
+			if err := organizations[i].Get(UUID); err != nil {
+				beego.Error("[WEB API] Get organizations error:", err.Error())
+
+				result := map[string]string{"message": "Get organizations error."}
+				this.Data["json"] = result
+
+				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+				this.ServeJson()
+			}
+		}
+
+		this.Data["json"] = organizations
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.ServeJson()
+	}
 }
 
 func (this *OrganizationWebV1Controller) GetOrganizationDetail() {
-	organization := new(models.Organization)
+	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 
-	if _, _, err := organization.Has(this.Ctx.Input.Param(":org")); err != nil {
-		beego.Error(fmt.Sprintf("[WEB 用户] 获取用户组织信息失败，err=", err))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "获取用户组织信息失败")))
-		return
-	}
+		beego.Error("[WEB API] Load session failure")
 
-	organization4Json, err := json.Marshal(organization)
-	if err != nil {
-		beego.Error(fmt.Sprintf("[WEB 用户] 组织Json序列化失败，err=", err))
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "[WEB 用户] 组织Json序列化失败")))
-		return
+		this.ServeJson()
+
+	} else {
+		organization := new(models.Organization)
+
+		if _, _, err := organization.Has(this.Ctx.Input.Param(":org")); err != nil {
+			beego.Error("[WEB API] Get organizations error:", err.Error())
+
+			result := map[string]string{"message": "Get organizations error."}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+		}
+
+		this.Data["json"] = organization
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.ServeJson()
 	}
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body(organization4Json)
 }

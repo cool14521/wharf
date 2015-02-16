@@ -57,11 +57,6 @@ func (this *RepositoryAPIController) PutRepository() {
 
 	beego.Debug("[Sign] " + sign)
 
-	//创建或更新 Repository 数据
-	//也可以采用 ioutil.ReadAll(this.Ctx.Request.Body) 的方式读取 body 数据
-	//TODO 检查 JSON 字符串是否合法
-	//TODO 检查 逻辑是否合法
-
 	beego.Debug("[JSON] " + string(this.Ctx.Input.CopyBody()))
 
 	//从 API 创建的 Repository 默认是 Public 的。
@@ -114,10 +109,6 @@ func (this *RepositoryAPIController) PutTag() {
 	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
 	beego.Debug("[Tag] " + this.Ctx.Input.Param(":tag"))
 	beego.Debug("[Session username] " + this.GetSession("username").(string))
-	//	beego.Debug("[Session org] " + this.GetSession("org").(string))
-
-	//username := this.GetSession("username").(string)
-	//org := this.GetSession("org").(string)
 
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
@@ -162,11 +153,6 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 
 	beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
 	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
-	//beego.Debug("[Session username] " + this.GetSession("username").(string))
-	//beego.Debug("[Session org] " + this.GetSession("org").(string))
-
-	//	username := this.GetSession("username").(string)
-	//	org := this.GetSession("org").(string)
 
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
@@ -181,10 +167,6 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 	beego.Debug("[Body] " + string(this.Ctx.Input.CopyBody()))
 
 	repo := new(models.Repository)
-
-	//TODO 检查仓库所有镜像的 Tag 信息和上传的 Tag 信息是否一致。
-	//TODO 检查仓库所有镜像是否 Uploaded 为 True
-	//TODO 检查仓库所有镜像是否 Checksumed 为 True
 
 	//设定 repository 的 Uploaded
 	if err := repo.PutImages(namespace, repository); err != nil {
@@ -214,15 +196,6 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
-	//	orgModel := new(models.Organization)
-	//	has, _, _ := orgModel.Has(namespace)
-	//	org := ""
-	//	if has == true {
-	//		org = namespace
-	//	}
-
-	//	beego.Debug("[Username] " + username)
-	//	beego.Debug("[Org] " + org)
 	beego.Debug("[Repository] " + repository)
 	beego.Debug("[namespace] " + namespace)
 
@@ -269,8 +242,6 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
 	}
 
-	//		this.Ctx.Input.CruSession.Set("username", username)
-	//		this.Ctx.Input.CruSession.Set("org", org)
 	this.Ctx.Input.CruSession.Set("namespace", namespace)
 	this.Ctx.Input.CruSession.Set("repository", repository)
 	//在 SetSession 中增加读权限

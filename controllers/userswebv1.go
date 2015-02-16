@@ -162,6 +162,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+
 		} else if exist == true {
 			beego.Error("[WEB API] User already exist:", user.Username)
 
@@ -170,6 +171,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+
 		} else {
 			user.UUID = string(utils.GeneralKey(user.Username))
 
