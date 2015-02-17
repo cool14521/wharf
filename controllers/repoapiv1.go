@@ -8,6 +8,7 @@ import (
 	"github.com/astaxie/beego"
 
 	"github.com/dockercn/wharf/models"
+	"github.com/dockercn/wharf/modules"
 	"github.com/dockercn/wharf/utils"
 )
 
@@ -38,7 +39,7 @@ func (this *RepoAPIV1Controller) Prepare() {
 }
 
 func (this *RepoAPIV1Controller) PutRepository() {
-	isAuth, errCode, errInfo := models.DoAuthPutRepository(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthPutRepository(this.Ctx)
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
 		this.Ctx.Output.Context.Output.Body(errInfo)
@@ -89,7 +90,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 
 func (this *RepoAPIV1Controller) PutTag() {
 
-	isAuth, errCode, errInfo := models.DoAuthPutRepositoryTag(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthPutRepositoryTag(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
@@ -131,7 +132,7 @@ func (this *RepoAPIV1Controller) PutTag() {
 
 func (this *RepoAPIV1Controller) PutRepositoryImages() {
 
-	isAuth, errCode, errInfo := models.DoAuthPutRepositoryImage(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthPutRepositoryImage(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
@@ -168,7 +169,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 
 func (this *RepoAPIV1Controller) GetRepositoryImages() {
 
-	isAuth, errCode, errInfo := models.DoAuthGetRepositoryImages(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthGetRepositoryImages(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
@@ -227,7 +228,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 
 func (this *RepoAPIV1Controller) GetRepositoryTags() {
 
-	isAuth, errCode, errInfo := models.DoAuthGetRepositoryTags(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthGetRepositoryTags(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)

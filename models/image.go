@@ -10,7 +10,71 @@ import (
 	"github.com/dockercn/wharf/utils"
 )
 
-//验证Auth使用
+type Image struct {
+	UUID       string
+	ImageId    string //
+	JSON       string //
+	Ancestry   string //
+	Checksum   string //
+	Payload    string //
+	URL        string //
+	Backend    string //
+	Path       string //文件在服务器的存储路径
+	Sign       string //
+	Size       int64  //
+	Uploaded   bool   //
+	Checksumed bool   //
+	Encrypted  bool   //是否加密
+	Created    int64  //
+	Updated    int64  //
+}
+
+func (image *Image) Has(imageName string) (isHas bool, UUID []byte, err error) {
+	UUID, err = GetUUID("image", imageName)
+	if err != nil {
+		return false, nil, err
+	}
+
+	if len(UUID) <= 0 {
+		return false, nil, nil
+	}
+	err = Get(image, UUID)
+
+	return true, UUID, err
+}
+
+func (image *Image) Save() (err error) {
+	err = Save(image, []byte(image.UUID))
+	if err != nil {
+		return err
+	}
+	_, err = LedisDB.HSet([]byte(GLOBAL_IMAGE_INDEX), []byte(image.ImageId), []byte(image.UUID))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (image *Image) Get(UUID string) (err error) {
+	err = Get(image, []byte(UUID))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (image *Image) Remove() (err error) {
+	_, err = LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_IMAGE_INDEX)), []byte(image.ImageId), []byte(image.UUID))
+	if err != nil {
+		return err
+	}
+	_, err = LedisDB.HDel([]byte(GLOBAL_IMAGE_INDEX), []byte(image.UUID))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (image *Image) IsPushed(imageId string) (isPushed bool, err error) {
 
 	isHas, _, err := image.Has(imageId)

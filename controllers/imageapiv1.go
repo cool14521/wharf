@@ -9,6 +9,7 @@ import (
 	"github.com/astaxie/beego"
 
 	"github.com/dockercn/wharf/models"
+	"github.com/dockercn/wharf/modules"
 	"github.com/dockercn/wharf/utils"
 )
 
@@ -41,7 +42,7 @@ func (this *ImageAPIV1Controller) Prepare() {
 
 func (this *ImageAPIV1Controller) GetImageJSON() {
 
-	isAuth, errCode, errInfo := models.DoAuthGetImageJSON(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthGetImageJSON(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
@@ -80,7 +81,7 @@ func (this *ImageAPIV1Controller) GetImageJSON() {
 
 func (this *ImageAPIV1Controller) PutImageJSON() {
 
-	isAuth, errCode, errInfo := models.DoAuthPutImageJSON(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthPutImageJSON(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
@@ -113,7 +114,7 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 }
 
 func (this *ImageAPIV1Controller) PutImageLayer() {
-	isAuth, errCode, errInfo := models.DoAuthPutImageLayer(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthPutImageLayer(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
@@ -172,7 +173,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 }
 
 func (this *ImageAPIV1Controller) PutChecksum() {
-	isAuth, errCode, errInfo := models.DoAuthPutChecksum(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthPutChecksum(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
@@ -215,7 +216,7 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 }
 
 func (this *ImageAPIV1Controller) GetImageAncestry() {
-	isAuth, errCode, errInfo := models.DoAuthGetImageAncestry(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthGetImageAncestry(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
@@ -250,7 +251,7 @@ func (this *ImageAPIV1Controller) GetImageAncestry() {
 
 func (this *ImageAPIV1Controller) GetImageLayer() {
 
-	isAuth, errCode, errInfo := models.DoAuthGetImageLayer(this.Ctx)
+	isAuth, errCode, errInfo := modules.DoAuthGetImageLayer(this.Ctx)
 
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)

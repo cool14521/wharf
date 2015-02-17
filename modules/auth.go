@@ -9,6 +9,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 
+	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
 )
 
@@ -49,7 +50,7 @@ func DoAuthBasic(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte
 	}
 
 	//根据解码的数据，在数据库中查询用户
-	user := new(User)
+	user := new(models.User)
 	err = user.Get(username, passwd)
 	if err != nil {
 		//查询用户数据失败，返回 401 错误
@@ -76,7 +77,7 @@ func DoAuthNamespace(Ctx *context.Context) (IsAuth bool, NamespaceType bool, Err
 
 	//判断是用户还是组织
 
-	org := new(Organization)
+	org := new(models.Organization)
 	orgIsHas, _, err := org.Has(namespace)
 	if err != nil {
 		beego.Error(fmt.Sprintf("[API 用户] 查询组织 %s 时错误 %s", namespace, err.Error()))
@@ -86,7 +87,7 @@ func DoAuthNamespace(Ctx *context.Context) (IsAuth bool, NamespaceType bool, Err
 		return
 	}
 
-	user := new(User)
+	user := new(models.User)
 	userIsHas, _, err := user.Has(namespace)
 	if err != nil {
 		beego.Error(fmt.Sprintf("[API 用户] 查询用户 %s 时错误 %s", namespace, err.Error()))
@@ -118,7 +119,7 @@ func DoAuthNamespace(Ctx *context.Context) (IsAuth bool, NamespaceType bool, Err
 		for index, value := range user.Organizations {
 			fmt.Printf("遍历第[%d]个切片\n", index)
 			//查找
-			organization := new(Organization)
+			organization := new(models.Organization)
 			err = organization.Get(value)
 			if err != nil {
 				beego.Error(fmt.Sprintf("[API 用户] 验证用户所在组织namespace错误: %s", namespace))
@@ -145,7 +146,7 @@ func DoAuthNamespace(Ctx *context.Context) (IsAuth bool, NamespaceType bool, Err
 		//判断用户所有Team 对于此仓库权限的集合
 		for index, value := range user.Teams {
 			fmt.Printf("遍历第[%d]个Team\n", index)
-			team := new(Team)
+			team := new(models.Team)
 			err = team.Get(value)
 			if err != nil {
 				beego.Error(fmt.Sprintf("[API 用户] 验证用户所在Team错误"))
@@ -156,7 +157,7 @@ func DoAuthNamespace(Ctx *context.Context) (IsAuth bool, NamespaceType bool, Err
 			}
 			for Pindex, Pvalue := range team.TeamPrivileges {
 				fmt.Printf("遍历第[%d]个TeamPrivileges\n", Pindex)
-				privilege := new(Privilege)
+				privilege := new(models.Privilege)
 				err = privilege.Get(Pvalue)
 
 				if err != nil {
@@ -287,7 +288,7 @@ func DoAuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo
 	//TODO 检查 imageID 的合法性
 	imageId := string(Ctx.Input.Param(":image_id"))
 
-	image := new(Image)
+	image := new(models.Image)
 	isPushed, err := image.IsPushed(imageId)
 
 	if err != nil {
