@@ -11,11 +11,11 @@ import (
 	"github.com/dockercn/wharf/utils"
 )
 
-type RepositoryAPIController struct {
+type RepoAPIV1Controller struct {
 	beego.Controller
 }
 
-func (r *RepositoryAPIController) URLMapping() {
+func (r *RepoAPIV1Controller) URLMapping() {
 	r.Mapping("PutTag", r.PutTag)
 	r.Mapping("PutRepositoryImages", r.PutRepositoryImages)
 	r.Mapping("GetRepositoryImages", r.GetRepositoryImages)
@@ -23,7 +23,7 @@ func (r *RepositoryAPIController) URLMapping() {
 	r.Mapping("PutRepository", r.PutRepository)
 }
 
-func (this *RepositoryAPIController) Prepare() {
+func (this *RepoAPIV1Controller) Prepare() {
 	beego.Debug("[Headers]")
 	beego.Debug(this.Ctx.Input.Request.Header)
 
@@ -37,7 +37,7 @@ func (this *RepositoryAPIController) Prepare() {
 
 }
 
-func (this *RepositoryAPIController) PutRepository() {
+func (this *RepoAPIV1Controller) PutRepository() {
 	isAuth, errCode, errInfo := models.DoAuthPutRepository(this.Ctx)
 	if !isAuth {
 		this.Ctx.Output.Context.Output.SetStatus(errCode)
@@ -87,7 +87,7 @@ func (this *RepositoryAPIController) PutRepository() {
 
 }
 
-func (this *RepositoryAPIController) PutTag() {
+func (this *RepoAPIV1Controller) PutTag() {
 
 	isAuth, errCode, errInfo := models.DoAuthPutRepositoryTag(this.Ctx)
 
@@ -129,7 +129,7 @@ func (this *RepositoryAPIController) PutTag() {
 	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 }
 
-func (this *RepositoryAPIController) PutRepositoryImages() {
+func (this *RepoAPIV1Controller) PutRepositoryImages() {
 
 	isAuth, errCode, errInfo := models.DoAuthPutRepositoryImage(this.Ctx)
 
@@ -166,7 +166,7 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 }
 
-func (this *RepositoryAPIController) GetRepositoryImages() {
+func (this *RepoAPIV1Controller) GetRepositoryImages() {
 
 	isAuth, errCode, errInfo := models.DoAuthGetRepositoryImages(this.Ctx)
 
@@ -225,7 +225,7 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 
 }
 
-func (this *RepositoryAPIController) GetRepositoryTags() {
+func (this *RepoAPIV1Controller) GetRepositoryTags() {
 
 	isAuth, errCode, errInfo := models.DoAuthGetRepositoryTags(this.Ctx)
 

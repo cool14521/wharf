@@ -12,11 +12,11 @@ import (
 	"github.com/dockercn/wharf/utils"
 )
 
-type ImageAPIController struct {
+type ImageAPIV1Controller struct {
 	beego.Controller
 }
 
-func (i *ImageAPIController) URLMapping() {
+func (i *ImageAPIV1Controller) URLMapping() {
 	i.Mapping("GetImageJSON", i.GetImageJSON)
 	i.Mapping("PutImageJSON", i.PutImageJSON)
 	i.Mapping("PutImageLayer", i.PutImageLayer)
@@ -25,7 +25,7 @@ func (i *ImageAPIController) URLMapping() {
 	i.Mapping("GetImageLayer", i.GetImageLayer)
 }
 
-func (this *ImageAPIController) Prepare() {
+func (this *ImageAPIV1Controller) Prepare() {
 	beego.Debug("[Header]")
 	beego.Debug(this.Ctx.Request.Header)
 
@@ -39,7 +39,7 @@ func (this *ImageAPIController) Prepare() {
 
 }
 
-func (this *ImageAPIController) GetImageJSON() {
+func (this *ImageAPIV1Controller) GetImageJSON() {
 
 	isAuth, errCode, errInfo := models.DoAuthGetImageJSON(this.Ctx)
 
@@ -78,7 +78,7 @@ func (this *ImageAPIController) GetImageJSON() {
 	this.StopRun()
 }
 
-func (this *ImageAPIController) PutImageJSON() {
+func (this *ImageAPIV1Controller) PutImageJSON() {
 
 	isAuth, errCode, errInfo := models.DoAuthPutImageJSON(this.Ctx)
 
@@ -112,7 +112,7 @@ func (this *ImageAPIController) PutImageJSON() {
 
 }
 
-func (this *ImageAPIController) PutImageLayer() {
+func (this *ImageAPIV1Controller) PutImageLayer() {
 	isAuth, errCode, errInfo := models.DoAuthPutImageLayer(this.Ctx)
 
 	if !isAuth {
@@ -171,7 +171,7 @@ func (this *ImageAPIController) PutImageLayer() {
 
 }
 
-func (this *ImageAPIController) PutChecksum() {
+func (this *ImageAPIV1Controller) PutChecksum() {
 	isAuth, errCode, errInfo := models.DoAuthPutChecksum(this.Ctx)
 
 	if !isAuth {
@@ -214,7 +214,7 @@ func (this *ImageAPIController) PutChecksum() {
 
 }
 
-func (this *ImageAPIController) GetImageAncestry() {
+func (this *ImageAPIV1Controller) GetImageAncestry() {
 	isAuth, errCode, errInfo := models.DoAuthGetImageAncestry(this.Ctx)
 
 	if !isAuth {
@@ -248,7 +248,7 @@ func (this *ImageAPIController) GetImageAncestry() {
 
 }
 
-func (this *ImageAPIController) GetImageLayer() {
+func (this *ImageAPIV1Controller) GetImageLayer() {
 
 	isAuth, errCode, errInfo := models.DoAuthGetImageLayer(this.Ctx)
 
