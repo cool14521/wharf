@@ -165,3 +165,70 @@ func (repo *Repository) PutImages(namespace, repository string) error {
 
 	return nil
 }
+
+type Start struct {
+	UUID       string `json:"UUID"`       //全局唯一的索引
+	User       string `json:"user"`       //用户UUID，代表哪个用户加的星
+	Repository string `json:"repository"` //仓库UUID，代表给哪个仓库加的星
+	Time       int64  `json:"time"`       //代表加星的时间
+}
+type Comment struct {
+	UUID       string `json:"UUID"`       //全局唯一的索引
+	Comment    string `json:"comment"`    //评论的内容 markdown 格式保存
+	User       string `json:"user"`       //用户UUID，代表哪个用户进行的评论
+	Repository string `json:"repository"` //仓库UUID，代表评论的哪个仓库
+	Time       int64  `json:"time"`       //代表评论的时间
+}
+type Privilege struct {
+	UUID       string `json:"UUID"`       //全局唯一的索引
+	Privilege  bool   `json:"privilege"`  //true 为读写，false为只读
+	Team       string `json:"team"`       //此权限所属Team的UUID
+	Repository string `json:"repository"` //此权限对应的仓库UUID
+}
+
+func (privilege *Privilege) Get(UUID string) (err error) {
+	err = Get(privilege, []byte(UUID))
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+type Tag struct {
+	UUID       string
+	Name       string //
+	ImageId    string //
+	Namespace  string
+	Repository string
+	Sign       string //
+}
+
+func (tag *Tag) Has(namespace, repository, imageName, tagName string) (isHas bool, UUID []byte, err error) {
+	UUID, err = GetUUID("tag", fmt.Sprintf("%s:%s:%s:%s", namespace, repository, imageName, tagName))
+	if err != nil {
+		return false, nil, err
+	}
+	if len(UUID) <= 0 {
+		return false, nil, nil
+	}
+	err = Get(tag, UUID)
+	return true, UUID, err
+}
+
+func (tag *Tag) Save() (err error) {
+	err = Save(tag, []byte(tag.UUID))
+	if err != nil {
+		return err
+	}
+	_, err = LedisDB.HSet([]byte(GLOBAL_TAG_INDEX), []byte(fmt.Sprintf("%s:%s:%s:%s", tag.Namespace, tag.Repository, tag.ImageId, tag.Name)), []byte(tag.UUID))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tag *Tag) GetByUUID(uuid string) (err error) {
+	err = Get(tag, []byte(uuid))
+	return err
+}
