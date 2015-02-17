@@ -19,7 +19,6 @@ func (u *UserWebAPIV1Controller) URLMapping() {
 	u.Mapping("GetUser", u.GetUser)
 	u.Mapping("Signup", u.Signup)
 	u.Mapping("Signin", u.Signin)
-
 }
 
 func (this *UserWebAPIV1Controller) Prepare() {

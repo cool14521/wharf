@@ -1,34 +1,19 @@
 package controllers
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/astaxie/beego"
-
-	"github.com/dockercn/wharf/models"
 )
 
-func (this *RepositoryController) Prepare() {
-	beego.Debug("[Header] ")
-	beego.Debug(this.Ctx.Request.Header)
-}
-
-type RepositoryController struct {
+type RepoW1Controller struct {
 	beego.Controller
 }
 
-func (this RepositoryController) GetRepositoryAdd() {
-	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if !ok {
-		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "session加载失败")))
-		return
-	}
+func (u *RepoW1Controller) URLMapping() {
+}
 
-	this.TplNames = "repositoryAdd.html"
-	this.Data["username"] = user.Username
+func (this *RepoW1Controller) Prepare() {
+	beego.Debug("[Header] ")
+	beego.Debug(this.Ctx.Request.Header)
 
-	this.Render()
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 }

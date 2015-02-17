@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -14,8 +13,6 @@ type WebController struct {
 }
 
 func (this *WebController) Prepare() {
-	beego.Debug(fmt.Sprintf("[%s] %s | %s", this.Ctx.Input.Host(), this.Ctx.Input.Request.Method, this.Ctx.Input.Request.RequestURI))
-
 	beego.Debug("[Header] ")
 	beego.Debug(this.Ctx.Request.Header)
 }
@@ -32,32 +29,29 @@ func (this *WebController) GetAuth() {
 }
 
 func (this *WebController) GetDashboard() {
-	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if !ok {
-		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "session加载失败")))
-		return
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+		beego.Error("[WEB API] Load session failure")
+
+		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
+	} else {
+
+		this.TplNames = "dashboard.html"
+		this.Data["username"] = user.Username
+
+		this.Render()
 	}
-
-	this.TplNames = "dashboard.html"
-	this.Data["username"] = user.Username
-
-	this.Render()
 }
 
 func (this *WebController) GetSetting() {
-	user, ok := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if !ok {
-		beego.Error(fmt.Sprintf("[WEB 用户] session加载失败"))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf(`{"message":"%s"}`, "session加载失败")))
-		return
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+		beego.Error("[WEB API] Load session failure")
+
+		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
+	} else {
+
+		this.TplNames = "setting.html"
+		this.Data["username"] = user.Username
+
+		this.Render()
 	}
-
-	this.TplNames = "setting.html"
-
-	this.Data["username"] = user.Username
-
-	this.Render()
 }
