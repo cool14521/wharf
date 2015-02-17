@@ -44,12 +44,12 @@ func (this *RepositoryAPIController) PutRepository() {
 		this.Ctx.Output.Context.Output.Body(errInfo)
 		this.StopRun()
 	}
+
 	username, passwd, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-	//获取namespace/repository
+
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
-	//加密签名
 	sign := ""
 	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
 		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
@@ -59,7 +59,6 @@ func (this *RepositoryAPIController) PutRepository() {
 
 	beego.Debug("[JSON] " + string(this.Ctx.Input.CopyBody()))
 
-	//从 API 创建的 Repository 默认是 Public 的。
 	repo := new(models.Repository)
 	if err := repo.DoPut(namespace, repository, string(this.Ctx.Input.CopyBody()), this.Ctx.Input.Header("User-Agent")); err != nil {
 		beego.Error(fmt.Sprintf("[API 用户] Put repository 错误: %s", err.Error()))
@@ -68,25 +67,18 @@ func (this *RepositoryAPIController) PutRepository() {
 		this.StopRun()
 	}
 
-	//如果 Request 的 Header 中含有 X-Docker-Token 且为 True，需要在返回值设置 Token 值。
-	//否则客户端报错 Index response didn't contain an access token
 	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
-		//创建 token 并保存
-		//需要加密的字符串为 UserName + UserPassword + 时间戳
 		token := utils.GeneralToken(username + passwd)
 		this.SetSession("token", token)
-		//在返回值 Header 里面设置 Token
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
 	}
 
 	this.SetSession("username", username)
-	//	this.SetSession("org", org)
 	this.SetSession("namespace", namespace)
 	this.SetSession("repository", repository)
 	this.SetSession("access", "write")
 
-	//操作正常的输出
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
@@ -113,7 +105,6 @@ func (this *RepositoryAPIController) PutTag() {
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
-	//加密签名
 	sign := ""
 	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
 		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
@@ -123,7 +114,6 @@ func (this *RepositoryAPIController) PutTag() {
 
 	tag := this.Ctx.Input.Param(":tag")
 
-	//从 HTTP Body 中获取 Image 的 Value
 	r, _ := regexp.Compile(`"([[:alnum:]]+)"`)
 	imageIds := r.FindStringSubmatch(string(this.Ctx.Input.CopyBody()))
 
@@ -135,12 +125,10 @@ func (this *RepositoryAPIController) PutTag() {
 		this.StopRun()
 	}
 
-	//操作正常的输出
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 }
 
-//Push 命令的最后一步，所有的检查操作，通知操作都在此函数进行。
 func (this *RepositoryAPIController) PutRepositoryImages() {
 
 	isAuth, errCode, errInfo := models.DoAuthPutRepositoryImage(this.Ctx)
@@ -157,7 +145,6 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
-	//加密签名
 	sign := ""
 	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
 		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
@@ -168,7 +155,6 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 
 	repo := new(models.Repository)
 
-	//设定 repository 的 Uploaded
 	if err := repo.PutImages(namespace, repository); err != nil {
 		beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Uploaded 标志错误: %s", namespace, repository, err.Error()))
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -176,12 +162,10 @@ func (this *RepositoryAPIController) PutRepositoryImages() {
 		this.StopRun()
 	}
 
-	//操作正常的输出
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
 	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
 }
 
-//获取一个 Repository 的 Image 信息
 func (this *RepositoryAPIController) GetRepositoryImages() {
 
 	isAuth, errCode, errInfo := models.DoAuthGetRepositoryImages(this.Ctx)
@@ -191,25 +175,20 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 		this.Ctx.Output.Context.Output.Body(errInfo)
 		this.StopRun()
 	}
+
 	username, passwd, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-	//获取namespace/repository
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
 	beego.Debug("[Repository] " + repository)
 	beego.Debug("[namespace] " + namespace)
 
-	//TODO：私有和组织的镜像仓库权限判断问题
-
-	//加密签名
 	sign := ""
 	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
 		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
 	}
 
 	beego.Debug("[Sign] " + sign)
-
-	//TODO 私有镜像仓库权限判断
 
 	repo := new(models.Repository)
 
@@ -230,23 +209,17 @@ func (this *RepositoryAPIController) GetRepositoryImages() {
 
 	}
 
-	//如果 Request 的 Header 中含有 X-Docker-Token 且为 True，需要在返回值设置 Token 值。
-	//否则客户端报错 Index response didn't contain an access token
 	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
-		//创建 token 并保存
-		//需要加密的字符串为 UserName + UserPassword + 时间戳
 		token := utils.GeneralToken(username + passwd)
 		this.Ctx.Input.CruSession.Set("token", token)
-		//在返回值 Header 里面设置 Token
+
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
 	}
 
 	this.Ctx.Input.CruSession.Set("namespace", namespace)
 	this.Ctx.Input.CruSession.Set("repository", repository)
-	//在 SetSession 中增加读权限
 	this.Ctx.Input.CruSession.Set("access", "read")
-	//操作正常的输出
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(repo.JSON))
 
@@ -265,13 +238,9 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 	beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
 	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
 
-	//username := this.Data["username"].(string)
-	//	org := this.Ctx.Input.CruSession.Get("org").(string)
-
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
-	//加密签名
 	sign := ""
 	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
 		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
@@ -303,7 +272,6 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 
 		}
 		nowTag := new(models.Tag)
-		fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", repo.Tags)
 		err = nowTag.GetByUUID(value)
 		if err != nil {
 			beego.Error(fmt.Sprintf("[API 用户]  %s/%s Tags 不存在", namespace, repository))
@@ -315,8 +283,6 @@ func (this *RepositoryAPIController) GetRepositoryTags() {
 
 	}
 	nowTags += "}"
-	//TODO 私有镜像仓库权限判断
-	//操作正常的输出
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(nowTags))
 

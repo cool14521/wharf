@@ -46,6 +46,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+
 		} else {
 			beego.Info("[Web API] Add team successfully: ", string(this.Ctx.Input.CopyBody()))
 
@@ -54,6 +55,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.ServeJson()
+
 		}
 	}
 }
