@@ -34,28 +34,30 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+		this.StopRun()
 
-	} else {
-		var team models.Team
-
-		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &team); err != nil {
-			beego.Error("[WEB API] Unmarshal team data error.", err.Error())
-
-			result := map[string]string{"message": err.Error()}
-			this.Data["json"] = result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
-
-		} else {
-			beego.Info("[Web API] Add team successfully: ", string(this.Ctx.Input.CopyBody()))
-
-			result := map[string]string{"message": "OK"}
-			this.Data["json"] = result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-			this.ServeJson()
-
-		}
 	}
+
+	var team models.Team
+
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &team); err != nil {
+		beego.Error("[WEB API] Unmarshal team data error.", err.Error())
+
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+
+	}
+
+	beego.Info("[Web API] Add team successfully: ", string(this.Ctx.Input.CopyBody()))
+
+	result := map[string]string{"message": "OK"}
+	this.Data["json"] = result
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
 }

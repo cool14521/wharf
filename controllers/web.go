@@ -26,6 +26,8 @@ func (this *WebController) GetIndex() {
 func (this *WebController) GetAuth() {
 	this.TplNames = "auth.html"
 	this.Render()
+	this.StopRun()
+
 }
 
 func (this *WebController) GetDashboard() {
@@ -39,6 +41,8 @@ func (this *WebController) GetDashboard() {
 		this.Data["username"] = user.Username
 
 		this.Render()
+		this.StopRun()
+
 	}
 }
 
@@ -47,11 +51,13 @@ func (this *WebController) GetSetting() {
 		beego.Error("[WEB API] Load session failure")
 
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
+
 	} else {
 
 		this.TplNames = "setting.html"
 		this.Data["username"] = user.Username
 
 		this.Render()
+		this.StopRun()
 	}
 }

@@ -39,10 +39,14 @@ func (this *RepoAPIV1Controller) Prepare() {
 }
 
 func (this *RepoAPIV1Controller) PutRepository() {
-	isAuth, errCode, errInfo := modules.DoAuthPutRepository(this.Ctx)
-	if !isAuth {
-		this.Ctx.Output.Context.Output.SetStatus(errCode)
-		this.Ctx.Output.Context.Output.Body(errInfo)
+	if auth, code, message := modules.AuthPutRepository(this.Ctx); auth == false {
+
+		result := map[string]string{"message": string(message)}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(code)
+		this.ServeJson()
+
 		this.StopRun()
 	}
 

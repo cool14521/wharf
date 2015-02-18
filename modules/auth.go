@@ -13,7 +13,7 @@ import (
 	"github.com/dockercn/wharf/utils"
 )
 
-func DoAuthBasic(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+func authBasic(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
 	if len(Ctx.Input.Header("Authorization")) == 0 {
 		//不存在 Authorization 信息返回错误信息
@@ -68,7 +68,7 @@ func DoAuthBasic(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte
 
 }
 
-func DoAuthNamespace(Ctx *context.Context) (IsAuth bool, NamespaceType bool, ErrCode int, ErrInfo []byte, Read bool, Write bool) {
+func authNamespace(Ctx *context.Context) (IsAuth bool, NamespaceType bool, ErrCode int, ErrInfo []byte, Read bool, Write bool) {
 
 	//根据 Namespace 查询数据
 	namespace := string(Ctx.Input.Param(":namespace"))
@@ -230,33 +230,29 @@ func DoAuthToken(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte
 	return
 }
 
-func DoAuthPutRepository(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+func AuthPutRepository(Ctx *context.Context) (bool, int, []byte) {
 
-	beego.Error("执行DoAuthPutRepository")
+	if auth, code, message := authBasic(Ctx); auth == false {
 
-	IsAuth, ErrCode, ErrInfo = DoAuthBasic(Ctx)
+		return auth, code, message
 
-	if !IsAuth {
-		return
 	}
 
-	IsAuth, _, ErrCode, ErrInfo, _, Write := DoAuthNamespace(Ctx)
+	if auth, _, code, message, _, write := authNamespace(Ctx); auth == false {
 
-	if !IsAuth {
-		return
+		return auth, code, message
+
+	} else if write == false {
+
+		code = http.StatusForbidden
+		message = []byte("Forbidden Push Repository")
+
+		return auth, code, message
+
+	} else {
+
+		return true, 0, nil
 	}
-
-	if !Write {
-		ErrCode = http.StatusForbidden
-		ErrInfo = []byte(`{"错误":"没有权限PUSH仓库"}`)
-		return
-	}
-
-	ErrCode = 0
-	ErrInfo = nil
-	IsAuth = true
-	return
-
 }
 
 func DoAuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
@@ -421,13 +417,13 @@ func DoAuthPutRepositoryImage(Ctx *context.Context) (IsAuth bool, ErrCode int, E
 
 	beego.Error("执行DoAuthPutRepositoryImage")
 
-	IsAuth, ErrCode, ErrInfo = DoAuthBasic(Ctx)
+	IsAuth, ErrCode, ErrInfo = authBasic(Ctx)
 
 	if !IsAuth {
 		return
 	}
 
-	IsAuth, _, ErrCode, ErrInfo, _, _ = DoAuthNamespace(Ctx)
+	IsAuth, _, ErrCode, ErrInfo, _, _ = authNamespace(Ctx)
 
 	if !IsAuth {
 		return
@@ -453,12 +449,12 @@ func DoAuthGetRepositoryImages(Ctx *context.Context) (IsAuth bool, ErrCode int, 
 
 	beego.Error("执行DoAuthGetRepositoryImages")
 
-	IsAuth, ErrCode, ErrInfo = DoAuthBasic(Ctx)
+	IsAuth, ErrCode, ErrInfo = authBasic(Ctx)
 
 	if !IsAuth {
 		return
 	}
-	IsAuth, _, ErrCode, ErrInfo, _, _ = DoAuthNamespace(Ctx)
+	IsAuth, _, ErrCode, ErrInfo, _, _ = authNamespace(Ctx)
 
 	if !IsAuth {
 		return

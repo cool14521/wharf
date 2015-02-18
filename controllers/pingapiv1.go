@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/astaxie/beego"
 )
 
@@ -27,5 +29,8 @@ func (this *PingAPIV1Controller) GetPing() {
 	this.Data["json"] = &result
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+
 	this.ServeJson()
+	this.StopRun()
 }

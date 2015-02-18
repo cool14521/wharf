@@ -38,6 +38,7 @@ func (this *UserWebAPIV1Controller) GetProfile() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+		this.StopRun()
 
 	} else {
 
@@ -45,6 +46,7 @@ func (this *UserWebAPIV1Controller) GetProfile() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
+		this.StopRun()
 
 	}
 }
@@ -59,6 +61,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+		this.StopRun()
 
 	} else {
 
@@ -73,6 +76,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+			this.StopRun()
 
 		} else if exist == false && err == nil {
 
@@ -83,6 +87,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+			this.StopRun()
 
 		} else {
 
@@ -92,6 +97,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 			this.Data["json"] = users
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.ServeJson()
+			this.StopRun()
 
 		}
 	}
@@ -109,6 +115,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+		this.StopRun()
 
 	} else {
 
@@ -122,6 +129,8 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+			this.StopRun()
+
 		}
 
 		if user.Gravatar == "" {
@@ -135,6 +144,8 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
+		this.StopRun()
+
 	}
 }
 
@@ -149,6 +160,8 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+		this.StopRun()
+
 	} else {
 
 		beego.Debug("[WEB API] User signup:", string(this.Ctx.Input.CopyBody()))
@@ -161,6 +174,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+			this.StopRun()
 
 		} else if exist == true {
 			beego.Error("[WEB API] User already exist:", user.Username)
@@ -170,6 +184,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+			this.StopRun()
 
 		} else {
 			user.UUID = string(utils.GeneralKey(user.Username))
@@ -182,6 +197,8 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 				this.ServeJson()
+				this.StopRun()
+
 			}
 
 			result := map[string]string{"message": "User Singup Successfully!"}
@@ -189,6 +206,8 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+			this.StopRun()
+
 		}
 	}
 }

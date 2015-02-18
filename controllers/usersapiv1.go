@@ -49,6 +49,7 @@ func (this *UserAPIV1Controller) GetUsers() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 		this.ServeJson()
+		this.StopRun()
 
 	} else {
 
@@ -62,6 +63,7 @@ func (this *UserAPIV1Controller) GetUsers() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 			this.ServeJson()
+			this.StopRun()
 		}
 
 		beego.Info("[User API]", username, "authorization successfully")
@@ -71,5 +73,6 @@ func (this *UserAPIV1Controller) GetUsers() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
+		this.StopRun()
 	}
 }

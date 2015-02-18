@@ -29,7 +29,9 @@ func (this *OrganizationWebV1Controller) Prepare() {
 
 func (this *OrganizationWebV1Controller) PostOrganization() {
 
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+
+	if exist != true {
 
 		beego.Error("[WEB API] Load session failure")
 
@@ -38,63 +40,63 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+		this.StopRun()
 
-	} else {
+	}
 
-		var org models.Organization
+	var org models.Organization
 
-		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
 
-			beego.Error("[WEB API] Unmarshal organization data error:", err.Error())
+		beego.Error("[WEB API] Unmarshal organization data error:", err.Error())
 
-			result := map[string]string{"message": err.Error()}
-			this.Data["json"] = result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
-		}
-
-		beego.Debug("[WEB API] organization create: %s", string(this.Ctx.Input.CopyBody()))
-
-		org.UUID = utils.GeneralToken(org.Organization)
-
-		org.Username = user.Username
-
-		if err := org.Save(); err != nil {
-			beego.Error("[WEB API] Organization save error:", err.Error())
-
-			result := map[string]string{"message": "Organization save error."}
-			this.Data["json"] = result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
-
-			return
-		}
-
-		user.Organizations = append(user.Organizations, org.UUID)
-
-		if err := user.Save(); err != nil {
-			beego.Error("[WEB API] User save error:", err.Error())
-
-			result := map[string]string{"message": "User save error."}
-			this.Data["json"] = result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
-
-			return
-		}
-
-		user.Get(user.Username, user.Password)
-		this.Ctx.Input.CruSession.Set("user", user)
-
-		result := map[string]string{"message": "Create organization successfully."}
+		result := map[string]string{"message": err.Error()}
 		this.Data["json"] = result
 
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+		this.StopRun()
 	}
+
+	beego.Debug("[WEB API] organization create: %s", string(this.Ctx.Input.CopyBody()))
+
+	org.UUID = utils.GeneralToken(org.Organization)
+
+	org.Username = user.Username
+
+	if err := org.Save(); err != nil {
+		beego.Error("[WEB API] Organization save error:", err.Error())
+
+		result := map[string]string{"message": "Organization save error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	user.Organizations = append(user.Organizations, org.UUID)
+
+	if err := user.Save(); err != nil {
+		beego.Error("[WEB API] User save error:", err.Error())
+
+		result := map[string]string{"message": "User save error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	user.Get(user.Username, user.Password)
+	this.Ctx.Input.CruSession.Set("user", user)
+
+	result := map[string]string{"message": "Create organization successfully."}
+	this.Data["json"] = result
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
 }
 
 func (this *OrganizationWebV1Controller) PutOrganization() {
