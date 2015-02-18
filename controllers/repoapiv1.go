@@ -92,13 +92,11 @@ func (this *RepoAPIV1Controller) PutRepository() {
 
 func (this *RepoAPIV1Controller) PutTag() {
 	if auth, code, message := modules.AuthPutRepositoryTag(this.Ctx); auth == false {
-
 		result := map[string]string{"message": string(message)}
 		this.Data["json"] = result
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-
 		this.StopRun()
 	}
 
@@ -136,11 +134,12 @@ func (this *RepoAPIV1Controller) PutTag() {
 
 func (this *RepoAPIV1Controller) PutRepositoryImages() {
 
-	isAuth, errCode, errInfo := modules.DoAuthPutRepositoryImage(this.Ctx)
+	if auth, code, message := modules.AuthPutRepositoryImage(this.Ctx); auth == false {
+		result := map[string]string{"message": string(message)}
+		this.Data["json"] = result
 
-	if !isAuth {
-		this.Ctx.Output.Context.Output.SetStatus(errCode)
-		this.Ctx.Output.Context.Output.Body(errInfo)
+		this.Ctx.Output.Context.Output.SetStatus(code)
+		this.ServeJson()
 		this.StopRun()
 	}
 
@@ -155,14 +154,21 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 	repo := new(models.Repository)
 
 	if err := repo.PutImages(namespace, repository); err != nil {
-		beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Uploaded 标志错误: %s", namespace, repository, err.Error()))
+		beego.Error("[REGISTRY API V1] Update Uploaded flag error: %s", namespace, repository, err.Error())
+
+		result := map[string]string{"message": "Update Uploaded flag error"}
+		this.Data["json"] = result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Uploaded 标志错误\"}"))
+		this.ServeJson()
 		this.StopRun()
 	}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
-	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
+	this.Ctx.Output.Context.Output.Body([]byte(""))
+
+	this.ServeJson()
+	this.StopRun()
 }
 
 func (this *RepoAPIV1Controller) GetRepositoryImages() {

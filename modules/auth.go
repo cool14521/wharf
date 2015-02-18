@@ -258,6 +258,23 @@ func AuthPutRepositoryTag(Ctx *context.Context) (bool, int, []byte) {
 	return true, 0, nil
 }
 
+func AuthPutRepositoryImage(Ctx *context.Context) (bool, int, []byte) {
+	if auth, code, message := authBasic(Ctx); auth == false {
+		return auth, code, message
+	}
+
+	if auth, _, code, message, _, _ = authNamespace(Ctx); auth == false {
+		return auth, code, message
+	}
+
+	if Ctx.Input.Session("access") != "write" {
+		beego.Error("REGISTRY API V1] Without write privilege for update the repository")
+		return false, http.StatusUnauthorized, []byte("Without write privilege for update the repository")
+	}
+
+	return true, 0, nil
+}
+
 func DoAuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
 	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
@@ -380,38 +397,6 @@ func DoAuthPutChecksum(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo 
 	ErrInfo = nil
 
 	return
-}
-
-func DoAuthPutRepositoryImage(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	beego.Error("执行DoAuthPutRepositoryImage")
-
-	IsAuth, ErrCode, ErrInfo = authBasic(Ctx)
-
-	if !IsAuth {
-		return
-	}
-
-	IsAuth, _, ErrCode, ErrInfo, _, _ = authNamespace(Ctx)
-
-	if !IsAuth {
-		return
-	}
-
-	if Ctx.Input.Session("access") != "write" {
-
-		beego.Error("[API 用户] 更新 Repository 的 Tag 信息时在 Session 中没有 write 的权限记录")
-		IsAuth = false
-		ErrCode = http.StatusUnauthorized
-		ErrInfo = []byte("{\"error\":\"没有更新 Repository Tag 数据的写权限\"}")
-		return
-	}
-
-	IsAuth = true
-	ErrCode = 0
-	ErrInfo = nil
-	return
-
 }
 
 func DoAuthGetRepositoryImages(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
