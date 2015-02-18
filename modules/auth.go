@@ -238,7 +238,7 @@ func AuthPutRepository(Ctx *context.Context) (bool, int, []byte) {
 	if auth, _, code, message, _, write := authNamespace(Ctx); auth == false {
 		return auth, code, message
 	} else if write == false {
-		beego.Error("REGISTRY API V1] Without write privilege for update the repository's json")
+		beego.Error("[REGISTRY API V1] Without write privilege for update the repository's json")
 		return auth, http.StatusForbidden, []byte("Forbidden Push Repository")
 	}
 
@@ -251,7 +251,7 @@ func AuthPutRepositoryTag(Ctx *context.Context) (bool, int, []byte) {
 	}
 
 	if Ctx.Input.Session("access") != "write" {
-		beego.Error("REGISTRY API V1] Without write privilege for update the repository's tag")
+		beego.Error("[REGISTRY API V1] Without write privilege for update the repository's tag")
 		return false, http.StatusUnauthorized, []byte("Without write privilege for update the repository's tag")
 	}
 
@@ -268,7 +268,7 @@ func AuthPutRepositoryImage(Ctx *context.Context) (bool, int, []byte) {
 	}
 
 	if Ctx.Input.Session("access") != "write" {
-		beego.Error("REGISTRY API V1] Without write privilege for update the repository")
+		beego.Error("[REGISTRY API V1] Without write privilege for update the repository")
 		return false, http.StatusUnauthorized, []byte("Without write privilege for update the repository")
 	}
 
@@ -285,12 +285,11 @@ func AuthGetRepositoryImages(Ctx *context.Context) (bool, int, []byte) {
 	}
 
 	if Ctx.Input.Session("access") != "read" {
-		beego.Error("REGISTRY API V1] Without read privilege for repository json")
+		beego.Error("[REGISTRY API V1] Without read privilege for repository json")
 		return false, http.StatusUnauthorized, []byte("REGISTRY API V1] Without read privilege for repository json")
 	}
 
 	return true, 0, nil
-
 }
 
 func AuthGetRepositoryTags(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
@@ -300,178 +299,98 @@ func AuthGetRepositoryTags(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrI
 	}
 
 	if Ctx.Input.Session("access") != "read" {
-		beego.Error("REGISTRY API V1] Without read privilege for repository images")
-		return false, http.StatusUnauthorized, []byte("REGISTRY API V1] Without read privilege for repository images")
+		beego.Error("[REGISTRY API V1] Without read privilege for repository images")
+		return false, http.StatusUnauthorized, []byte("Without read privilege for repository images")
 	}
 
 	return true, 0, nil
 }
 
-func DoAuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+func AuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
-	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
-
-	if !IsAuth {
-		return
+	if auth, code, message := authToken(Ctx); auth == false {
+		return auth, code, message
 	}
 
 	if Ctx.Input.Session("access") != "write" && Ctx.Input.Session("access") != "read" {
-
-		beego.Error("[API 用户] 查询 Image 时在 Session 中没有 write 或 read 的权限记录")
-		IsAuth = false
-		ErrCode = http.StatusUnauthorized
-		ErrInfo = []byte("{\"error\":\"没有访问 Image 数据的权限\"}")
-		return
+		beego.Error("[REGISTRY API V1] Without read/write privilege in user session")
+		return false, http.StatusUnauthorized, []byte("Without read/write privilege in user session")
 	}
 
-	//初始化加密签名
-	sign := ""
-	if len(string(Ctx.Input.Header("X-Docker-Sign"))) > 0 {
-		sign = string(Ctx.Input.Header("X-Docker-Sign"))
-	}
-	beego.Info("[API 用户] sign:::%s", sign)
-
-	//TODO 检查 imageID 的合法性
 	imageId := string(Ctx.Input.Param(":image_id"))
 
 	image := new(models.Image)
-	isPushed, err := image.IsPushed(imageId)
 
-	if err != nil {
-		beego.Error(fmt.Sprintf("[API 用户] 查询 Image %s 时报错 ", imageId, err.Error()))
-		IsAuth = false
-		ErrCode = http.StatusBadRequest
-		ErrInfo = []byte("{\"错误\":\"搜索 Image 错误\"}")
-		return
+	if pushed, err := image.IsPushed(imageId); err != nil {
+		return false, http.StatusBadRequest, []byte("Search Image Error")
+	} else if pushed == false {
+		return false, http.StatusBadRequest, []byte("Search Image None")
 	}
 
-	if !isPushed {
-		beego.Error(fmt.Sprintf("[API 用户] 没有查询到 Image ：%s ", imageId))
-		IsAuth = false
-		ErrCode = http.StatusNotFound
-		ErrInfo = []byte("{\"error\":\"没有找到 Image 数据\"}")
-		return
-	}
-
-	IsAuth = true
-	ErrCode = 0
-	ErrInfo = nil
-	return
+	return true, 0, nil
 }
 
-func DoAuthPutImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
-
-	if !IsAuth {
-		return
+func AuthPutImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+	if auth, code, message := authToken(Ctx); auth == false {
+		return auth, code, message
 	}
 
 	if Ctx.Input.Session("access") != "write" {
-
-		beego.Error("[API 用户] 查询 Image 时在 Session 中没有 write 的权限记录")
-		IsAuth = false
-		ErrCode = http.StatusUnauthorized
-		ErrInfo = []byte("{\"error\":\"没有访问 Image 数据的权限\"}")
-		return
+		beego.Error("[REGISTRY API V1] Without write image json privilege in user session")
+		return false, http.StatusUnauthorized, []byte("Without write image json privilege in user session")
 	}
 
-	IsAuth = true
-	ErrCode = 0
-	ErrInfo = nil
-
-	return
+	return true, 0, nil
 }
 
-func DoAuthPutImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
-
-	if !IsAuth {
-		return
+func AuthPutImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+	if auth, code, message := authToken(Ctx); auth == false {
+		return auth, code, message
 	}
 
 	if Ctx.Input.Session("access") != "write" {
-
-		beego.Error("[API 用户] 写入 Image Layer 时在 Session 中没有 write 的权限记录")
-		IsAuth = false
-		ErrCode = http.StatusUnauthorized
-		ErrInfo = []byte("{\"error\":\"没有写入 Image Layer 文件的权限\"}")
-		return
+		beego.Error("[REGISTRY API V1] Without write image privilege in user session")
+		return false, http.StatusUnauthorized, []byte("Without write image privilege in user session")
 	}
 
-	IsAuth = true
-	ErrCode = 0
-	ErrInfo = nil
-
-	return
+	return true, 0, nil
 }
 
-func DoAuthPutChecksum(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
-
-	if !IsAuth {
-		return
+func AuthPutChecksum(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+	if auth, code, message := authToken(Ctx); auth == false {
+		return auth, code, message
 	}
 
 	if Ctx.Input.Session("access") != "write" {
-
-		beego.Error("[API 用户] 写入 Image Checksum 时在 Session 中没有 write 的权限记录")
-		IsAuth = false
-		ErrCode = http.StatusUnauthorized
-		ErrInfo = []byte("{\"error\":\"没有写入 Image Checksum 的权限\"}")
-		return
+		beego.Error("[REGISTRY API V1] Without write image checksum privilege in user session")
+		return false, http.StatusUnauthorized, []byte("Without write image checksum privilege in user session")
 	}
 
-	IsAuth = true
-	ErrCode = 0
-	ErrInfo = nil
-
-	return
+	return true, 0, nil
 }
 
-func DoAuthGetImageAncestry(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
-
-	if !IsAuth {
-		return
+func AuthGetImageAncestry(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+	if auth, code, message := authToken(Ctx); auth == false {
+		return auth, code, message
 	}
 
 	if Ctx.Input.Session("access") != "read" {
-		beego.Error("[API 用户] 读取 Image Ancestry 时在 Session 中没有 read 的权限记录")
-		IsAuth = false
-		ErrCode = http.StatusUnauthorized
-		ErrInfo = []byte("{\"error\":\"没有读取 Image Ancestry 的权限\"}")
-		return
+		beego.Error("[REGISTRY API V1] Without read image ancestry privilege in user session")
+		return false, http.StatusUnauthorized, []byte("Without read image ancestry privilege in user session")
 	}
 
-	ErrCode = 0
-	ErrInfo = nil
-	IsAuth = true
-	return
-
+	return true, 0, nil
 }
 
-func DoAuthGetImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
-
-	if !IsAuth {
-		return
+func AuthGetImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+	if auth, code, message := authToken(Ctx); auth == false {
+		return auth, code, message
 	}
 
 	if Ctx.Input.Session("access") != "read" {
-		beego.Error("[API 用户] 读取 Image Layer 文件时在 Session 中没有 read 的权限记录")
-		IsAuth = false
-		ErrCode = http.StatusUnauthorized
-		ErrInfo = []byte("{\"error\":\"没有读取 Image Layer 文件的权限\"}")
-		return
+		beego.Error("[REGISTRY API V1] Without read image layer privilege in user session")
+		return false, http.StatusUnauthorized, []byte("Without read image layer privilege in user session")
 	}
 
-	ErrCode = 0
-	ErrInfo = nil
-	IsAuth = true
-	return
-
+	return true, 0, nil
 }

@@ -97,7 +97,6 @@ func (image *Image) IsPushed(imageId string) (isPushed bool, err error) {
 
 //API 获取 image 的 JSON 使用
 func (image *Image) GetJSON(imageId string) ([]byte, error) {
-
 	isHas, _, err := image.Has(imageId)
 
 	if err != nil {
@@ -114,6 +113,24 @@ func (image *Image) GetJSON(imageId string) ([]byte, error) {
 
 	return []byte(image.JSON), nil
 
+}
+
+func (image *Image) GetChecksum(imageId string) ([]byte, error) {
+	isHas, _, err := image.Has(imageId)
+
+	if err != nil {
+		return nil, fmt.Errorf("查找 Image 错误")
+	}
+
+	if !isHas {
+		return nil, fmt.Errorf("仓库不存在")
+	}
+
+	if !image.Checksumed || !image.Uploaded {
+		return nil, fmt.Errorf("仓库没有上传完毕JSON无效")
+	}
+
+	return []byte(image.Checksum), nil
 }
 
 func (image *Image) PutJSON(imageId, json string) error {
