@@ -263,7 +263,7 @@ func AuthPutRepositoryImage(Ctx *context.Context) (bool, int, []byte) {
 		return auth, code, message
 	}
 
-	if auth, _, code, message, _, _ = authNamespace(Ctx); auth == false {
+	if auth, _, code, message, _, _ := authNamespace(Ctx); auth == false {
 		return auth, code, message
 	}
 
@@ -273,6 +273,24 @@ func AuthPutRepositoryImage(Ctx *context.Context) (bool, int, []byte) {
 	}
 
 	return true, 0, nil
+}
+
+func AuthGetRepositoryImages(Ctx *context.Context) (bool, int, []byte) {
+	if auth, code, message := authBasic(Ctx); auth == false {
+		return auth, code, message
+	}
+
+	if auth, _, code, message, _, _ := authNamespace(Ctx); auth == false {
+		return auth, code, message
+	}
+
+	if Ctx.Input.Session("access") != "read" {
+		beego.Error("REGISTRY API V1] Without read privilege for repository json")
+		return false, http.StatusUnauthorized, []byte("REGISTRY API V1] Without read privilege for repository json")
+	}
+
+	return true, 0, nil
+
 }
 
 func DoAuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
@@ -397,28 +415,6 @@ func DoAuthPutChecksum(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo 
 	ErrInfo = nil
 
 	return
-}
-
-func DoAuthGetRepositoryImages(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	beego.Error("执行DoAuthGetRepositoryImages")
-
-	IsAuth, ErrCode, ErrInfo = authBasic(Ctx)
-
-	if !IsAuth {
-		return
-	}
-	IsAuth, _, ErrCode, ErrInfo, _, _ = authNamespace(Ctx)
-
-	if !IsAuth {
-		return
-	}
-
-	ErrCode = 0
-	ErrInfo = nil
-	IsAuth = true
-	return
-
 }
 
 func DoAuthGetRepositoryTags(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
