@@ -293,6 +293,20 @@ func AuthGetRepositoryImages(Ctx *context.Context) (bool, int, []byte) {
 
 }
 
+func AuthGetRepositoryTags(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+
+	if auth, code, message := authToken(Ctx); auth == false {
+		return auth, code, message
+	}
+
+	if Ctx.Input.Session("access") != "read" {
+		beego.Error("REGISTRY API V1] Without read privilege for repository images")
+		return false, http.StatusUnauthorized, []byte("REGISTRY API V1] Without read privilege for repository images")
+	}
+
+	return true, 0, nil
+}
+
 func DoAuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
 	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
@@ -415,29 +429,6 @@ func DoAuthPutChecksum(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo 
 	ErrInfo = nil
 
 	return
-}
-
-func DoAuthGetRepositoryTags(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
-
-	if !IsAuth {
-		return
-	}
-
-	if Ctx.Input.Session("access") != "read" {
-		beego.Error("[API 用户] 读取 Repository Tag 时在 Session 中没有 read 的权限记录")
-		IsAuth = false
-		ErrCode = http.StatusUnauthorized
-		ErrInfo = []byte("{\"error\":\"没有更新 Repository Tag 数据的写权限\"}")
-		return
-	}
-
-	IsAuth = true
-	ErrCode = 0
-	ErrInfo = nil
-	return
-
 }
 
 func DoAuthGetImageAncestry(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {

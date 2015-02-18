@@ -184,7 +184,6 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
-
 	} else if has == false {
 		beego.Error("[REGISTRY API V1] Read repository no found", namespace, repository)
 
@@ -194,7 +193,6 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
-
 	}
 
 	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
@@ -215,56 +213,62 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 
 func (this *RepoAPIV1Controller) GetRepositoryTags() {
 
-	isAuth, errCode, errInfo := modules.DoAuthGetRepositoryTags(this.Ctx)
+	if auth, code, message := modules.AuthGetRepositoryTags(this.Ctx); auth == false {
+		result := map[string]string{"message": string(message)}
+		this.Data["json"] = result
 
-	if !isAuth {
-		this.Ctx.Output.Context.Output.SetStatus(errCode)
-		this.Ctx.Output.Context.Output.Body(errInfo)
+		this.Ctx.Output.Context.Output.SetStatus(code)
+		this.ServeJson()
 		this.StopRun()
 	}
-
-	beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
-	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
 
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
 	repo := new(models.Repository)
-	isHas, _, err := repo.Has(namespace, repository)
-	if err != nil {
-		beego.Error(fmt.Sprintf("[API 用户] 读取 %s/%s 的 Tags 数据错误: %s", namespace, repository, err.Error()))
+
+	if has, _, err := repo.Has(namespace, repository); err != nil {
+		beego.Error("[REGISTRY API V1] Read repository json error: %s", namespace, repository, err.Error())
+
+		result := map[string]string{"message": "Read repository json error"}
+		this.Data["json"] = result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"读取 Tag 数据错误\"}"))
+		this.ServeJson()
+		this.StopRun()
+	} else if has == false {
+		beego.Error("[REGISTRY API V1] Read repository no found", namespace, repository)
+
+		result := map[string]string{"message": "Read repository no found"}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
 		this.StopRun()
 	}
 
-	if !isHas {
-		beego.Error(fmt.Sprintf("[API 用户]  %s/%s 不存在", namespace, repository))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("[API 用户]  %s/%s 不存在", namespace, repository)))
-		this.StopRun()
-	}
-	nowTags := "{"
-	beego.Error("[API 用户] repo:::", repo)
-	beego.Error("[API 用户] repo.Tags", repo.Tags)
-	for index, value := range repo.Tags {
-		if index != 0 {
-			nowTags += ","
+	tag := map[string]string{}
 
-		}
-		nowTag := new(models.Tag)
-		err = nowTag.GetByUUID(value)
-		if err != nil {
-			beego.Error(fmt.Sprintf("[API 用户]  %s/%s Tags 不存在", namespace, repository))
+	for _, value := range repo.Tags {
+
+		t := new(models.Tag)
+		if err := t.GetByUUID(value); err != nil {
+			beego.Error(fmt.Sprintf("[REGISTRY API V1]  %s/%s Tags is not exist", namespace, repository))
+
+			result := map[string]string{"message": fmt.Sprintf("%s/%s Tags is not exist", namespace, repository)}
+			this.Data["json"] = result
+
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.Ctx.Output.Context.Output.Body([]byte(fmt.Sprintf("[API 用户]  %s/%s Tags 不存在", namespace, repository)))
+			this.ServeJson()
 			this.StopRun()
 		}
-		nowTags += fmt.Sprintf(`"%s":"%s"`, nowTag.Name, nowTag.ImageId)
 
+		tag[t.Name] = t.ImageId
 	}
-	nowTags += "}"
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte(nowTags))
 
+	this.Data["json"] = tag
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
 }
