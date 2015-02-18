@@ -55,20 +55,18 @@ func (this *RepoAPIV1Controller) PutRepository() {
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
-	sign := ""
-	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
-		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
-	}
-
-	beego.Debug("[Sign] " + sign)
-
-	beego.Debug("[JSON] " + string(this.Ctx.Input.CopyBody()))
+	beego.Debug("[REGISTRY API V1]", string(this.Ctx.Input.CopyBody()))
 
 	repo := new(models.Repository)
-	if err := repo.DoPut(namespace, repository, string(this.Ctx.Input.CopyBody()), this.Ctx.Input.Header("User-Agent")); err != nil {
-		beego.Error(fmt.Sprintf("[API 用户] Put repository 错误: %s", err.Error()))
+
+	if err := repo.Put(namespace, repository, string(this.Ctx.Input.CopyBody()), this.Ctx.Input.Header("User-Agent")); err != nil {
+		beego.Error("[REGISTRY API V1] Put repository error: %s", err.Error())
+
+		result := map[string]string{"Error": err.Error()}
+		this.Data["json"] = result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
-		this.Ctx.Output.Context.Output.Body([]byte(`{"错误":"Put repository 错误"}`))
+		this.ServeJson()
 		this.StopRun()
 	}
 
@@ -86,52 +84,54 @@ func (this *RepoAPIV1Controller) PutRepository() {
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
+	this.Ctx.Output.Context.Output.Body([]byte(""))
 
-	return
+	this.StopRun()
 
 }
 
 func (this *RepoAPIV1Controller) PutTag() {
+	if auth, code, message := modules.AuthPutRepositoryTag(this.Ctx); auth == false {
 
-	isAuth, errCode, errInfo := modules.DoAuthPutRepositoryTag(this.Ctx)
+		result := map[string]string{"message": string(message)}
+		this.Data["json"] = result
 
-	if !isAuth {
-		this.Ctx.Output.Context.Output.SetStatus(errCode)
-		this.Ctx.Output.Context.Output.Body(errInfo)
+		this.Ctx.Output.Context.Output.SetStatus(code)
+		this.ServeJson()
+
 		this.StopRun()
 	}
 
-	beego.Debug("[Namespace] " + this.Ctx.Input.Param(":namespace"))
-	beego.Debug("[Repository] " + this.Ctx.Input.Param(":repo_name"))
-	beego.Debug("[Tag] " + this.Ctx.Input.Param(":tag"))
-	beego.Debug("[Session username] " + this.GetSession("username").(string))
+	beego.Debug("[REGISTRY API V1]", this.Ctx.Input.Param(":namespace"))
+	beego.Debug("[REGISTRY API V1]", this.Ctx.Input.Param(":repo_name"))
+	beego.Debug("[REGISTRY API V1]", this.Ctx.Input.Param(":tag"))
+	beego.Debug("[REGISTRY API V1]", this.GetSession("username").(string))
 
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
-	sign := ""
-	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
-		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
-	}
-
-	beego.Debug("[Sign] " + sign)
-
 	tag := this.Ctx.Input.Param(":tag")
+
+	beego.Debug("[REGISTRY API V1]", string(this.Ctx.Input.CopyBody()))
 
 	r, _ := regexp.Compile(`"([[:alnum:]]+)"`)
 	imageIds := r.FindStringSubmatch(string(this.Ctx.Input.CopyBody()))
 
 	repo := new(models.Repository)
 	if err := repo.PutTag(imageIds[1], namespace, repository, tag); err != nil {
-		beego.Error(fmt.Sprintf("[API 用户] 更新 %s/%s 的 Tag [%s:%s] 错误: %s", namespace, repository, imageIds[1], tag, err.Error()))
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.Ctx.Output.Context.Output.Body([]byte("{\"错误\":\"更新 Tag 数据错误\"}"))
+		beego.Error("[REGISTRY API V1] Put repository tag error: %s", err.Error())
+
+		result := map[string]string{"Error": err.Error()}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
+		this.ServeJson()
 		this.StopRun()
 	}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.Output.Body([]byte("\"\""))
+	this.Ctx.Output.Context.Output.Body([]byte(""))
+	this.StopRun()
 }
 
 func (this *RepoAPIV1Controller) PutRepositoryImages() {
@@ -150,13 +150,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
-	sign := ""
-	if len(string(this.Ctx.Input.Header("X-Docker-Sign"))) > 0 {
-		sign = string(this.Ctx.Input.Header("X-Docker-Sign"))
-	}
-
-	beego.Debug("[Sign] " + sign)
-	beego.Debug("[Body] " + string(this.Ctx.Input.CopyBody()))
+	beego.Debug("[REGISTRY API V1]", string(this.Ctx.Input.CopyBody()))
 
 	repo := new(models.Repository)
 

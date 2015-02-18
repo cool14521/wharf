@@ -195,7 +195,7 @@ func authNamespace(Ctx *context.Context) (IsAuth bool, NamespaceType bool, ErrCo
 
 }
 
-func DoAuthToken(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+func authToken(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
 	//非 Basic Auth ，检查 Token
 	if strings.Index(Ctx.Input.Header("Authorization"), "Token") == -1 {
@@ -231,35 +231,36 @@ func DoAuthToken(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte
 }
 
 func AuthPutRepository(Ctx *context.Context) (bool, int, []byte) {
-
 	if auth, code, message := authBasic(Ctx); auth == false {
-
 		return auth, code, message
-
 	}
 
 	if auth, _, code, message, _, write := authNamespace(Ctx); auth == false {
-
 		return auth, code, message
-
 	} else if write == false {
-
-		code = http.StatusForbidden
-		message = []byte("Forbidden Push Repository")
-
-		return auth, code, message
-
-	} else {
-
-		return true, 0, nil
+		beego.Error("REGISTRY API V1] Without write privilege for update the repository's json")
+		return auth, http.StatusForbidden, []byte("Forbidden Push Repository")
 	}
+
+	return true, 0, nil
+}
+
+func AuthPutRepositoryTag(Ctx *context.Context) (bool, int, []byte) {
+	if auth, code, message := authToken(Ctx); auth == false {
+		return auth, code, message
+	}
+
+	if Ctx.Input.Session("access") != "write" {
+		beego.Error("REGISTRY API V1] Without write privilege for update the repository's tag")
+		return false, http.StatusUnauthorized, []byte("Without write privilege for update the repository's tag")
+	}
+
+	return true, 0, nil
 }
 
 func DoAuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
-	beego.Error("执行DoAuthGetImageJSON")
-
-	IsAuth, ErrCode, ErrInfo = DoAuthToken(Ctx)
+	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
 
 	if !IsAuth {
 		return
@@ -311,9 +312,7 @@ func DoAuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo
 
 func DoAuthPutImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
-	beego.Error("执行DoAuthPutImageJSON")
-
-	IsAuth, ErrCode, ErrInfo = DoAuthToken(Ctx)
+	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
 
 	if !IsAuth {
 		return
@@ -337,9 +336,7 @@ func DoAuthPutImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo
 
 func DoAuthPutImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
-	beego.Error("执行DoAuthPutImageLayer")
-
-	IsAuth, ErrCode, ErrInfo = DoAuthToken(Ctx)
+	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
 
 	if !IsAuth {
 		return
@@ -363,9 +360,7 @@ func DoAuthPutImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInf
 
 func DoAuthPutChecksum(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
-	beego.Error("执行DoAuthPutChecksum")
-
-	IsAuth, ErrCode, ErrInfo = DoAuthToken(Ctx)
+	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
 
 	if !IsAuth {
 		return
@@ -385,32 +380,6 @@ func DoAuthPutChecksum(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo 
 	ErrInfo = nil
 
 	return
-}
-
-func DoAuthPutRepositoryTag(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	beego.Error("执行DoAuthPutRepositoryTag")
-
-	IsAuth, ErrCode, ErrInfo = DoAuthToken(Ctx)
-
-	if !IsAuth {
-		return
-	}
-
-	if Ctx.Input.Session("access") != "write" {
-
-		beego.Error("[API 用户] 更新 Repository 的 Tag 信息时在 Session 中没有 write 的权限记录")
-		IsAuth = false
-		ErrCode = http.StatusUnauthorized
-		ErrInfo = []byte("{\"error\":\"没有更新 Repository Tag 数据的写权限\"}")
-		return
-	}
-
-	IsAuth = true
-	ErrCode = 0
-	ErrInfo = nil
-	return
-
 }
 
 func DoAuthPutRepositoryImage(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
@@ -469,9 +438,7 @@ func DoAuthGetRepositoryImages(Ctx *context.Context) (IsAuth bool, ErrCode int, 
 
 func DoAuthGetRepositoryTags(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
-	beego.Error("执行DoAuthGetRepositoryTags")
-
-	IsAuth, ErrCode, ErrInfo = DoAuthToken(Ctx)
+	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
 
 	if !IsAuth {
 		return
@@ -493,10 +460,7 @@ func DoAuthGetRepositoryTags(Ctx *context.Context) (IsAuth bool, ErrCode int, Er
 }
 
 func DoAuthGetImageAncestry(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	beego.Error("执行DoAuthGetImageAncestry")
-
-	IsAuth, ErrCode, ErrInfo = DoAuthToken(Ctx)
+	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
 
 	if !IsAuth {
 		return
@@ -519,9 +483,7 @@ func DoAuthGetImageAncestry(Ctx *context.Context) (IsAuth bool, ErrCode int, Err
 
 func DoAuthGetImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 
-	beego.Error("执行DoAuthGetImageLayer")
-
-	IsAuth, ErrCode, ErrInfo = DoAuthToken(Ctx)
+	IsAuth, ErrCode, ErrInfo = authToken(Ctx)
 
 	if !IsAuth {
 		return

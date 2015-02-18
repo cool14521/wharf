@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/astaxie/beego"
-
 	"github.com/dockercn/wharf/utils"
 )
 
@@ -73,7 +71,7 @@ func (repository *Repository) Remove() (err error) {
 	return nil
 }
 
-func (repo *Repository) DoPut(namespace, repository, json, agent string) error {
+func (repo *Repository) Put(namespace, repository, json, agent string) error {
 	isHas, _, err := repo.Has(namespace, repository)
 	if err != nil {
 		return err
@@ -83,18 +81,18 @@ func (repo *Repository) DoPut(namespace, repository, json, agent string) error {
 		repo.UUID = string(utils.GeneralKey(fmt.Sprintf("%s:%s", namespace, repository)))
 		repo.Created = time.Now().Unix()
 	}
-	beego.Debug("0")
+
 	repo.Namespace = namespace
 	repo.Repository = repository
 	repo.JSON = json
 	repo.Agent = agent
 	repo.Updated = time.Now().Unix()
 
-	// 将put状态设置为后续put操作需要
 	repo.Checksumed = false
 	repo.Uploaded = false
 
 	err = repo.Save()
+
 	if err != nil {
 		return err
 	}
