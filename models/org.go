@@ -26,91 +26,95 @@ type Team struct {
 
 }
 
-func (organization *Organization) Has(organizationName string) (isHas bool, UUID []byte, err error) {
-	UUID, err = GetUUID("organization", organizationName)
+func (organization *Organization) Has(organizationName string) (bool, []byte, error) {
+	UUID, err := GetUUID("organization", organizationName)
 	if err != nil {
 		return false, nil, err
 	}
 	if len(UUID) <= 0 {
 		return false, nil, nil
 	}
+
 	err = Get(organization, UUID)
+
 	return true, UUID, err
 }
 
-func (organization *Organization) Save() (err error) {
-	err = Save(organization, []byte(organization.UUID))
-	if err != nil {
+func (organization *Organization) Save() error {
+	if err := Save(organization, []byte(organization.UUID)); err != nil {
 		return err
 	}
-	_, err = LedisDB.HSet([]byte(GLOBAL_ORGANIZATION_INDEX), []byte(organization.Organization), []byte(organization.UUID))
-	if err != nil {
+
+	if _, err := LedisDB.HSet([]byte(GLOBAL_ORGANIZATION_INDEX), []byte(organization.Organization), []byte(organization.UUID)); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (organization *Organization) Get(UUID string) (err error) {
-	err = Get(organization, []byte(UUID))
-	if err != nil {
+func (organization *Organization) Get(UUID string) error {
+	if err := Get(organization, []byte(UUID)); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (organization *Organization) Remove() (err error) {
-	_, err = LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_ORGANIZATION_INDEX)), []byte(organization.Organization), []byte(organization.UUID))
-	if err != nil {
+func (organization *Organization) Remove() error {
+	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_ORGANIZATION_INDEX)), []byte(organization.Organization), []byte(organization.UUID)); err != nil {
 		return err
 	}
-	_, err = LedisDB.HDel([]byte(GLOBAL_ORGANIZATION_INDEX), []byte(organization.UUID))
-	if err != nil {
+
+	if _, err := LedisDB.HDel([]byte(GLOBAL_ORGANIZATION_INDEX), []byte(organization.UUID)); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (team *Team) Has(teamName string) (isHas bool, UUID []byte, err error) {
-	UUID, err = GetUUID("team", teamName)
+func (team *Team) Has(teamName string) (bool, []byte, error) {
+	UUID, err := GetUUID("team", teamName)
 	if err != nil {
 		return false, nil, err
 	}
+
 	if len(UUID) <= 0 {
 		return false, nil, nil
 	}
+
 	err = Get(team, UUID)
+
 	return true, UUID, err
 }
 
-func (team *Team) Save() (err error) {
-	err = Save(team, []byte(team.UUID))
-	if err != nil {
+func (team *Team) Save() error {
+	if err := Save(team, []byte(team.UUID)); err != nil {
 		return err
 	}
-	_, err = LedisDB.HSet([]byte(GLOBAL_TEAM_INDEX), []byte(team.Team), []byte(team.UUID))
-	if err != nil {
+
+	if _, err := LedisDB.HSet([]byte(GLOBAL_TEAM_INDEX), []byte(team.Team), []byte(team.UUID)); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (team *Team) Get(UUID string) (err error) {
-	err = Get(team, []byte(UUID))
-	if err != nil {
+func (team *Team) Get(UUID string) error {
+	if err := Get(team, []byte(UUID)); err != nil {
 		return err
 	}
-	return nil
 
+	return nil
 }
 
-func (team *Team) Remove() (err error) {
-	_, err = LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_TEAM_INDEX)), []byte(team.Team), []byte(team.UUID))
-	if err != nil {
+func (team *Team) Remove() error {
+	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_TEAM_INDEX)), []byte(team.Team), []byte(team.UUID)); err != nil {
 		return err
 	}
-	_, err = LedisDB.HDel([]byte(GLOBAL_TEAM_INDEX), []byte(team.UUID))
-	if err != nil {
+
+	if _, err := LedisDB.HDel([]byte(GLOBAL_TEAM_INDEX), []byte(team.UUID)); err != nil {
 		return err
 	}
+
 	return nil
 }

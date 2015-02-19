@@ -231,7 +231,7 @@ func AuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo [
 
 	image := new(models.Image)
 
-	if pushed, err := image.IsPushed(imageId); err != nil {
+	if pushed, err := image.Pushed(imageId); err != nil {
 		return false, http.StatusBadRequest, []byte("Search Image Error")
 	} else if pushed == false {
 		return false, http.StatusBadRequest, []byte("Search Image None")

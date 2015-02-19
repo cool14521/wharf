@@ -25,8 +25,9 @@ type User struct {
 	Comments      []string `json:"comments"`      //和用户相关的所有评论对应UUID信息，包括自己发的评论和别人评论相关自己的，最新的评论在最前面
 }
 
-func (user *User) Has(username string) (isHas bool, UUID []byte, err error) {
-	UUID, err = GetUUID("user", username)
+func (user *User) Has(username string) (bool, []byte, error) {
+
+	UUID, err := GetUUID("user", username)
 
 	if err != nil {
 		return false, nil, err
@@ -41,7 +42,7 @@ func (user *User) Has(username string) (isHas bool, UUID []byte, err error) {
 	return true, UUID, err
 }
 
-func (user *User) Save() (err error) {
+func (user *User) Save() error {
 	//https://github.com/docker/docker/blob/28f09f06326848f4117baf633ec9fc542108f051/registry/registry.go#L27
 	validNamespace := regexp.MustCompile(`^([a-z0-9_]{4,30})$`)
 	if !validNamespace.MatchString(user.Username) {
@@ -57,57 +58,43 @@ func (user *User) Save() (err error) {
 		return fmt.Errorf("Email illegal")
 	}
 
-	err = Save(user, []byte(user.UUID))
-	if err != nil {
+	if err := Save(user, []byte(user.UUID)); err != nil {
 		return err
 	}
 
-	_, err = LedisDB.HSet([]byte(GLOBAL_USER_INDEX), []byte(user.Username), []byte(user.UUID))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (user *User) Remove() (err error) {
-	_, err = LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_USER_INDEX)), []byte(user.Username), []byte(user.UUID))
-	if err != nil {
-		return err
-	}
-
-	_, err = LedisDB.HDel([]byte(GLOBAL_USER_INDEX), []byte(user.Username))
-	if err != nil {
+	if _, err := LedisDB.HSet([]byte(GLOBAL_USER_INDEX), []byte(user.Username), []byte(user.UUID)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (user *User) Get(username, password string) (err error) {
+func (user *User) Remove() error {
+	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_USER_INDEX)), []byte(user.Username), []byte(user.UUID)); err != nil {
+		return err
+	}
 
+	if _, err := LedisDB.HDel([]byte(GLOBAL_USER_INDEX), []byte(user.Username)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (user *User) Get(username, password string) error {
 	if exist, UUID, err := user.Has(username); err != nil {
-
 		return err
-
 	} else if exist == false && err == nil {
-
 		return fmt.Errorf("User is not exist: %s", username)
-
 	} else if exist == true && err == nil {
-
 		if err := Get(user, UUID); err != nil {
-
 			return err
-
 		} else {
-
 			if user.Password != password {
 				return fmt.Errorf("User password error.")
 			} else {
 				return nil
 			}
-
 		}
 	}
 

@@ -36,140 +36,13 @@ type Repository struct {
 	Updated       int64    `json:"updated"`       //
 }
 
-func (repository *Repository) Has(namespace, repositoryName string) (isHas bool, UUID []byte, err error) {
-	UUID, err = GetUUID("repository", fmt.Sprintf("%s:%s", namespace, repositoryName))
-	if err != nil {
-		return false, nil, err
-	}
-	if len(UUID) <= 0 {
-		return false, nil, nil
-	}
-	err = Get(repository, UUID)
-	return true, UUID, err
-}
-
-func (repository *Repository) Save() (err error) {
-	err = Save(repository, []byte(repository.UUID))
-	if err != nil {
-		return err
-	}
-	_, err = LedisDB.HSet([]byte(GLOBAL_REPOSITORY_INDEX), []byte(fmt.Sprintf("%s:%s", repository.Namespace, repository.Repository)), []byte(repository.UUID))
-	if err != nil {
-		return err
-	}
-	return nil
-}
-func (repository *Repository) Remove() (err error) {
-	_, err = LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_REPOSITORY_INDEX)), []byte(fmt.Sprintf("%s:%s", repository.Namespace, repository.Repository)), []byte(repository.UUID))
-	if err != nil {
-		return err
-	}
-	_, err = LedisDB.HDel([]byte(GLOBAL_REPOSITORY_INDEX), []byte(fmt.Sprintf("%s:%s", repository.Namespace, repository.Repository)))
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (repo *Repository) Put(namespace, repository, json, agent string) error {
-	isHas, _, err := repo.Has(namespace, repository)
-	if err != nil {
-		return err
-	}
-
-	if !isHas {
-		repo.UUID = string(utils.GeneralKey(fmt.Sprintf("%s:%s", namespace, repository)))
-		repo.Created = time.Now().Unix()
-	}
-
-	repo.Namespace = namespace
-	repo.Repository = repository
-	repo.JSON = json
-	repo.Agent = agent
-	repo.Updated = time.Now().Unix()
-
-	repo.Checksumed = false
-	repo.Uploaded = false
-
-	err = repo.Save()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (repo *Repository) PutTag(imageId, namespace, repository, tag string) error {
-
-	isHas, _, err := repo.Has(namespace, repository)
-
-	if err != nil {
-		return err
-	}
-	if !isHas {
-		return fmt.Errorf("没有在数据库中查询到要更新的 Repository 数据")
-	}
-
-	image := new(Image)
-	isHas, _, err = image.Has(imageId)
-	if err != nil {
-		return err
-	}
-	if !isHas {
-		return fmt.Errorf("没有查询到 tag 依赖的 image 数据")
-	}
-
-	nowTag := new(Tag)
-	//isHas, _, err = nowTag.Has(namespace, repository, imageId, tag)
-	//		if err != nil {
-	//		return fmt.Errorf("查询 tag 数据异常")
-	//	}
-
-	//if !isHas {
-	nowTag.UUID = string(fmt.Sprintf("%s:%s:%s", namespace, repository, tag))
-	//	}
-
-	nowTag.Name = tag
-	nowTag.ImageId = imageId
-	nowTag.Namespace = namespace
-	nowTag.Repository = repository
-	err = nowTag.Save()
-	if err != nil {
-		return fmt.Errorf("保存 tag 数据异常")
-	}
-	repo.Tags = append(repo.Tags, nowTag.UUID)
-	fmt.Println("*********************************", repo.Tags)
-	repo.Save()
-
-	return nil
-}
-
-func (repo *Repository) PutImages(namespace, repository string) error {
-
-	isHas, _, err := repo.Has(namespace, repository)
-
-	if err != nil {
-		return err
-	}
-	if !isHas {
-		return fmt.Errorf("没有在数据库中查询到要更新的 Repository 数据")
-	}
-
-	//repo.Checksum
-	repo.Checksumed = true
-	repo.Uploaded = true
-	repo.Updated = time.Now().Unix()
-
-	return nil
-}
-
 type Start struct {
 	UUID       string `json:"UUID"`       //全局唯一的索引
 	User       string `json:"user"`       //用户UUID，代表哪个用户加的星
 	Repository string `json:"repository"` //仓库UUID，代表给哪个仓库加的星
 	Time       int64  `json:"time"`       //代表加星的时间
 }
+
 type Comment struct {
 	UUID       string `json:"UUID"`       //全局唯一的索引
 	Comment    string `json:"comment"`    //评论的内容 markdown 格式保存
@@ -177,6 +50,7 @@ type Comment struct {
 	Repository string `json:"repository"` //仓库UUID，代表评论的哪个仓库
 	Time       int64  `json:"time"`       //代表评论的时间
 }
+
 type Privilege struct {
 	UUID       string `json:"UUID"`       //全局唯一的索引
 	Privilege  bool   `json:"privilege"`  //true 为读写，false为只读
@@ -184,49 +58,158 @@ type Privilege struct {
 	Repository string `json:"repository"` //此权限对应的仓库UUID
 }
 
-func (privilege *Privilege) Get(UUID string) (err error) {
-	err = Get(privilege, []byte(UUID))
-	if err != nil {
-		return err
-	}
-	return nil
-
-}
-
 type Tag struct {
-	UUID       string
+	UUID       string //
 	Name       string //
 	ImageId    string //
-	Namespace  string
-	Repository string
+	Namespace  string //
+	Repository string //
 	Sign       string //
 }
 
-func (tag *Tag) Has(namespace, repository, imageName, tagName string) (isHas bool, UUID []byte, err error) {
-	UUID, err = GetUUID("tag", fmt.Sprintf("%s:%s:%s:%s", namespace, repository, imageName, tagName))
+func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {
+	UUID, err := GetUUID("repository", fmt.Sprintf("%s:%s", namespace, repository))
 	if err != nil {
 		return false, nil, err
 	}
+
 	if len(UUID) <= 0 {
 		return false, nil, nil
 	}
-	err = Get(tag, UUID)
+
+	err = Get(repository, UUID)
+
 	return true, UUID, err
 }
 
-func (tag *Tag) Save() (err error) {
-	err = Save(tag, []byte(tag.UUID))
-	if err != nil {
+func (r *Repository) Save() error {
+	if err := Save(r, []byte(r.UUID)); err != nil {
 		return err
 	}
-	_, err = LedisDB.HSet([]byte(GLOBAL_TAG_INDEX), []byte(fmt.Sprintf("%s:%s:%s:%s", tag.Namespace, tag.Repository, tag.ImageId, tag.Name)), []byte(tag.UUID))
-	if err != nil {
+
+	if _, err := LedisDB.HSet([]byte(GLOBAL_REPOSITORY_INDEX), []byte(fmt.Sprintf("%s:%s", r.Namespace, r.Repository)), []byte(r.UUID)); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (tag *Tag) GetByUUID(uuid string) (err error) {
-	err = Get(tag, []byte(uuid))
-	return err
+func (r *Repository) Remove() error {
+	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_REPOSITORY_INDEX)), []byte(fmt.Sprintf("%s:%s", r.Namespace, r.Repository)), []byte(r.UUID)); err != nil {
+		return err
+	}
+
+	if _, err := LedisDB.HDel([]byte(GLOBAL_REPOSITORY_INDEX), []byte(fmt.Sprintf("%s:%s", r.Namespace, r.Repository))); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Repository) Put(namespace, repository, json, agent string) error {
+	if has, _, err := r.Has(namespace, repository); err != nil {
+		return err
+	} else if has == false {
+		r.UUID = string(utils.GeneralKey(fmt.Sprintf("%s:%s", namespace, repository)))
+		r.Created = time.Now().Unix()
+	}
+
+	r.Namespace, r.Repository, r.JSON, agent = namespace, repository, json, agent
+
+	r.Updated = time.Now().Unix()
+	r.Checksumed = false
+	r.Uploaded = false
+
+	if err := r.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Repository) PutTag(imageId, namespace, repository, tag string) error {
+	if has, _, err := r.Has(namespace, repository); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("Repository not found")
+	}
+
+	image := new(Image)
+
+	if has, _, err := image.Has(imageId); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("Tag's image not found")
+	}
+
+	t := new(Tag)
+	t.UUID = string(fmt.Sprintf("%s:%s:%s", namespace, repository, tag))
+	t.Name, t.ImageId, t.Namespace, t.Repository = tag, imageId, namespace, repository
+
+	if err := t.Save(); err != nil {
+		return err
+	}
+
+	r.Tags = append(r.Tags, t.UUID)
+
+	if err := r.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Repository) PutImages(namespace, repository string) error {
+	if has, _, err := r.Has(namespace, repository); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("Repository not found")
+	}
+
+	r.Checksumed, r.Uploaded, r.Updated = true, true, time.Now().Unix()
+
+	if err := r.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Privilege) Get(UUID string) error {
+	if err := Get(p, []byte(UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *Tag) Has(namespace, repository, image, tag string) (bool, []byte, error) {
+	UUID, err := GetUUID("tag", fmt.Sprintf("%s:%s:%s:%s", namespace, repository, image, tag))
+	if err != nil {
+		return false, nil, err
+	}
+
+	if len(UUID) <= 0 {
+		return false, nil, nil
+	}
+
+	err = Get(t, UUID)
+
+	return true, UUID, err
+}
+
+func (t *Tag) Save() error {
+	if err := Save(t, []byte(t.UUID)); err != nil {
+		return err
+	}
+
+	if _, err := LedisDB.HSet([]byte(GLOBAL_TAG_INDEX), []byte(fmt.Sprintf("%s:%s:%s:%s", t.Namespace, t.Repository, t.ImageId, t.Name)), []byte(t.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *Tag) GetByUUID(uuid string) error {
+	return Get(t, []byte(uuid))
 }

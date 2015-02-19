@@ -46,40 +46,40 @@ func InitDb() {
 	db, _ := beego.AppConfig.Int("ledisdb::DB")
 
 	LedisDB, _ = nowLedis.Select(db)
-
 }
 
 func GetUUID(ObjectType, Object string) (UUID []byte, err error) {
-	NOW_INDEX := ""
+
+	index := ""
 
 	switch strings.TrimSpace(ObjectType) {
 
 	case "user":
-		NOW_INDEX = GLOBAL_USER_INDEX
+		index = GLOBAL_USER_INDEX
 	case "repository":
-		NOW_INDEX = GLOBAL_REPOSITORY_INDEX
+		index = GLOBAL_REPOSITORY_INDEX
 	case "organization":
-		NOW_INDEX = GLOBAL_ORGANIZATION_INDEX
+		index = GLOBAL_ORGANIZATION_INDEX
 	case "team":
-		NOW_INDEX = GLOBAL_TEAM_INDEX
+		index = GLOBAL_TEAM_INDEX
 	case "image":
-		NOW_INDEX = GLOBAL_IMAGE_INDEX
+		index = GLOBAL_IMAGE_INDEX
 	case "tag":
-		NOW_INDEX = GLOBAL_TAG_INDEX
+		index = GLOBAL_TAG_INDEX
 	default:
 
 	}
 
-	UUID, err = LedisDB.HGet([]byte(NOW_INDEX), []byte(Object))
-
-	if err != nil {
+	if UUID, err = LedisDB.HGet([]byte(index), []byte(Object)); err != nil {
 		return nil, err
+	} else {
+		return UUID, nil
 	}
 
-	return UUID, nil
 }
 
 func Save(obj interface{}, key []byte) (err error) {
+
 	s := reflect.TypeOf(obj).Elem()
 
 	for i := 0; i < s.NumField(); i++ {
@@ -181,5 +181,7 @@ func Get(obj interface{}, UUID []byte) (err error) {
 		default:
 		}
 	}
+
 	return nil
+
 }
