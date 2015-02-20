@@ -24,9 +24,13 @@ func (this *WebController) GetIndex() {
 }
 
 func (this *WebController) GetAuth() {
-	this.TplNames = "auth.html"
-	this.Render()
-	this.StopRun()
+	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+		this.TplNames = "auth.html"
+		this.Render()
+		this.StopRun()
+	} else {
+		this.Ctx.Redirect(http.StatusMovedPermanently, "/dashboard")
+	}
 }
 
 func (this *WebController) GetDashboard() {
