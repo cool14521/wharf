@@ -51,7 +51,7 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
                         $scope.submitting = false;
                         growl.info(data.message);
                         $timeout(function() {
-                            $location.path('/');
+                            $location.path('/auth');
                         }, 3000);
                     })
                     .error(function(data, status, headers, config) {
