@@ -32,10 +32,8 @@ func (this *WebController) GetAuth() {
 func (this *WebController) GetDashboard() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		beego.Error("[WEB API] Load session failure")
-
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
 	} else {
-
 		this.TplNames = "dashboard.html"
 		this.Data["username"] = user.Username
 
@@ -47,11 +45,8 @@ func (this *WebController) GetDashboard() {
 func (this *WebController) GetSetting() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		beego.Error("[WEB API] Load session failure")
-
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
-
 	} else {
-
 		this.TplNames = "setting.html"
 		this.Data["username"] = user.Username
 

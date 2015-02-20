@@ -28,27 +28,27 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
     .config(function($routeProvider, $locationProvider) {
         $routeProvider
             .when('/repo', {
-                templateUrl: 'static/views/dashboard/repositories.html',
+                templateUrl: '/static/views/dashboard/repositories.html',
                 controller: 'RepositoriesCtrl'
             })
-            .when('/addRepo', {
-                templateUrl: 'static/views/dashboard/repositoryAdd.html',
+            .when('/repo/add', {
+                templateUrl: '/static/views/dashboard/repositoryAdd.html',
                 controller: 'AddRepositoryCtrl'
             })
-            .when('/publicRepo', {
-                templateUrl: 'static/views/dashboard/repoPublic.html',
+            .when('/repo/public', {
+                templateUrl: '/static/views/dashboard/repoPublic.html',
                 controller: 'PublicRepositoryCtrl'
             })
-            .when('/privateRepo', {
-                templateUrl: 'static/views/dashboard/repoPrivate.html',
+            .when('/repo/private', {
+                templateUrl: '/static/views/dashboard/repoPrivate.html',
                 controller: 'PrivateRepositoryCtrl'
             })
-            .when('/starRepo', {
-                templateUrl: 'static/views/dashboard/repoStar.html',
+            .when('/repo/star', {
+                templateUrl: '/static/views/dashboard/repoStar.html',
                 controller: 'StarRepositoryCtrl'
             })
-            .when('/comment', {
-                templateUrl: 'static/views/dashboard/comment.html',
+            .when('/comments', {
+                templateUrl: '/static/views/dashboard/comment.html',
                 controller: 'CommentCtrl'
             })
     })

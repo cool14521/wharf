@@ -293,43 +293,43 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
     .config(function($routeProvider, $locationProvider) {
         $routeProvider
             .when('/', {
-                templateUrl: 'static/views/setting/profile.html',
+                templateUrl: '/static/views/setting/profile.html',
                 controller: 'SettingProfileCtrl'
             })
             .when('/profile', {
-                templateUrl: 'static/views/setting/profile.html',
+                templateUrl: '/static/views/setting/profile.html',
                 controller: 'SettingProfileCtrl'
             })
             .when('/account', {
-                templateUrl: 'static/views/setting/account.html',
+                templateUrl: '/static/views/setting/account.html',
                 controller: 'SettingAccountCtrl'
             })
             .when('/emails', {
-                templateUrl: 'static/views/setting/emails.html',
+                templateUrl: '/static/views/setting/emails.html',
                 controller: 'SettingEmailsCtrl'
             })
             .when('/notification', {
-                templateUrl: 'static/views/setting/notification.html',
+                templateUrl: '/static/views/setting/notification.html',
                 controller: 'SettingNotificationCtrl'
             })
-            .when('/organization/:orgName', {
-                templateUrl: 'static/views/setting/organization.html',
+            .when('/org/:org', {
+                templateUrl: '/static/views/setting/organization.html',
                 controller: 'SettingOrganizationCtrl'
             })
-            .when('/organizationAdd', {
-                templateUrl: 'static/views/setting/organizationAdd.html',
+            .when('/org/add', {
+                templateUrl: '/static/views/setting/organizationAdd.html',
                 controller: 'SettingOrganizationAddCtrl'
             })
             .when('/team', {
-                templateUrl: 'static/views/setting/team.html',
+                templateUrl: '/static/views/setting/team.html',
                 controller: 'SettingTeamCtrl'
             })
-            .when('/teamAdd', {
-                templateUrl: 'static/views/setting/teamAdd.html',
+            .when('/team/add', {
+                templateUrl: '/static/views/setting/teamAdd.html',
                 controller: 'SettingTeamAddCtrl'
             })
             .when('/competence', {
-                templateUrl: 'static/views/setting/competence.html',
+                templateUrl: '/static/views/setting/competence.html',
                 controller: 'SettingCompetenceCtrl'
             });
     })

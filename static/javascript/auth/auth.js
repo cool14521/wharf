@@ -65,15 +65,15 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
     .config(function($routeProvider, $locationProvider) {
         $routeProvider
             .when('/', {
-                templateUrl: 'static/views/auth/signin.html',
+                templateUrl: '/static/views/auth/signin.html',
                 controller: 'SigninCtrl'
             })
             .when('/auth', {
-                templateUrl: 'static/views/auth/signin.html',
+                templateUrl: '/static/views/auth/signin.html',
                 controller: 'SigninCtrl'
             })
             .when('/signup', {
-                templateUrl: 'static/views/auth/signup.html',
+                templateUrl: '/static/views/auth/signup.html',
                 controller: 'SignupCtrl'
             });
     })

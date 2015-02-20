@@ -17,6 +17,7 @@
     "bootstrap": "~3.3.0",
     "angular-bootstrap": "~0.11.2",
     "angular-growl-v2": "~0.7.0",
-    "jquery-ui-boostrap":""
+    "jquery-ui-boostrap":"",
+    "ng-file-upload": "~3.0.7"
   }
 }
