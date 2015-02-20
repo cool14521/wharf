@@ -18,16 +18,15 @@ func (this *WebController) Prepare() {
 }
 
 func (this *WebController) GetIndex() {
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	this.Ctx.Output.Context.Output.Body([]byte("{\"status\":\"OK\"}"))
+	this.TplNames = "index.html"
+	this.Render()
+	this.StopRun()
 }
 
 func (this *WebController) GetAuth() {
 	this.TplNames = "auth.html"
 	this.Render()
 	this.StopRun()
-
 }
 
 func (this *WebController) GetDashboard() {
@@ -42,7 +41,6 @@ func (this *WebController) GetDashboard() {
 
 		this.Render()
 		this.StopRun()
-
 	}
 }
 
