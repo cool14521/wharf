@@ -24,9 +24,16 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
     .controller('StarRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
 
     }])
+    .controller('DockerfileCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+
+    }])    
     //routes
     .config(function($routeProvider, $locationProvider) {
         $routeProvider
+            .when('/', {
+                templateUrl: '/static/views/dashboard/repositories.html',
+                controller: 'RepositoriesCtrl'
+            })
             .when('/repo', {
                 templateUrl: '/static/views/dashboard/repositories.html',
                 controller: 'RepositoriesCtrl'
@@ -51,6 +58,10 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
                 templateUrl: '/static/views/dashboard/comment.html',
                 controller: 'CommentCtrl'
             })
+            .when('/repo/dockerfile', {
+                templateUrl: '/static/views/dashboard/dockerfile.html',
+                controller: 'DockerfileCtrl'
+            });
     })
     .directive('namespaceValidator', [function() {
         var NAMESPACE_REGEXP = /^([a-z0-9_]{6,30})$/;
