@@ -1,10 +1,12 @@
-docker-bucket
-===============
+Wharf - ContainerOps Platform 
+=============================
 
-编译
-====
+![](http://7vzqdz.com1.z0.glb.clouddn.com/wharf.png)
 
-代码 **clone** 到 `$GOPATH/src/githhub.com/dockercn` 目录下，然后执行以下命令
+How To Compile Wharf Application 
+================================
+
+Clone codes into `$GOPATH/src/githhub.com/dockercn` folder, then exec commands:
 
 ```
 go get -u github.com/astaxie/beego
@@ -12,58 +14,13 @@ go get -u github.com/codegangsta/cli
 go get -u github.com/siddontang/ledisdb/ledis
 go get -u github.com/garyburd/redigo/redis
 go get -u github.com/shurcooL/go/github_flavored_markdown
-
 go build
 ```
-`TODO` 支持 **gopm** 编译程序
 
-`TODO` 支持 **Dockerfile**
-
-新建用户
-=======
-
-```
-./wharf account --action add --username container --passwd container --email container@containerops.com
-```
-
-
-对象 Key 规则
-================
-
-在 LedisDB 中对象的 Key 规则：
-
-```
-@Username // @用户名
-#Organization // #组织名
-
-
-@Username$Repository+ // 用户未加密公有仓库
-#Organization$Repository+ // 组织未加密公有仓库
-
-
-@Username$Repository- // 用户未加密私有仓库
-#Organization$Repository- // 组织未加密私公有仓库
-
-
-@Username$Repository-?Sign // 用户加密私有仓库  
-#Organization$Repository-?Sign // 组织加密私有仓库
-
-
-&Image+ //未加密，私有库和公有库未加密的 Image 共享
-&Image-?Sign //加密，只有私有库有加密支持，每个 Image 根据加密签名不同，可能存有多份儿。
-
-@Username$Repository*Template+(-) //  
-#Organization$Repository*Template+(-) //
-
-
-@Username$Repository!Job //  
-#Organization$Repository!Job //
-
-```
-
-
-Bucket Conf
+Wharf Runtime Conf
 ==========
+
+Please add a runtime conf named `bucket.conf` file in `wharf/conf` when run `wharf` service. 
 
 ```
 runmode = dev
@@ -81,7 +38,6 @@ Version = 0.8.0
 Config = prod
 Standalone = true
 OpenSignup = false
-Encrypt = true
 Gravatar = data/gravatar
 
 [ledisdb]
@@ -95,19 +51,21 @@ FileName = bucket-log
 [session]
 Provider = ledis
 SavePath = /tmp/session
-
-[email]
-Host = smtp.exmail.qq.com
-Port = 465
-User = demo@demo.com
-Password = 123456
-
 ```
+
+* Application runmode `dev` or `prod`.
+* If run behind Nginx, the `enablehttptls` will be `false`.
+* If run with TLS and without Nginx, set `enablehttptls` is `true` and set the file and key file.
+* The `BasePath` is `Docker` and `Rocket` image files storage fold.
+* `Endpoints` is very important param,  set is value same with your domain or IP. Like you run `wharf` with domain `xxx.org`, the `Endpoints` value is `xxx.org`. 
+* `DataDir` is `ledis` data storage path.
+* The `wharf` session provider default is `ledis`, the `Provider` and `SavePath` is session data storage path.
+
 
 Nginx Conf
 ==========
 
-Nginx 配置文件的示例，注意 **client_max_body_size** 对上传文件大小的限制。
+It's a Nginx conf example. You could change **client_max_body_size** what limited upload file size.
 
 ```
 upstream wharf_upstream {
