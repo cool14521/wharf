@@ -1,4 +1,4 @@
-Wharf - ContainerOps Platform 
+Wharf - ContainerOps Open Source Platform 
 =============================
 
 ![](http://7vzqdz.com1.z0.glb.clouddn.com/wharf.png)
