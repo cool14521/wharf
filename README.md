@@ -1,12 +1,11 @@
-Wharf - ContainerOps Open Source Platform 
+Wharf - ContainerOps Open Source Platform
 =============================
 
 ![](http://7vzqdz.com1.z0.glb.clouddn.com/wharf.png)
 
-How To Compile Wharf Application 
-================================
+# How To Compile Wharf Application
 
-Clone codes into `$GOPATH/src/githhub.com/dockercn` folder, then exec commands:
+Clone code into directory `$GOPATH/src/githhub.com/dockercn` and then exec commands:
 
 ```
 go get -u github.com/astaxie/beego
@@ -17,12 +16,11 @@ go get -u github.com/shurcooL/go/github_flavored_markdown
 go build
 ```
 
-Wharf Runtime Conf
-==========
+# Wharf Runtime Configuration
 
-Please add a runtime conf named `bucket.conf` file in `wharf/conf` when run `wharf` service. 
+Please add a runtime config file named `bucket.conf` under `wharf/conf` before starting `wharf` service.
 
-```
+```ini
 runmode = dev
 
 enablehttptls = true
@@ -53,21 +51,20 @@ Provider = ledis
 SavePath = /tmp/session
 ```
 
-* Application runmode `dev` or `prod`.
-* If run behind Nginx, the `enablehttptls` will be `false`.
+* Application run mode must be `dev` or `prod`.
+* If you use Nginx as front end, make sure `enablehttptls` is `false`.
 * If run with TLS and without Nginx, set `enablehttptls` is `true` and set the file and key file.
-* The `BasePath` is `Docker` and `Rocket` image files storage fold.
-* `Endpoints` is very important param,  set is value same with your domain or IP. Like you run `wharf` with domain `xxx.org`, the `Endpoints` value is `xxx.org`. 
-* `DataDir` is `ledis` data storage path.
+* The `BasePath` is where `Docker` and `Rocket` image files are stored.
+* `Endpoints` is very important parameter, set the same value as your domain or IP. For example, you run `wharf` with domain `xxx.org`, then `Endpoints` should be `xxx.org`.
+* `DataDir` is where `ledis` data is located.
 * The `wharf` session provider default is `ledis`, the `Provider` and `SavePath` is session data storage path.
 
 
-Nginx Conf
-==========
+# Nginx Configuration
 
-It's a Nginx conf example. You could change **client_max_body_size** what limited upload file size.
+It's a Nginx config example. You can change **client_max_body_size** what limited upload file size.
 
-```
+```nginx
 upstream wharf_upstream {
   server 127.0.0.1:9911;
 }
