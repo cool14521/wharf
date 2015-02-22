@@ -37,6 +37,6 @@
     "commit": "09f128e2bf3c485d016ab1f5d0c263b379862c9e"
   },
   "_source": "git://github.com/wilk/ng-websocket.git",
-  "_target": "*",
+  "_target": "~0.2.1",
   "_originalSource": "ng-websocket"
 }
