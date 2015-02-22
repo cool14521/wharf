@@ -8,7 +8,7 @@
 'use strict';
 
 //Auth Page Module
-angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
+angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'ui.codemirror'])
     .controller('AddRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
 
     }])
