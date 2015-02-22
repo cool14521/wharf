@@ -18,6 +18,10 @@ func init() {
 		beego.NSRouter("/signin", &controllers.UserWebAPIV1Controller{}, "post:Signin"),
 		beego.NSRouter("/signup", &controllers.UserWebAPIV1Controller{}, "post:Signup"),
 		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "get:GetProfile"),
+		beego.NSRouter("/namespace", &controllers.UserWebAPIV1Controller{}, "get:GetNamespace"),
+
+		//repository routers
+		beego.NSRouter("/repository", &controllers.RepoWebAPIV1Controller{}, "post:PostRepository"),
 
 		//team routers
 		beego.NSRouter("/users/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUser"),

@@ -19,6 +19,7 @@ func (u *UserWebAPIV1Controller) URLMapping() {
 	u.Mapping("GetUser", u.GetUser)
 	u.Mapping("Signup", u.Signup)
 	u.Mapping("Signin", u.Signin)
+	u.Mapping("GetNamespace", u.GetNamespace)
 }
 
 func (this *UserWebAPIV1Controller) Prepare() {
@@ -178,5 +179,27 @@ func (this *UserWebAPIV1Controller) Signup() {
 			this.ServeJson()
 			this.StopRun()
 		}
+	}
+}
+
+func (this *UserWebAPIV1Controller) GetNamespace() {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+		beego.Error("[WEB API] Load session failure")
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	} else {
+		namespaces := make([]string, 0)
+		namespaces = append(namespaces, user.Username)
+		//add organization which depend on username
+
+		this.Data["json"] = namespaces
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+		this.ServeJson()
+		this.StopRun()
 	}
 }

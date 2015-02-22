@@ -16,9 +16,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 $scope.user = data
             })
             .error(function(data, status, headers, config) {
-                $timeout(function() {
-                    $window.location.href = '/auth';
-                }, 3000);
+                
             });
 
         //deal with fileupload start
