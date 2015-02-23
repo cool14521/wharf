@@ -197,11 +197,6 @@ func AuthGetRepositoryImages(Ctx *context.Context) (bool, int, []byte) {
 
 	Ctx.Input.CruSession.Set("access", "read")
 
-	//if Ctx.Input.Session("access") != "read" {
-	//	beego.Error("[REGISTRY API V1] Without read privilege for repository json")
-	//	return false, http.StatusUnauthorized, []byte("REGISTRY API V1] Without read privilege for repository json")
-	//}
-
 	return true, 0, nil
 }
 
