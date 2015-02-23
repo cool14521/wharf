@@ -90,8 +90,6 @@ func (user *User) Get(username, password string) error {
 		if err := Get(user, UUID); err != nil {
 			return err
 		} else {
-
-			fmt.Println("得到的密码:", user.Password, password)
 			if user.Password != password {
 				return fmt.Errorf("User password error.")
 			} else {
