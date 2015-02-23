@@ -259,6 +259,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 	image := new(models.Image)
 
 	if has, _, err := image.Has(imageId); err != nil {
+		//这里是判断Image 是否存在出现异常
 		beego.Error("[REGISTRY API V1] Read Image Layer file Error: ", err.Error())
 		result := map[string]string{"Error": "Read Image Layer file Error"}
 		this.Data["json"] = result
@@ -266,8 +267,9 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
-	} else if has {
-		beego.Error("[REGISTRY API V1] Read Image None: ", err.Error())
+	} else if !has {
+		//这里应该写Image不存在
+		beego.Error("[REGISTRY API V1] Read Image None: ")
 		result := map[string]string{"Error": "Read Image None"}
 		this.Data["json"] = result
 

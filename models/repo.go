@@ -68,7 +68,9 @@ type Tag struct {
 }
 
 func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {
+
 	UUID, err := GetUUID("repository", fmt.Sprintf("%s:%s", namespace, repository))
+
 	if err != nil {
 		return false, nil, err
 	}
@@ -76,8 +78,7 @@ func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {
 	if len(UUID) <= 0 {
 		return false, nil, nil
 	}
-
-	err = Get(repository, UUID)
+	err = Get(r, UUID)
 
 	return true, UUID, err
 }
