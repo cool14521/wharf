@@ -105,8 +105,8 @@ func authNamespace(Ctx *context.Context) (Auth bool, NamespaceType bool, Code in
 					} else if Read == false {
 						Read = true
 						Write = false
-					}
 
+					}
 					return true, NamespaceType, Code, Message, Read, Write
 				}
 			}
@@ -114,11 +114,12 @@ func authNamespace(Ctx *context.Context) (Auth bool, NamespaceType bool, Code in
 	} else {
 		if user.Username == namespace {
 			Auth = true
+			Read = true
+			Write = true
 		} else {
 			Auth, Code, Message = false, http.StatusUnauthorized, []byte("Unauthorized Namespace")
 		}
 	}
-
 	return Auth, NamespaceType, Code, Message, Read, Write
 }
 
@@ -194,10 +195,12 @@ func AuthGetRepositoryImages(Ctx *context.Context) (bool, int, []byte) {
 		return auth, code, message
 	}
 
-	if Ctx.Input.Session("access") != "read" {
-		beego.Error("[REGISTRY API V1] Without read privilege for repository json")
-		return false, http.StatusUnauthorized, []byte("REGISTRY API V1] Without read privilege for repository json")
-	}
+	Ctx.Input.CruSession.Set("access", "read")
+
+	//if Ctx.Input.Session("access") != "read" {
+	//	beego.Error("[REGISTRY API V1] Without read privilege for repository json")
+	//	return false, http.StatusUnauthorized, []byte("REGISTRY API V1] Without read privilege for repository json")
+	//}
 
 	return true, 0, nil
 }

@@ -32,13 +32,10 @@ func (i *Image) Has(image string) (bool, []byte, error) {
 	if err != nil {
 		return false, nil, err
 	}
-
 	if len(UUID) <= 0 {
 		return false, nil, nil
 	}
-
 	err = Get(i, UUID)
-
 	return true, UUID, err
 }
 
@@ -114,8 +111,15 @@ func (i *Image) PutJSON(imageId, json string) error {
 	if has, _, err := i.Has(imageId); err != nil {
 		return err
 	} else if has == false {
+		i.ImageId = imageId
 		i.UUID = string(utils.GeneralKey(imageId))
+		i.JSON = json
 		i.Created = time.Now().Unix()
+
+		if err = i.Save(); err != nil {
+			return err
+		}
+
 	} else {
 		i.ImageId, i.JSON = imageId, json
 		i.Uploaded, i.Checksumed, i.Encrypted, i.Size, i.Updated = false, false, false, 0, time.Now().Unix()
@@ -151,6 +155,7 @@ func (i *Image) PutChecksum(imageId string, checksum string, checksumed bool, pa
 		return fmt.Errorf("Image not found")
 	} else {
 		if err := i.PutAncestry(imageId); err != nil {
+
 			return err
 		}
 

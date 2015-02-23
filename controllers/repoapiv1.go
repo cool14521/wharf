@@ -157,7 +157,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 
 func (this *RepoAPIV1Controller) GetRepositoryImages() {
 
-	if auth, code, message := modules.AuthPutRepositoryImage(this.Ctx); auth == false {
+	if auth, code, message := modules.AuthGetRepositoryImages(this.Ctx); auth == false {
 		result := map[string]string{"message": string(message)}
 		this.Data["json"] = result
 
