@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/astaxie/beego"
+	"net/http"
 
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
@@ -52,10 +51,9 @@ func (this *UserAPIV1Controller) GetUsers() {
 		this.StopRun()
 
 	} else {
-
 		user := new(models.User)
 
-		if user.Get(username, passwd); err != nil {
+		if err := user.Get(username, passwd); err != nil {
 			beego.Error("[USER API] Search user error: ", err.Error())
 
 			result := map[string]string{"error": "User authorization failure."}
