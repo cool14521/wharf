@@ -16,7 +16,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 $scope.user = data
             })
             .error(function(data, status, headers, config) {
-                
+
             });
 
         //deal with fileupload start
@@ -133,7 +133,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         }
     }])
     .controller('SettingOrganizationCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-        $http.get('/w1/organizations/' + $routeParams.orgName)
+        $http.get('/w1/organizations/' + $routeParams.org)
             .success(function(data, status, headers, config) {
                 $scope.organization = data;
                 /*  if length(data) == 0 {
@@ -148,27 +148,29 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                     alert(data);
                 }, 3000);
             });
-
+        $scope.submitting = false;
         $scope.submit = function() {
             if (true) {
                 $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
                 $http.put('/w1/organization', $scope.organization)
                     .success(function(data, status, headers, config) {
+                        $scope.submitting = true;
                         growl.info(data.message);
                     })
                     .error(function(data, status, headers, config) {
-                        $scope.submitting = false;
                         growl.error(data.message);
                     });
             }
         }
     }])
     .controller('SettingOrganizationAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submitting = false;
         $scope.submit = function() {
             if (true) {
                 $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
                 $http.post('/w1/organization', $scope.organization)
                     .success(function(data, status, headers, config) {
+                        $scope.submitting = true;
                         growl.info(data.message);
                     })
                     .error(function(data, status, headers, config) {
@@ -179,7 +181,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         }
 
         $scope.createOrg = function() {
-            $window.location.href = '/setting#/organizationAdd';
+            $window.location.href = '/setting#/org/add';
         }
     }])
     .controller('SettingTeamCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
@@ -197,10 +199,11 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         }
 
         $scope.createTeam = function() {
-            $window.location.href = '/setting#/teamAdd';
+            $window.location.href = '/setting#/team/add';
         }
     }])
     .controller('SettingTeamAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submitting = false;
         $scope.users = [];
         $scope.team = new Object();
         $scope.team.users = [];
@@ -223,6 +226,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
                 $http.post('/w1/team', $scope.team)
                     .success(function(data, status, headers, config) {
+                        $scope.submitting = true;
                         growl.info(data.message);
                     })
                     .error(function(data, status, headers, config) {
@@ -249,7 +253,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             */
         }
 
-        var availableTags = ["chliang2030598"];
+        var availableTags = ["chliang2030598","fivestarsky"];
 
         $("#tags").autocomplete({
             source: availableTags
@@ -310,20 +314,20 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 templateUrl: '/static/views/setting/notification.html',
                 controller: 'SettingNotificationCtrl'
             })
+            .when('/org/add', {
+                templateUrl: '/static/views/setting/organizationadd.html',
+                controller: 'SettingOrganizationAddCtrl'
+            })
             .when('/org/:org', {
                 templateUrl: '/static/views/setting/organization.html',
                 controller: 'SettingOrganizationCtrl'
-            })
-            .when('/org/add', {
-                templateUrl: '/static/views/setting/organizationAdd.html',
-                controller: 'SettingOrganizationAddCtrl'
             })
             .when('/team', {
                 templateUrl: '/static/views/setting/team.html',
                 controller: 'SettingTeamCtrl'
             })
             .when('/team/add', {
-                templateUrl: '/static/views/setting/teamAdd.html',
+                templateUrl: '/static/views/setting/teamadd.html',
                 controller: 'SettingTeamAddCtrl'
             })
             .when('/competence', {

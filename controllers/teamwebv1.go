@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego"
-
 	"github.com/dockercn/wharf/models"
+	"github.com/dockercn/wharf/utils"
 )
 
 type TeamWebV1Controller struct {
@@ -25,7 +25,9 @@ func (this *TeamWebV1Controller) Prepare() {
 }
 
 func (this *TeamWebV1Controller) PostTeam() {
-	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+
+	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+	if exist != true {
 
 		beego.Error("[WEB API] Load session failure")
 
@@ -53,6 +55,37 @@ func (this *TeamWebV1Controller) PostTeam() {
 	}
 
 	beego.Info("[Web API] Add team successfully: ", string(this.Ctx.Input.CopyBody()))
+
+	team.UUID = utils.GeneralToken(team.Team)
+	team.Username = user.Username
+
+	if err := team.Save(); err != nil {
+		beego.Error("[WEB API] Team save error:", err.Error())
+
+		result := map[string]string{"message": "Team save error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	org := new(models.Organization)
+
+	if exist, _, _ := org.Has(team.Organization); exist {
+		org.Teams = append(org.Teams, team.UUID)
+	}
+
+	if err := org.Save(); err != nil {
+		beego.Error("[WEB API] team save error:", err.Error())
+
+		result := map[string]string{"message": "team save error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
 
 	result := map[string]string{"message": "OK"}
 	this.Data["json"] = result
