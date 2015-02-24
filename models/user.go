@@ -100,3 +100,23 @@ func (user *User) Get(username, password string) error {
 
 	return nil
 }
+
+func (user *User) Orgs(username string) (map[string]string, error) {
+	var result map[string]string
+
+	if exist, _, err := user.Has(username); err != nil {
+		return nil, err
+	} else if exist == false && err == nil {
+		return nil, fmt.Errorf("User is not exist: %s", username)
+	} else if exist == true && err == nil {
+		for _, uuid := range user.Organizations {
+			var org Organization
+
+			if err := org.Get(uuid); err == nil {
+				result[org.Organization] = org.UUID
+			}
+		}
+	}
+
+	return result, nil
+}

@@ -193,7 +193,11 @@ func (this *UserWebAPIV1Controller) GetNamespace() {
 		this.StopRun()
 	} else {
 		namespaces := []string{user.Username}
-		//add organization which depend on username
+		orgs, _ := user.Orgs(user.Username)
+
+		for k, _ := range orgs {
+			namespaces = append(namespaces, k)
+		}
 
 		this.Data["json"] = namespaces
 
