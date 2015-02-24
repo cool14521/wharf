@@ -102,7 +102,7 @@ func (user *User) Get(username, password string) error {
 }
 
 func (user *User) Orgs(username string) (map[string]string, error) {
-	var result map[string]string
+	result := map[string]string{}
 
 	if exist, _, err := user.Has(username); err != nil {
 		return nil, err
