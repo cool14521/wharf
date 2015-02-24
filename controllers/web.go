@@ -12,6 +12,14 @@ type WebController struct {
 	beego.Controller
 }
 
+func (this *WebController) URLMapping() {
+	this.Mapping("GetIndex", this.GetIndex)
+	this.Mapping("GetAuth", this.GetAuth)
+	this.Mapping("GetDashboard", this.GetDashboard)
+	this.Mapping("GetSetting", this.GetSetting)
+	this.Mapping("GetRepository", this.GetRepository)
+}
+
 func (this *WebController) Prepare() {
 	beego.Debug("[Header] ")
 	beego.Debug(this.Ctx.Request.Header)
@@ -62,4 +70,15 @@ func (this *WebController) GetSetting() {
 		this.Render()
 		this.StopRun()
 	}
+}
+
+func (this *WebController) GetRepository() {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == true {
+		this.Data["username"] = user.Username
+	}
+
+	this.TplNames = "repository.html"
+
+	this.Render()
+	this.StopRun()
 }

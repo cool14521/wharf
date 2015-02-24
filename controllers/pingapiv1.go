@@ -10,6 +10,10 @@ type PingAPIV1Controller struct {
 	beego.Controller
 }
 
+func (this *PingAPIV1Controller) URLMapping() {
+	this.Mapping("GetPing", this.GetPing)
+}
+
 func (this *PingAPIV1Controller) Prepare() {
 
 	beego.Debug("[Headers]")

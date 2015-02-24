@@ -13,11 +13,11 @@ type OrganizationWebV1Controller struct {
 	beego.Controller
 }
 
-func (u *OrganizationWebV1Controller) URLMapping() {
-	u.Mapping("PostOrganization", u.PostOrganization)
-	u.Mapping("PutOrganization", u.PutOrganization)
-	u.Mapping("GetOrganizations", u.GetOrganizations)
-	u.Mapping("GetOrganizationDetail", u.GetOrganizationDetail)
+func (this *OrganizationWebV1Controller) URLMapping() {
+	this.Mapping("PostOrganization", this.PostOrganization)
+	this.Mapping("PutOrganization", this.PutOrganization)
+	this.Mapping("GetOrganizations", this.GetOrganizations)
+	this.Mapping("GetOrganizationDetail", this.GetOrganizationDetail)
 }
 
 func (this *OrganizationWebV1Controller) Prepare() {

@@ -16,7 +16,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
 
         //init user data
         $scope.addPrivilege = false
-        $http.get('/w1/namespace')
+        $http.get('/w1/namespaces')
             .success(function(data, status, headers, config) {
                 $scope.namespaces = data;
                 $scope.repository.namespace = data[0];

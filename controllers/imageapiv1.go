@@ -17,13 +17,13 @@ type ImageAPIV1Controller struct {
 	beego.Controller
 }
 
-func (i *ImageAPIV1Controller) URLMapping() {
-	i.Mapping("GetImageJSON", i.GetImageJSON)
-	i.Mapping("PutImageJSON", i.PutImageJSON)
-	i.Mapping("PutImageLayer", i.PutImageLayer)
-	i.Mapping("PutChecksum", i.PutChecksum)
-	i.Mapping("GetImageAncestry", i.GetImageAncestry)
-	i.Mapping("GetImageLayer", i.GetImageLayer)
+func (this *ImageAPIV1Controller) URLMapping() {
+	this.Mapping("GetImageJSON", this.GetImageJSON)
+	this.Mapping("PutImageJSON", this.PutImageJSON)
+	this.Mapping("PutImageLayer", this.PutImageLayer)
+	this.Mapping("PutChecksum", this.PutChecksum)
+	this.Mapping("GetImageAncestry", this.GetImageAncestry)
+	this.Mapping("GetImageLayer", this.GetImageLayer)
 }
 
 func (this *ImageAPIV1Controller) Prepare() {

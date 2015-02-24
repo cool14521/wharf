@@ -14,12 +14,12 @@ type UserWebAPIV1Controller struct {
 	beego.Controller
 }
 
-func (u *UserWebAPIV1Controller) URLMapping() {
-	u.Mapping("GetProfile", u.GetProfile)
-	u.Mapping("GetUser", u.GetUser)
-	u.Mapping("Signup", u.Signup)
-	u.Mapping("Signin", u.Signin)
-	u.Mapping("GetNamespace", u.GetNamespace)
+func (this *UserWebAPIV1Controller) URLMapping() {
+	this.Mapping("GetProfile", this.GetProfile)
+	this.Mapping("GetUser", this.GetUser)
+	this.Mapping("Signup", this.Signup)
+	this.Mapping("Signin", this.Signin)
+	this.Mapping("GetNamespaces", this.GetNamespaces)
 }
 
 func (this *UserWebAPIV1Controller) Prepare() {
@@ -182,7 +182,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 	}
 }
 
-func (this *UserWebAPIV1Controller) GetNamespace() {
+func (this *UserWebAPIV1Controller) GetNamespaces() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		beego.Error("[WEB API] Load session failure")
 		result := map[string]string{"message": "Session load failure", "url": "/auth"}

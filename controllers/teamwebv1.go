@@ -13,8 +13,8 @@ type TeamWebV1Controller struct {
 	beego.Controller
 }
 
-func (u *TeamWebV1Controller) URLMapping() {
-	u.Mapping("PostTeam", u.PostTeam)
+func (this *TeamWebV1Controller) URLMapping() {
+	this.Mapping("PostTeam", this.PostTeam)
 }
 
 func (this *TeamWebV1Controller) Prepare() {

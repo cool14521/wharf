@@ -16,12 +16,12 @@ type RepoAPIV1Controller struct {
 	beego.Controller
 }
 
-func (r *RepoAPIV1Controller) URLMapping() {
-	r.Mapping("PutTag", r.PutTag)
-	r.Mapping("PutRepositoryImages", r.PutRepositoryImages)
-	r.Mapping("GetRepositoryImages", r.GetRepositoryImages)
-	r.Mapping("GetRepositoryTags", r.GetRepositoryTags)
-	r.Mapping("PutRepository", r.PutRepository)
+func (this *RepoAPIV1Controller) URLMapping() {
+	this.Mapping("PutTag", this.PutTag)
+	this.Mapping("PutRepositoryImages", this.PutRepositoryImages)
+	this.Mapping("GetRepositoryImages", this.GetRepositoryImages)
+	this.Mapping("GetRepositoryTags", this.GetRepositoryTags)
+	this.Mapping("PutRepository", this.PutRepository)
 }
 
 func (this *RepoAPIV1Controller) Prepare() {

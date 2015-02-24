@@ -13,12 +13,14 @@ func init() {
 	beego.Router("/setting", &controllers.WebController{}, "get:GetSetting")
 	beego.Router("/dashboard", &controllers.WebController{}, "get:GetDashboard")
 
+	beego.Router("/u/:namespace/:repository", &controllers.WebController{}, "get:GetRepository")
+
 	//Web API
 	web := beego.NewNamespace("/w1",
 		beego.NSRouter("/signin", &controllers.UserWebAPIV1Controller{}, "post:Signin"),
 		beego.NSRouter("/signup", &controllers.UserWebAPIV1Controller{}, "post:Signup"),
 		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "get:GetProfile"),
-		beego.NSRouter("/namespace", &controllers.UserWebAPIV1Controller{}, "get:GetNamespace"),
+		beego.NSRouter("/namespaces", &controllers.UserWebAPIV1Controller{}, "get:GetNamespaces"),
 
 		//repository routers
 		beego.NSRouter("/repository", &controllers.RepoWebAPIV1Controller{}, "post:PostRepository"),

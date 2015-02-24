@@ -12,9 +12,9 @@ type UserAPIV1Controller struct {
 	beego.Controller
 }
 
-func (u *UserAPIV1Controller) URLMapping() {
-	u.Mapping("PostUsers", u.PostUsers)
-	u.Mapping("GetUsers", u.GetUsers)
+func (this *UserAPIV1Controller) URLMapping() {
+	this.Mapping("PostUsers", this.PostUsers)
+	this.Mapping("GetUsers", this.GetUsers)
 }
 
 func (this *UserAPIV1Controller) Prepare() {

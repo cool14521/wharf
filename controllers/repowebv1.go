@@ -14,8 +14,8 @@ type RepoWebAPIV1Controller struct {
 	beego.Controller
 }
 
-func (u *RepoWebAPIV1Controller) URLMapping() {
-	u.Mapping("PostRepository", u.PostRepository)
+func (this *RepoWebAPIV1Controller) URLMapping() {
+	this.Mapping("PostRepository", this.PostRepository)
 }
 
 func (this *RepoWebAPIV1Controller) PostRepository() {
