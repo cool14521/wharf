@@ -11,9 +11,8 @@
                 </lable>
             </div>
             <div class="form-content">
-                <select class="form-control" ng-model="repository.namespace">
-                    <option ng-repeat="namespace in namespaces">{{namespace}}</option>
-                </select>
+                <select class="form-control" ng-model="repository.namespace" ng-options="namespace for namespace in namespaces"></select>
+
                 <div class="slash">/</div>
 
                 <input class="" type="text" placeholder="Repository Name" ng-model="repository.repository">

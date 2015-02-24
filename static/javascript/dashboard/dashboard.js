@@ -11,12 +11,15 @@
 angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'ui.codemirror'])
     .controller('AddRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
         $scope.privated = {};
+        $scope.namespaces = [];
+        $scope.repository = {};
 
         //init user data
         $scope.addPrivilege = false
         $http.get('/w1/namespace')
             .success(function(data, status, headers, config) {
-                $scope.namespaces = data
+                $scope.namespaces = data;
+                $scope.repository.namespace = data[0];
             })
             .error(function(data, status, headers, config) {
 
@@ -29,6 +32,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
             code: 1,
             name: "Private"
         }];
+
         $scope.privated.selection = $scope.privated.values[0];
 
         //deal with create repository
@@ -64,7 +68,31 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
 
     }])
     .controller('DockerfileCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
+        $scope.privated = {};
+        $scope.namespaces = [];
+        $scope.repository = {};
 
+        //init user data
+        $scope.addPrivilege = false
+        $http.get('/w1/namespace')
+            .success(function(data, status, headers, config) {
+                $scope.namespaces = data;
+                $scope.repository.namespace = data[0];
+            })
+            .error(function(data, status, headers, config) {
+
+            });
+        $scope.privated = {};
+        $scope.privated.values = [{
+            code: 0,
+            name: "Public"
+        }, {
+            code: 1,
+            name: "Private"
+        }];
+
+        $scope.privated.selection = $scope.privated.values[0];
+        
     }])
     //routes
     .config(function($routeProvider, $locationProvider) {
