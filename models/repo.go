@@ -16,12 +16,14 @@ type Repository struct {
 	Tags          []string `json:"tags"`          //保存此仓库所有tag的对应UUID
 	Starts        []string `json:"starts"`        //此仓库Start的UUID列表
 	Comments      []string `json:"comments"`      //此仓库Comment的对应UUID列表
+	Short         string   `json:short`           //此仓库的的短描述
 	Description   string   `json:"description"`   //保存 Markdown 格式
 	JSON          string   `json:"json"`          //Docker 客户端上传的 Images 信息，JSON 格式。
 	Dockerfile    string   `json:"dockerfile"`    //生产 Repository 的 Dockerfile 文件内容
 	Agent         string   `json:"agent"`         //docker 命令产生的 agent 信息
 	Links         string   `json:"links"`         //保存 JSON 的信息，保存官方库的 Link，产生 repository 库的 Git 库地址
 	Size          int64    `json:"size"`          //仓库所有 Image 的大小 byte
+	Download      int64    `json:"download"`      //下载次数
 	Uploaded      bool     `json:"uploaded"`      //上传完成标志
 	Checksum      string   `json:"checksum"`      //
 	Checksumed    bool     `json:"checksumed"`    //Checksum 检查标志
@@ -36,7 +38,7 @@ type Repository struct {
 	Updated       int64    `json:"updated"`       //
 }
 
-type Start struct {
+type Star struct {
 	UUID       string `json:"UUID"`       //全局唯一的索引
 	User       string `json:"user"`       //用户UUID，代表哪个用户加的星
 	Repository string `json:"repository"` //仓库UUID，代表给哪个仓库加的星
