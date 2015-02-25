@@ -13,6 +13,9 @@ func init() {
 	beego.Router("/setting", &controllers.WebController{}, "get:GetSetting")
 	beego.Router("/dashboard", &controllers.WebController{}, "get:GetDashboard")
 
+	beego.Router("/admin/auth", &controllers.WebController{}, "get:GetAdminAuth")
+	beego.Router("/admin", &controllers.WebController{}, "get:GetAdmin")
+
 	beego.Router("/u/:namespace/:repository", &controllers.WebController{}, "get:GetRepository")
 
 	//Web API
