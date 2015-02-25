@@ -8,65 +8,69 @@ import (
 )
 
 type Repository struct {
-	UUID          string   `json:"UUID"`          //全局唯一的索引, LedisDB中 RepositoryList 保存全局所有的仓库名列表信息。 LedisDB 独立保存每个Repository信息到一个HASH，名字为{UUID}
-	Repository    string   `json:"repository"`    //仓库名称 全局唯一，不可修改
-	Namespace     string   `json:"namespace"`     //仓库所有者的名字
-	NamespaceType bool     `json:"namespacetype"` // false 为普通用户，true为组织
-	Organization  string   `json:"organization"`  //如果仓库属于一个team，那么在此记录team所属组织
-	Tags          []string `json:"tags"`          //保存此仓库所有tag的对应UUID
-	Starts        []string `json:"starts"`        //此仓库Start的UUID列表
-	Comments      []string `json:"comments"`      //此仓库Comment的对应UUID列表
-	Short         string   `json:short`           //此仓库的的短描述
-	Description   string   `json:"description"`   //保存 Markdown 格式
-	JSON          string   `json:"json"`          //Docker 客户端上传的 Images 信息，JSON 格式。
-	Dockerfile    string   `json:"dockerfile"`    //生产 Repository 的 Dockerfile 文件内容
-	Agent         string   `json:"agent"`         //docker 命令产生的 agent 信息
-	Links         string   `json:"links"`         //保存 JSON 的信息，保存官方库的 Link，产生 repository 库的 Git 库地址
-	Size          int64    `json:"size"`          //仓库所有 Image 的大小 byte
-	Download      int64    `json:"download"`      //下载次数
-	Uploaded      bool     `json:"uploaded"`      //上传完成标志
+	UUID          string   `json:"UUID"`          //
+	Repository    string   `json:"repository"`    //
+	Namespace     string   `json:"namespace"`     //
+	NamespaceType bool     `json:"namespacetype"` //
+	Organization  string   `json:"organization"`  //
+	Tags          []string `json:"tags"`          //
+	Starts        []string `json:"starts"`        //
+	Comments      []string `json:"comments"`      //
+	Short         string   `json:"short"`         //
+	Description   string   `json:"description"`   //
+	JSON          string   `json:"json"`          //
+	Dockerfile    string   `json:"dockerfile"`    //
+	Agent         string   `json:"agent"`         //
+	Links         string   `json:"links"`         //
+	Size          int64    `json:"size"`          //
+	Download      int64    `json:"download"`      //
+	Uploaded      bool     `json:"uploaded"`      //
 	Checksum      string   `json:"checksum"`      //
-	Checksumed    bool     `json:"checksumed"`    //Checksum 检查标志
-	Labels        string   `json:"labels"`        //用户设定的标签，和库的 Tag 是不一样
+	Checksumed    bool     `json:"checksumed"`    //
 	Icon          string   `json:"icon"`          //
 	Sign          string   `json:"sign"`          //
-	Privated      bool     `json:"privated"`      //私有 Repository
-	Clear         string   `json:"clear"`         //对 Repository 进行了杀毒，杀毒的结果和 status 等信息以 JSON 格式保存
-	Cleared       bool     `json:"cleared"`       //对 Repository 是否进行了杀毒处理
-	Encrypted     bool     `json:"encrypted"`     //是否加密
+	Privated      bool     `json:"privated"`      //
+	Clear         string   `json:"clear"`         //
+	Cleared       bool     `json:"cleared"`       //
+	Encrypted     bool     `json:"encrypted"`     //
 	Created       int64    `json:"created"`       //
 	Updated       int64    `json:"updated"`       //
+	Memo          string   `json:"memo"`          //
 }
 
 type Star struct {
-	UUID       string `json:"UUID"`       //全局唯一的索引
-	User       string `json:"user"`       //用户UUID，代表哪个用户加的星
-	Repository string `json:"repository"` //仓库UUID，代表给哪个仓库加的星
-	Time       int64  `json:"time"`       //代表加星的时间
+	UUID       string `json:"UUID"`       //
+	User       string `json:"user"`       //
+	Repository string `json:"repository"` //
+	Time       int64  `json:"time"`       //
+	Memo       string `json:"memo"`       //
 }
 
 type Comment struct {
-	UUID       string `json:"UUID"`       //全局唯一的索引
-	Comment    string `json:"comment"`    //评论的内容 markdown 格式保存
-	User       string `json:"user"`       //用户UUID，代表哪个用户进行的评论
-	Repository string `json:"repository"` //仓库UUID，代表评论的哪个仓库
-	Time       int64  `json:"time"`       //代表评论的时间
+	UUID       string `json:"UUID"`       //
+	Comment    string `json:"comment"`    //
+	User       string `json:"user"`       //
+	Repository string `json:"repository"` //
+	Time       int64  `json:"time"`       //
+	Memo       string `json:"memo"`       //
 }
 
 type Privilege struct {
-	UUID       string `json:"UUID"`       //全局唯一的索引
-	Privilege  bool   `json:"privilege"`  //true 为读写，false为只读
-	Team       string `json:"team"`       //此权限所属Team的UUID
-	Repository string `json:"repository"` //此权限对应的仓库UUID
+	UUID       string `json:"UUID"`       //
+	Privilege  bool   `json:"privilege"`  //
+	Team       string `json:"team"`       //
+	Repository string `json:"repository"` //
+	Memo       string `json:"memo"`       //
 }
 
 type Tag struct {
-	UUID       string //
-	Name       string //
-	ImageId    string //
-	Namespace  string //
-	Repository string //
-	Sign       string //
+	UUID       string `json:"uuid"`       //
+	Name       string `json:"name"`       //
+	ImageId    string `json:"imageid"`    //
+	Namespace  string `json:"namespace"`  //
+	Repository string `json:"repository"` //
+	Sign       string `json:"sign"`       //
+	Memo       string `json:"memo"`       //
 }
 
 func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {

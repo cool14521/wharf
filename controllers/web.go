@@ -82,3 +82,21 @@ func (this *WebController) GetRepository() {
 	this.Render()
 	this.StopRun()
 }
+
+func (this *WebController) GetAdmin() {
+	this.TplNames = "admin.html"
+
+	this.Data["username"] = "genedna"
+
+	this.Render()
+	this.StopRun()
+}
+
+func (this *WebController) GetAdminAuth() {
+	this.TplNames = "admin-auth.html"
+
+	this.Data["username"] = "genedna"
+
+	this.Render()
+	this.StopRun()
+}

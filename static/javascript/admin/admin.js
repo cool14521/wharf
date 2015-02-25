@@ -1,5 +1,5 @@
 /*
- *  Document   : setting.js
+ *  Document   : admin.js
  *  Author     : Meaglith Ma <genedna@gmail.com> @genedna
  *  Description: 
  *
