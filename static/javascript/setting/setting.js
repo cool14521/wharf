@@ -406,7 +406,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         };
     }])
     .directive('namespaceValidator', [function() {
-        var NAMESPACE_REGEXP = /^([a-z0-9_]{6,30})$/;
+        var USERNAME_REGEXP = /^([a-z0-9_]{6,30})$/;
 
         return {
             require: 'ngModel',
