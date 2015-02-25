@@ -46,7 +46,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
             $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
             $http.post('/w1/repository', $scope.repository)
                 .success(function(data, status, headers, config) {
-                    $scope.addPrivilege = true ;
+                    $scope.addPrivilege = true;
                     growl.info(data.message);
                 })
                 .error(function(data, status, headers, config) {
@@ -92,7 +92,28 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
         }];
 
         $scope.privated.selection = $scope.privated.values[0];
-        
+
+    }])
+    .controller('SettingOrganizationAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submitting = false;
+        $scope.submit = function() {
+            if (true) {
+                $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+                $http.post('/w1/organization', $scope.organization)
+                    .success(function(data, status, headers, config) {
+                        $scope.submitting = true;
+                        growl.info(data.message);
+                    })
+                    .error(function(data, status, headers, config) {
+                        $scope.submitting = false;
+                        growl.error(data.message);
+                    });
+            }
+        }
+
+        $scope.createOrg = function() {
+            $window.location.href = '/setting#/org/add';
+        }
     }])
     //routes
     .config(function($routeProvider, $locationProvider) {
@@ -128,6 +149,10 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
             .when('/repo/dockerfile', {
                 templateUrl: '/static/views/dashboard/dockerfile.html',
                 controller: 'DockerfileCtrl'
+            })
+            .when('/org/add', {
+                templateUrl: '/static/views/setting/organizationadd.html',
+                controller: 'SettingOrganizationAddCtrl'
             });
     })
     .directive('namespaceValidator', [function() {
