@@ -104,3 +104,17 @@ server {
   }
 }
 ```
+
+# How To Run
+
+Run behind Nginx:
+
+```bash
+./wharf web --address 127.0.0.1 --port 9911
+```
+
+Run directly:
+
+```bash
+./wharf web --address 0.0.0.0 --port 80
+```
