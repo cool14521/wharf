@@ -15,6 +15,7 @@ type TeamWebV1Controller struct {
 
 func (this *TeamWebV1Controller) URLMapping() {
 	this.Mapping("PostTeam", this.PostTeam)
+	this.Mapping("GetTeams", this.GetTeams)
 }
 
 func (this *TeamWebV1Controller) Prepare() {
@@ -93,4 +94,23 @@ func (this *TeamWebV1Controller) PostTeam() {
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
 	this.StopRun()
+}
+
+func (this *TeamWebV1Controller) GetTeams() {
+	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+	if exist != true {
+
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+
+	}
+    
+    for _,orgUUID:=range user.
+
 }

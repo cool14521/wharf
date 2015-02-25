@@ -28,6 +28,7 @@ func init() {
 		//team routers
 		beego.NSRouter("/users/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUser"),
 		beego.NSRouter("/team", &controllers.TeamWebV1Controller{}, "post:PostTeam"),
+		beego.NSRouter("/teams", &controllers.TeamWebV1Controller{}, "get:GetTeams"),
 
 		//organization routers
 		beego.NSRouter("/organizations", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizations"),
