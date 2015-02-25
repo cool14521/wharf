@@ -1,0 +1,228 @@
+.right-div {
+    margin-top: 20px;
+}
+/*repositoryAdd*/
+
+.block-content {
+    padding-bottom: 20px;
+}
+.repoAreaDiv {
+    <!-- border: 2px solid #E5E5E5;
+    margin-top: 30px;
+    padding-left: 20px;
+    border-radius: 4px;
+    --> margin-top: 20px;
+}
+.repoCreateForm>.form-group>.form-title {
+    font-size: 16px;
+}
+.repoCreateForm>.form-group>.form-content>select {
+    margin-top: 10px;
+    width: 220px;
+    border: 1px solid #bdc3c7;
+    float: left;
+}
+.repoCreateForm>.form-group>.form-content>.slash {
+    float: left;
+    font-size: 21px;
+    color: #666;
+    margin: 0px 8px;
+    margin-top: 10px;
+}
+.repoCreateForm>.form-group>.form-content>input {
+    height: 42px;
+    padding: 8px 12px;
+    font-family: "Lato", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.467;
+    color: #34495e;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    box-shadow: none;
+    margin-top: 10px;
+    width: 220px;
+    border: 1px solid #bdc3c7;
+}
+.repoCreateForm>.form-group>.form-content>input:hover {
+    color: #1bbae1;
+    text-decoration: none;
+}
+.repoCreateForm>.form-group>.form-content>p {
+    text-align: justify;
+    width: 450px;
+    margin-top: 10px;
+}
+.repoCreateDesc {
+    width: 60%;
+}
+.repoCreateDesc:hover {
+    color: #1bbae1;
+    text-decoration: none;
+}
+.repoCreateFormAuthority {
+    margin-top: 10px;
+    color: black;
+}
+.addRepoBtn {
+    color: #2C2C2C;
+    background-color: #76D3F5;
+    border: 1px solid #ccc;
+    position: relative;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 7px 12px;
+    white-space: nowrap;
+    width: 150px;
+    margin-top: 15px;
+    border-radius: 6px;
+}
+.cancelRepoBtn {
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 15px;
+}
+/*repositores*/
+
+.block-content {} .repositoriesArea {
+    margin-top: -20px;
+    margin-left: 20px;
+}
+.repositoryBox {
+    border: 1px solid #bdc3c7;
+    margin-left: 40px;
+    margin-top: 30px;
+    border-radius: 5px;
+    padding-bottom: 15px;
+}
+.repositoryBoxTime {
+    margin-top: 15px;
+    margin-bottom: 0px;
+}
+.repositoryBoxNamespace {
+    font-size: 18px;
+    margin-top: -20px;
+}
+.repositoryBoxDesc {
+    text-align: justify;
+    font-size: 14px;
+    margin-top: 15px;
+}
+.repositoryBoxIcon {
+    font-size: 22px;
+    margin-top: 15px;
+    float: right;
+}
+.repositoryBoxIcon>.icon1 {
+    float: left;
+    margin-left: 15px;
+    color: #5F5E5E;
+}
+.repositoryBoxIcon>.icon2 {
+    float: left;
+    color: #5F5E5E;
+}
+.repositoryAreaSecond {
+    margin-top: 40px;
+    margin-left: 20px;
+}
+.repositoryBlock {
+    border: 1px solid #bdc3c7;
+    margin-left: 40px;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+.repositoryBlock:hover {
+    text-decoration: none;
+    border: 1px solid #1bbae1;
+}
+.repo-list-item-img {
+    float: left;
+    margin-right: 10px;
+    /*margin-left: 10px;*/
+    
+    text-align: center;
+}
+.profile {
+    float: left;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin-top: 20px;
+}
+.repo-list-item-content {
+    float: left;
+}
+.repo-list-item-icons {
+    color: #5F5E5E;
+    float: left;
+}
+.repo-list-item-content-t {
+    float: left;
+    margin-top: 17px;
+}
+.repo-list-item-content-title {
+    color: black;
+    font-size: 19px;
+    font-weight: bold;
+}
+.repo-list-item-content-time {
+    margin-top: 18px;
+    color: #BDBEC0;
+    float: right;
+    font-weight: 700;
+    margin-left: -90px;
+}
+.repo-list-item-content-desc {
+    color: #434A54;
+}
+.repo-list-item-icons {
+    float: left;
+    font-size: 24px;
+    margin-top: 30px;
+    margin-left: 30px;
+}
+.repo-list-item-icons>.icon1 {
+    color: #5F5E5E;
+    float: left;
+}
+.repo-list-item-icons>.icon2 {
+    color: #5F5E5E;
+    margin-left: 10px;
+    float: left;
+}
+.repoPrivate {
+    background-color: #FFFCF5;
+}
+.paginationRepo {
+    float: right;
+    margin-right: 95px;
+}
+/*public repository*/
+
+.PublicRepositoryArea {
+    margin-left: 30px;
+}
+.block-content {
+    padding-bottom: 20px;
+}
+.iconTitle {
+    font-size: 16px;
+    margin-top: -3px;
+    float: left;
+}
+.first {
+    margin-right: 12px;
+}
+.privateRepoIcons {
+    float: right;
+}
+.comment-list-item-content-time {
+    margin-top: -35px;
+    color: #BDBEC0;
+    float: right;
+    font-weight: 700;
+}
+
+.commments-tilte {
+    margin-top:25px;
+}

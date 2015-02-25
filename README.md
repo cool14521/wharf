@@ -1,61 +1,33 @@
-docker-bucket
-===============
+Wharf - ContainerOps Open Source Platform
+=============================
 
-编译
-====
+![](http://7vzqdz.com1.z0.glb.clouddn.com/wharf.png)
 
-代码 **clone** 到 `$GOPATH/src/githhub.com/dockercn` 目录下，然后执行以下命令
+# How To Compile Wharf Application
+
+Clone code into directory `$GOPATH/src/githhub.com/dockercn` and then exec commands:
 
 ```
-go get github.com/astaxie/beego
-go get github.com/codegangsta/cli
-go get github.com/siddontang/ledisdb/ledis
-go get github.com/garyburd/redigo/redis
+go get -u github.com/astaxie/beego
+go get -u github.com/codegangsta/cli
+go get -u github.com/siddontang/ledisdb/ledis
+go get -u github.com/garyburd/redigo/redis
+go get -u github.com/shurcooL/go/github_flavored_markdown
 go build
 ```
-`TODO` 支持 **gopm** 编译程序
 
-`TODO` 支持 **Dockerfile**
+# Wharf Runtime Configuration
 
-新建用户
-=======
+Please add a runtime config file named `bucket.conf` under `wharf/conf` before starting `wharf` service.
 
-```
-./docker-bucket account --action add --username docker --passwd docker --email bucket@docker.cn
-```
+```ini
+runmode = dev
 
-对象 Key 规则
-================
+enablehttptls = true
+httpsport = 443
+httpcertfile = cert/wharf.crt
+httpkeyfile = cert/wharf.key
 
-在 LedisDB 中对象的 Key 规则：
-
-```
-@Username // @用户名
-#Organization // #组织名
-
-@Username$Repository+ // 用户未加密公有仓库
-#Organization$Repository+ // 组织未加密公有仓库
-
-@Username$Repository- // 用户未加密私有仓库
-#Organization$Repository- // 组织未加密私公有仓库
-
-@Username$Repository-?Sign // 用户加密私有仓库  
-#Organization$Repository-?Sign // 组织加密私有仓库
-
-&Image+ //未加密，私有库和公有库未加密的 Image 共享
-&Image-?Sign //加密，只有私有库有加密支持，每个 Image 根据加密签名不同，可能存有多份儿。
-
-@Username$Repository*Template+(-) //  
-#Organization$Repository*Template+(-) //
-
-@Username$Repository!Job //  
-#Organization$Repository!Job //
-```
-
-Bucket Conf
-==========
-
-```
 [docker]
 BasePath = /tmp/registry
 StaticPath = files
@@ -64,30 +36,36 @@ Version = 0.8.0
 Config = prod
 Standalone = true
 OpenSignup = false
-Encrypt = true
+Gravatar = data/gravatar
 
 [ledisdb]
 DataDir = /tmp/ledisdb
 DB = 8
 
-[email]
-Host = smtp.exmail.qq.com
-Port = 465
-User = demo@docker.cn
-Password = 123456
-
 [log]
 FilePath = /tmp/log
 FileName = bucket-log
+
+[session]
+Provider = ledis
+SavePath = /tmp/session
 ```
 
-Nginx Conf
-==========
+* Application run mode must be `dev` or `prod`.
+* If you use Nginx as front end, make sure `enablehttptls` is `false`.
+* If run with TLS and without Nginx, set `enablehttptls` is `true` and set the file and key file.
+* The `BasePath` is where `Docker` and `Rocket` image files are stored.
+* `Endpoints` is very important parameter, set the same value as your domain or IP. For example, you run `wharf` with domain `xxx.org`, then `Endpoints` should be `xxx.org`.
+* `DataDir` is where `ledis` data is located.
+* The `wharf` session provider default is `ledis`, the `Provider` and `SavePath` is session data storage path.
 
-Nginx 配置文件的示例，注意 **client_max_body_size** 对上传文件大小的限制。
 
-```
-upstream bucket_upstream {
+# Nginx Configuration
+
+It's a Nginx config example. You can change **client_max_body_size** what limited upload file size.
+
+```nginx
+upstream wharf_upstream {
   server 127.0.0.1:9911;
 }
 
@@ -122,7 +100,7 @@ server {
   proxy_http_version 1.1;
 
   location / {
-    proxy_pass         http://bucket_upstream;
+    proxy_pass         http://wharf_upstream;
   }
 }
 ```

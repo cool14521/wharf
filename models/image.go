@@ -3,13 +3,13 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"time"
 
-	"github.com/dockercn/docker-bucket/utils"
+	"github.com/dockercn/wharf/utils"
 )
 
 type Image struct {
+	UUID       string
 	ImageId    string //
 	JSON       string //
 	Ancestry   string //
@@ -27,437 +27,186 @@ type Image struct {
 	Updated    int64  //
 }
 
-func (image *Image) Get(imageId, sign string) (bool, []byte, error) {
-	var k []byte
-
-	if len(sign) == 0 {
-		k = []byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId)))
-	} else {
-		k = []byte(fmt.Sprintf("%s-?%s", GetObjectKey("image", imageId), sign))
+func (i *Image) Has(image string) (bool, []byte, error) {
+	UUID, err := GetUUID("image", image)
+	if err != nil {
+		return false, nil, err
 	}
-
-	if key, err := LedisDB.HGet([]byte(GetServerKeys("image")), k); err != nil {
-		return false, []byte(""), err
-	} else if key != nil {
-		if image, err := LedisDB.HGet(key, []byte("ImageId")); err != nil {
-			return false, []byte(""), err
-		} else if image != nil {
-			if string(image) != imageId {
-				return true, key, fmt.Errorf("存在 Image 数据，但是 ImageID 不相同: %s", string(image))
-			}
-			return true, key, nil
-		}
+	if len(UUID) <= 0 {
+		return false, nil, nil
 	}
-
-	return false, []byte(""), nil
+	err = Get(i, UUID)
+	return true, UUID, err
 }
 
-func (image *Image) GetPushed(imageId, sign string, uploaded, checksumed bool) (bool, error) {
-	if has, key, err := image.Get(imageId, sign); err != nil {
+func (i *Image) Save() error {
+	if err := Save(i, []byte(i.UUID)); err != nil {
+		return err
+	}
+
+	if _, err := LedisDB.HSet([]byte(GLOBAL_IMAGE_INDEX), []byte(i.ImageId), []byte(i.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *Image) Get(UUID string) error {
+	if err := Get(i, []byte(UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *Image) Remove() (err error) {
+	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_IMAGE_INDEX)), []byte(i.ImageId), []byte(i.UUID)); err != nil {
+		return err
+	}
+
+	if _, err := LedisDB.HDel([]byte(GLOBAL_IMAGE_INDEX), []byte(i.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *Image) Pushed(imageId string) (bool, error) {
+	if has, _, err := i.Has(imageId); err != nil {
 		return false, err
 	} else if has == false {
-		return false, fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
-	} else {
-		if results, e := LedisDB.HMget(key, []byte("Checksumed"), []byte("Uploaded")); e != nil {
-			return false, e
-		} else {
-
-			if utils.BytesToBool(results[0]) != checksumed {
-				return false, nil
-			}
-
-			if utils.BytesToBool(results[1]) != uploaded {
-				return false, nil
-			}
-
-			return true, nil
-		}
+		return false, fmt.Errorf("Image not found")
+	} else if i.Checksumed && i.Uploaded {
+		return true, nil
 	}
 
 	return false, nil
 }
 
-func (image *Image) GetJSON(imageId, sign string, uploaded, checksumed bool) ([]byte, error) {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return []byte(""), err
+func (i *Image) GetJSON(imageId string) ([]byte, error) {
+	if has, _, err := i.Has(imageId); err != nil {
+		return nil, err
 	} else if has == false {
-		return []byte(""), fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
+		return nil, fmt.Errorf("Image not found")
+	} else if !i.Checksumed || !i.Uploaded {
+		return nil, fmt.Errorf("Image JSON not found")
 	} else {
-		if results, e := LedisDB.HMget(key, []byte("Checksumed"), []byte("Uploaded"), []byte("JSON")); e != nil {
-			return []byte(""), e
-		} else {
-
-			if utils.BytesToBool(results[0]) != checksumed {
-				return []byte(""), nil
-			}
-
-			if utils.BytesToBool(results[1]) != uploaded {
-				return []byte(""), nil
-			}
-
-			return results[2], nil
-		}
+		return []byte(i.JSON), nil
 	}
-
-	return []byte(""), nil
-
 }
 
-func (image *Image) GetChecksum(imageId, sign string, uploaded, checksumed bool) (string, error) {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return "", err
+func (i *Image) GetChecksum(imageId string) ([]byte, error) {
+	if has, _, err := i.Has(imageId); err != nil {
+		return nil, err
 	} else if has == false {
-		return "", fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
+		return nil, fmt.Errorf("Image not found")
+	} else if !i.Checksumed || !i.Uploaded {
+		return nil, fmt.Errorf("Image JSON not found")
 	} else {
-		if results, e := LedisDB.HMget(key, []byte("Checksumed"), []byte("Uploaded"), []byte("Checksum")); e != nil {
-			return "", e
-		} else {
-
-			if utils.BytesToBool(results[0]) != checksumed {
-				return "", nil
-			}
-
-			if utils.BytesToBool(results[1]) != uploaded {
-				return "", nil
-			}
-
-			return string(results[2]), nil
-		}
+		return []byte(i.Checksum), nil
 	}
-
-	return "", nil
-
 }
 
-func (image *Image) PutJSON(imageId, sign, json string) error {
-	if has, key, err := image.Get(imageId, sign); err != nil {
+func (i *Image) PutJSON(imageId, json string) error {
+	if has, _, err := i.Has(imageId); err != nil {
 		return err
 	} else if has == false {
-		//新建 Image 记录
-		key = utils.GeneralKey(fmt.Sprintf("%s+%s", GetObjectKey("image", imageId), sign))
+		i.ImageId = imageId
+		i.UUID = string(utils.GeneralKey(imageId))
+		i.JSON = json
+		i.Created = time.Now().Unix()
 
-		image.ImageId = imageId
-		image.JSON = json
-
-		image.Uploaded = false
-		image.Checksumed = false
-		image.Encrypted = false
-
-		image.Size = 0
-
-		image.Updated = time.Now().Unix()
-		image.Created = time.Now().Unix()
-
-		if len(sign) > 0 {
-			image.Sign = sign
-			image.Encrypted = true
-		}
-
-		if e := image.Save(key); e != nil {
-			return e
-		} else {
-			if len(sign) == 0 {
-				if _, e := LedisDB.HSet([]byte(GetServerKeys("image")), []byte(fmt.Sprintf("%s+", GetObjectKey("image", imageId))), key); e != nil {
-					return e
-				}
-			} else {
-				if _, e := LedisDB.HSet([]byte(GetServerKeys("image")), []byte(fmt.Sprintf("%s-?", GetObjectKey("image", imageId), sign)), key); e != nil {
-					return e
-				}
-			}
-		}
-	} else {
-		//更新旧 Image 记录
-
-		image.ImageId = imageId
-		image.JSON = json
-
-		image.Updated = time.Now().Unix()
-
-		if len(sign) > 0 {
-			image.Sign = sign
-			image.Encrypted = true
-		}
-
-		if e := image.Save(key); e != nil {
-			return e
-		}
-	}
-
-	return nil
-}
-
-func (image *Image) PutPath(imageId, sign, path string) error {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return err
-	} else if has == false {
-		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
-	} else {
-		image.Path = path
-
-		image.Updated = time.Now().Unix()
-
-		if e := image.Save(key); e != nil {
-			return e
-		}
-	}
-
-	return nil
-}
-
-func (image *Image) GetPath(imageId, sign string, uploaded, checksumed bool) (string, error) {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return "", err
-	} else if has == false {
-		return "", fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
-	} else {
-		if results, e := LedisDB.HMget(key, []byte("Checksumed"), []byte("Uploaded"), []byte("Path")); e != nil {
-			return "", e
-		} else {
-
-			if utils.BytesToBool(results[0]) != checksumed {
-				return "", fmt.Errorf("没有找到 Image 的数据")
-			}
-
-			if utils.BytesToBool(results[1]) != uploaded {
-				return "", fmt.Errorf("没有找到 Image 的数据")
-			}
-
-			return string(results[2]), nil
-		}
-	}
-
-	return "", nil
-}
-
-func (image *Image) PutUploaded(imageId, sign string, uploaded bool) error {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return err
-	} else if has == false {
-		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
-	} else {
-		image.Uploaded = uploaded
-
-		image.Updated = time.Now().Unix()
-
-		if e := image.Save(key); e != nil {
-			return e
-		}
-	}
-
-	return nil
-}
-
-func (image *Image) PutSize(imageId, sign string, size int64) error {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return err
-	} else if has == false {
-		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
-	} else {
-		image.Size = size
-
-		image.Updated = time.Now().Unix()
-
-		if e := image.Save(key); e != nil {
-			return e
-		}
-	}
-
-	return nil
-}
-
-func (image *Image) PutChecksum(imageId, sign, checksum string) error {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return err
-	} else if has == false {
-		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
-	} else {
-		image.Checksum = checksum
-
-		image.Updated = time.Now().Unix()
-
-		if e := image.Save(key); e != nil {
-			return e
-		}
-	}
-
-	return nil
-}
-
-func (image *Image) PutPayload(imageId, sign, payload string) error {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return err
-	} else if has == false {
-		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
-	} else {
-		image.Payload = payload
-
-		image.Updated = time.Now().Unix()
-
-		if e := image.Save(key); e != nil {
-			return e
-		}
-	}
-
-	return nil
-}
-
-func (image *Image) PutChecksumed(imageId, sign string, checksumed bool) error {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return err
-	} else if has == false {
-		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
-	} else {
-		image.Checksumed = checksumed
-
-		image.Updated = time.Now().Unix()
-
-		if e := image.Save(key); e != nil {
-			return e
-		}
-	}
-
-	return nil
-}
-
-//从 JSON 数据中解析查找是否存在 parent 的数据。
-//如果存在 parent 数据，根据 imageId 和 sign 查找 parent 的记录。
-//把当前 imageId 加入到 数组中在 Marshal 后保存在 Ancestry 中。
-//如果不存在 parent 数据，则认为当前 imageId 是 root 节点。
-func (image *Image) PutAncestry(imageId, sign string) error {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return err
-	} else if has == false {
-		return fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
-	} else {
-		var imageJSONMap map[string]interface{}
-		var parents []string
-		var images []string
-
-		//从数据库中读取 JSON 数据
-		if imageJSON, err := LedisDB.HGet(key, []byte("JSON")); err != nil {
+		if err = i.Save(); err != nil {
 			return err
-		} else {
-			// JSON 数据解码到 image 对象中
-			if err := json.Unmarshal(imageJSON, &imageJSONMap); err != nil {
-				return err
-			}
+		}
 
-			//判断是否存在 parent 数据。
-			if value, has := imageJSONMap["parent"]; has == true {
-				//从数据库中读取 parent image 的数据
-				i := new(Image)
-				if h, k, e := i.Get(value.(string), sign); e != nil {
-					return e
-				} else if h == true {
-					//从数据库中获得 parent image 的 key
-					//从数据库中读取 parent image 的 Ancestry 字段数据
-					if j, e := LedisDB.HGet(k, []byte("Ancestry")); e != nil {
-						return e
-					} else {
-						if e := json.Unmarshal(j, &parents); e != nil {
-							return e
-						}
-					}
-				}
-			}
+	} else {
+		i.ImageId, i.JSON = imageId, json
+		i.Uploaded, i.Checksumed, i.Encrypted, i.Size, i.Updated = false, false, false, 0, time.Now().Unix()
 
-			images = append(images, imageId)
-			parents = append(images, parents...)
-
-			parentJSON, _ := json.Marshal(parents)
-
-			image.Ancestry = string(parentJSON)
-
-			image.Updated = time.Now().Unix()
-
-			if e := image.Save(key); e != nil {
-				return e
-			}
+		if err := i.Save(); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func (image *Image) GetAncestry(imageId, sign string, uploaded, checksumed bool) ([]byte, error) {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return []byte(""), err
+func (i *Image) PutLayer(imageId string, path string, uploaded bool, size int64) error {
+	if has, _, err := i.Has(imageId); err != nil {
+		return err
 	} else if has == false {
-		return []byte(""), fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
+		return fmt.Errorf("Image not found")
 	} else {
-		if results, e := LedisDB.HMget(key, []byte("Checksumed"), []byte("Uploaded"), []byte("Ancestry")); e != nil {
-			return []byte(""), e
-		} else {
+		i.Path, i.Uploaded, i.Size, i.Updated = path, uploaded, size, time.Now().Unix()
 
-			if utils.BytesToBool(results[0]) != checksumed {
-				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
-			}
-
-			if utils.BytesToBool(results[1]) != uploaded {
-				return []byte(""), fmt.Errorf("没有找到 Image 的数据")
-			}
-
-			return results[2], nil
+		if err := i.Save(); err != nil {
+			return err
 		}
 	}
 
-	return []byte(""), nil
+	return nil
 }
 
-func (image *Image) GetSize(imageId, sign string, uploaded, checksumed bool) (int64, error) {
-	if has, key, err := image.Get(imageId, sign); err != nil {
-		return 0, err
+func (i *Image) PutChecksum(imageId string, checksum string, checksumed bool, payload string) error {
+	if has, _, err := i.Has(imageId); err != nil {
+		return err
 	} else if has == false {
-		return 0, fmt.Errorf("没有在数据库中查询到要更新的 Image 数据")
+		return fmt.Errorf("Image not found")
 	} else {
-		if results, e := LedisDB.HMget(key, []byte("Checksumed"), []byte("Uploaded"), []byte("Size")); e != nil {
-			return 0, e
-		} else {
+		if err := i.PutAncestry(imageId); err != nil {
 
-			if utils.BytesToBool(results[0]) != checksumed {
-				return 0, fmt.Errorf("没有找到 Image 的数据")
-			}
+			return err
+		}
 
-			if utils.BytesToBool(results[1]) != uploaded {
-				return 0, fmt.Errorf("没有找到 Image 的数据")
-			}
+		i.Checksum, i.Checksumed, i.Payload, i.Updated = checksum, checksumed, payload, time.Now().Unix()
 
-			return utils.BytesToInt64(results[2]), nil
+		if err = i.Save(); err != nil {
+			return err
 		}
 	}
 
-	return 0, nil
+	return nil
 }
 
-func (image *Image) Save(key []byte) error {
-	s := reflect.TypeOf(image).Elem()
+func (i *Image) PutAncestry(imageId string) error {
+	if has, _, err := i.Has(imageId); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("Image not found")
+	}
 
-	//循环处理 Struct 的每一个 Field
-	for i := 0; i < s.NumField(); i++ {
-		//获取 Field 的 Value
-		value := reflect.ValueOf(image).Elem().Field(s.Field(i).Index[0])
+	var imageJSONMap map[string]interface{}
+	var imageAncestry []string
 
-		//判断 Field 不为空
-		if utils.IsEmptyValue(value) == false {
-			switch value.Kind() {
-			case reflect.String:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(value.String())); err != nil {
-					return err
-				}
-			case reflect.Bool:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.BoolToBytes(value.Bool())); err != nil {
-					return err
-				}
-			case reflect.Int64:
-				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
-					return err
-				}
-			default:
-				return fmt.Errorf("不支持的数据类型 %s:%s", s.Field(i).Name, value.Kind().String())
-			}
+	if err := json.Unmarshal([]byte(i.JSON), &imageJSONMap); err != nil {
+		return err
+	}
+
+	if value, has := imageJSONMap["parent"]; has == true {
+		parentImage := new(Image)
+		parentHas, _, err := parentImage.Has(value.(string))
+		if err != nil {
+			return err
 		}
 
+		if !parentHas {
+			return fmt.Errorf("Parent image not found")
+		}
+
+		var parentAncestry []string
+		json.Unmarshal([]byte(parentImage.Ancestry), &parentAncestry)
+		imageAncestry = append(imageAncestry, imageId)
+		imageAncestry = append(imageAncestry, parentAncestry...)
+	} else {
+		imageAncestry = append(imageAncestry, imageId)
+	}
+
+	ancestryJSON, _ := json.Marshal(imageAncestry)
+	i.Ancestry = string(ancestryJSON)
+
+	if err := i.Save(); err != nil {
+		return err
 	}
 
 	return nil

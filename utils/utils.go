@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -94,14 +95,14 @@ func GeneralKey(key string) []byte {
 }
 
 func GeneralToken(key string) string {
-	md5String := fmt.Sprintf("%v%v", key, string(time.Now().Unix()))
+	md5String := fmt.Sprintf("%v%v", key, time.Now())
 	h := md5.New()
 	h.Write([]byte(md5String))
 	return hex.EncodeToString(h.Sum(nil))
 }
 
 func EncodePassword(username string, password string) string {
-	md5String := fmt.Sprintf("%s%s%s", username, password, "docker-bucket")
+	md5String := fmt.Sprintf("%s%s%s", username, password, "wharf")
 	h := md5.New()
 	h.Write([]byte(md5String))
 
@@ -157,4 +158,20 @@ func IsDirExists(path string) bool {
 	}
 
 	panic("not reached")
+}
+
+func IsFileExists(filePath string) (error, bool) {
+	fi, err := os.Stat(filePath)
+	if err != nil {
+		return err, false
+	} else if fi.IsDir() {
+		return errors.New("传入参数应为文件而不是文件夹"), false
+	}
+	return nil, true
+}
+
+func EncodeEmail(email string) string {
+	h := md5.New()
+	h.Write([]byte(email))
+	return hex.EncodeToString(h.Sum(nil))
 }

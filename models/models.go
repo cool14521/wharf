@@ -1,7 +1,9 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 
@@ -9,16 +11,16 @@ import (
 	"github.com/siddontang/ledisdb/config"
 	"github.com/siddontang/ledisdb/ledis"
 
-	"github.com/dockercn/docker-bucket/global"
+	"github.com/dockercn/wharf/utils"
 )
 
 const (
-	USER_SYMBLE         = "@"
-	ORGANIZATION_SYMBLE = "#"
-	REPOSITORY_SYMBLE   = "$"
-	IMAGE_SYMBLE        = "&"
-	TEMPLATE_SYMBLE     = "*"
-	JOB_SYMBLE          = "!"
+	GLOBAL_USER_INDEX         = "GLOBAL_USER_INDEX"
+	GLOBAL_REPOSITORY_INDEX   = "GLOBAL_REPOSITORY_INDEX"
+	GLOBAL_ORGANIZATION_INDEX = "GLOBAL_ORGANIZATION_INDEX"
+	GLOBAL_TEAM_INDEX         = "GLOBAL_TEAM_INDEX"
+	GLOBAL_IMAGE_INDEX        = "GLOBAL_IMAGE_INDEX"
+	GLOBAL_TAG_INDEX          = "GLOBAL_TAG_INDEX"
 )
 
 var (
@@ -27,23 +29,10 @@ var (
 	LedisDB   *ledis.DB
 )
 
-func setSessionEngine() {
-	beego.SessionProvider = beego.AppConfig.String("session::Provider")
-	beego.SessionSavePath = beego.AppConfig.String("session::SavePath")
-	beego.SessionName = "bucket"
-	beego.SessionHashKey = "dwzemsxoltmv"
-}
-
-func InitSession() {
-	setSessionEngine()
-}
-
-// InitDb initializes the database.
 func InitDb() {
 	initLedisFunc := func() {
 		cfg := new(config.Config)
-		cfg.DataDir = global.BucketConfig.String("ledisdb::DataDir")
-
+		cfg.DataDir = beego.AppConfig.String("ledisdb::DataDir")
 		var err error
 		nowLedis, err = ledis.Open(cfg)
 		if err != nil {
@@ -54,47 +43,145 @@ func InitDb() {
 
 	ledisOnce.Do(initLedisFunc)
 
-	db, _ := global.BucketConfig.Int("ledisdb::DB")
+	db, _ := beego.AppConfig.Int("ledisdb::DB")
 
 	LedisDB, _ = nowLedis.Select(db)
 }
 
-//获取服务器全局存储的 Key 值
-func GetServerKeys(object string) string {
-	switch strings.TrimSpace(object) {
+func GetUUID(ObjectType, Object string) (UUID []byte, err error) {
+
+	index := ""
+
+	switch strings.TrimSpace(ObjectType) {
+
 	case "user":
-		return fmt.Sprintf("%susers", USER_SYMBLE)
-	case "org":
-		return fmt.Sprintf("%sorgs", ORGANIZATION_SYMBLE)
-	case "repo":
-		return fmt.Sprintf("%srepos", REPOSITORY_SYMBLE)
+		index = GLOBAL_USER_INDEX
+	case "repository":
+		index = GLOBAL_REPOSITORY_INDEX
+	case "organization":
+		index = GLOBAL_ORGANIZATION_INDEX
+	case "team":
+		index = GLOBAL_TEAM_INDEX
 	case "image":
-		return fmt.Sprintf("%simages", IMAGE_SYMBLE)
-	case "template":
-		return fmt.Sprintf("%stemplates", TEMPLATE_SYMBLE)
-	case "job":
-		return fmt.Sprintf("%sjob", JOB_SYMBLE)
+		index = GLOBAL_IMAGE_INDEX
+	case "tag":
+		index = GLOBAL_TAG_INDEX
 	default:
-		return ""
+
 	}
+
+	if UUID, err = LedisDB.HGet([]byte(index), []byte(Object)); err != nil {
+		return nil, err
+	} else {
+		return UUID, nil
+	}
+
 }
 
-//获取对象存储的 Key
-func GetObjectKey(object string, id string) string {
-	switch strings.TrimSpace(object) {
-	case "user":
-		return fmt.Sprintf("%s%s", USER_SYMBLE, strings.TrimSpace(id))
-	case "org":
-		return fmt.Sprintf("%s%s", ORGANIZATION_SYMBLE, strings.TrimSpace(id))
-	case "repo":
-		return fmt.Sprintf("%s%s", REPOSITORY_SYMBLE, strings.TrimSpace(id))
-	case "image":
-		return fmt.Sprintf("%s%s", IMAGE_SYMBLE, strings.TrimSpace(id))
-	case "template":
-		return fmt.Sprintf("%s%s", TEMPLATE_SYMBLE, strings.TrimSpace(id))
-	case "job":
-		return fmt.Sprintf("%s%s", JOB_SYMBLE, strings.TrimSpace(id))
-	default:
-		return ""
+func Save(obj interface{}, key []byte) (err error) {
+
+	s := reflect.TypeOf(obj).Elem()
+
+	for i := 0; i < s.NumField(); i++ {
+
+		value := reflect.ValueOf(obj).Elem().Field(s.Field(i).Index[0])
+
+		switch value.Kind() {
+
+		case reflect.String:
+			if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(value.String())); err != nil {
+				return err
+			}
+
+		case reflect.Bool:
+			if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.BoolToBytes(value.Bool())); err != nil {
+				return err
+			}
+
+		case reflect.Int64:
+			if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
+				return err
+			}
+
+		case reflect.Slice:
+			if "[]string" == value.Type().String() && !value.IsNil() {
+				strJson := "["
+
+				for i := 0; i < value.Len(); i++ {
+					nowUUID := value.Index(i).String()
+					if i != 0 {
+						strJson += fmt.Sprintf(`,"%s"`, nowUUID)
+					} else {
+						strJson += fmt.Sprintf(`"%s"`, nowUUID)
+					}
+				}
+
+				strJson += "]"
+
+				if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), []byte(strJson)); err != nil {
+					return err
+				}
+			}
+
+		default:
+		}
+
 	}
+	return nil
+}
+
+func Get(obj interface{}, UUID []byte) (err error) {
+
+	nowTypeElem := reflect.ValueOf(obj).Elem()
+	types := nowTypeElem.Type()
+
+	for i := 0; i < nowTypeElem.NumField(); i++ {
+
+		nowField := nowTypeElem.Field(i)
+		nowFieldName := types.Field(i).Name
+
+		switch nowField.Kind() {
+
+		case reflect.String:
+			nowValue, err := LedisDB.HGet(UUID, []byte(nowFieldName))
+			nowField.SetString(string(nowValue))
+			if err != nil {
+				return err
+			}
+
+		case reflect.Bool:
+			nowValue, err := LedisDB.HGet(UUID, []byte(nowFieldName))
+			nowField.SetBool(utils.BytesToBool(nowValue))
+			if err != nil {
+				return err
+			}
+
+		case reflect.Int64:
+			nowValue, err := LedisDB.HGet(UUID, []byte(nowFieldName))
+			nowField.SetInt(utils.BytesToInt64(nowValue))
+			if err != nil {
+				return err
+			}
+
+		case reflect.Slice:
+			if "[]string" == nowField.Type().String() {
+				nowValue, err := LedisDB.HGet(UUID, []byte(nowFieldName))
+
+				var stringSlice []string
+				err = json.Unmarshal(nowValue, &stringSlice)
+
+				if err != nil && (len(nowValue) > 0) {
+					return err
+				}
+
+				sliceValue := reflect.ValueOf(stringSlice)
+				nowField.Set(sliceValue)
+			}
+
+		default:
+		}
+	}
+
+	return nil
+
 }
