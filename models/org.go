@@ -25,7 +25,6 @@ type Team struct {
 	TeamPrivileges []string `json:"teamprivileges"` //
 	Repositories   []string `json:"repositories"`   //
 	Memo           string   `json:"memo"`           //
-
 }
 
 func (organization *Organization) Has(organizationName string) (bool, []byte, error) {
