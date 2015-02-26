@@ -184,9 +184,9 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             $window.location.href = '/setting#/org/add';
         }
     }])
-    .controller('SettingTeamCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+    .controller('SettingTeamCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
         //初始化加载user的organization信息
-        $http.get('/w1/organization')
+        $http.get('/w1/organizations')
             .success(function(data, status, headers, config) {
                 $scope.team = data
             })
@@ -253,7 +253,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             */
         }
 
-        var availableTags = ["chliang2030598","fivestarsky"];
+        var availableTags = ["chliang2030598", "fivestarsky"];
 
         $("#tags").autocomplete({
             source: availableTags
@@ -282,16 +282,65 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             .error(function(data, status, headers, config) {
                 $timeout(function() {
                     //$window.location.href = '/auth';
-                    alert(data);
+
                 }, 3000);
             });
     }])
-    .controller('SettingCompetenceCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+    .controller('SettingCompetenceCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
         //get teams data
-        
-        $scope.submit = function() {
+        $scope.repositoryAdd = {};
+        $scope.repo = {};
+        $http.get('/w1/teams')
+            .success(function(data, status, headers, config) {
+                $scope.teams = data;
+                /*  if length(data) == 0 {
+                      $scope.organizationShow = false;
+                      return
+                  }
+                  $scope.organizationShow = true;*/
+            })
+            .error(function(data, status, headers, config) {
+                $timeout(function() {
+                    //$window.location.href = '/auth';
+                    alert(data.message);
+                }, 3000);
+            });
+        //get repotories data
+        $http.get('/w1/organizations/' + $routeParams.org + '/repo')
+            .success(function(data, status, headers, config) {
+                $scope.organiztionrepos = data;
+                $scope.repositoryAdd = data[0];
+            })
+            .error(function(data, status, headers, config) {
+                $timeout(function() {
+                    //$window.location.href = '/auth';
+                    alert(data.message);
+                }, 3000);
+            });
 
+        //
+        $scope.repo.privilege = "false";
+
+        $scope.open = function(teamUUID) {
+            $('#myModal').modal('toggle');
+            $scope.repo.teamUUID = teamUUID;
         }
+
+        $scope.addRepo4Team = function() {
+            $scope.repo.repoUUID = $scope.repositoryAdd.UUID;
+            $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+            $http.post('/w1/team/privilege', $scope.repo)
+                .success(function(data, status, headers, config) {
+                    $('#myModal').modal('toggle');
+                    growl.info(data.message);
+                })
+                .error(function(data, status, headers, config) {
+                    $('#myModal').modal('toggle');
+                    growl.error(data.message);
+                });
+        }
+
+
     }])
     //routes
     .config(function($routeProvider, $locationProvider) {
@@ -324,15 +373,15 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 templateUrl: '/static/views/setting/organization.html',
                 controller: 'SettingOrganizationCtrl'
             })
-            .when('/team', {
-                templateUrl: '/static/views/setting/team.html',
-                controller: 'SettingTeamCtrl'
-            })
             .when('/team/add', {
                 templateUrl: '/static/views/setting/teamadd.html',
                 controller: 'SettingTeamAddCtrl'
             })
-            .when('/competence', {
+            .when('/:org/team', {
+                templateUrl: '/static/views/setting/team.html',
+                controller: 'SettingTeamCtrl'
+            })
+            .when('/:org/competence', {
                 templateUrl: '/static/views/setting/competence.html',
                 controller: 'SettingCompetenceCtrl'
             });

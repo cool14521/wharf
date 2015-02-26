@@ -11,7 +11,7 @@
                 </lable>
             </div>
             <div class="form-content">
-                <select class="form-control" ng-model="repository.namespace" ng-options="namespace for namespace in namespaces"></select>
+                <select class="form-control"  ng-model="namespaceObject" ng-options="namespace.namespace for namespace in namespaces"></select>
 
                 <div class="slash">/</div>
 
