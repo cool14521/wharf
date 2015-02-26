@@ -9,6 +9,7 @@ type Organization struct {
 	Organization string   `json:"organization"` //
 	Username     string   `json:"username"`     //
 	Description  string   `json:"description"`  //
+	Repositories []string `json:"repositories"` //
 	Created      int64    `json:"created"`      //
 	Updated      int64    `json:"updated"`      //
 	Teams        []string `json:"teams"`        //
