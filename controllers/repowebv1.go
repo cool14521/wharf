@@ -61,7 +61,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 				this.StopRun()
 			}
 
-			result := map[string]string{"message": "Repository Singup Successfully!"}
+			result := map[string]string{"message": "Repository create successfully!"}
 			this.Data["json"] = result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)

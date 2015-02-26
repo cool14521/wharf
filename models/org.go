@@ -5,25 +5,26 @@ import (
 )
 
 type Organization struct {
-	UUID         string   `json:"UUID"`         //全局唯一的索引
-	Organization string   `json:"organization"` //全局唯一，组织名称,不可修改，如果可以修改就要加code
-	Username     string   `json:"username"`     //创建组织的用户名
-	Description  string   `json:"description"`  //组织说明，保存markdown 格式 方便展现
-	Created      int64    `json:"created"`      //组织创建时间
-	Updated      int64    `json:"updated"`      //组织信息修改时间
-	Teams        []string `json:"teams"`        //当前组织下所有的Team的UUID
+	UUID         string   `json:"UUID"`         //
+	Organization string   `json:"organization"` //
+	Username     string   `json:"username"`     //
+	Description  string   `json:"description"`  //
+	Created      int64    `json:"created"`      //
+	Updated      int64    `json:"updated"`      //
+	Teams        []string `json:"teams"`        //
+	Memo         string   `json:"memo"`         //
 }
 
 type Team struct {
-	UUID           string   `json:"UUID"`           //全局唯一的索引
-	Team           string   `json:"team"`           //全局唯一,Team名称，不可修改，如果可以修改就要加code
-	Organization   string   `json:"organization"`   //此Team属于哪个组织
-	Username       string   `json:"username"`       //此Team属于哪个用户
+	UUID           string   `json:"UUID"`           //
+	Team           string   `json:"team"`           //
+	Organization   string   `json:"organization"`   //
+	Username       string   `json:"username"`       //
 	Description    string   `json:"description"`    //
-	Users          []string `json:"users"`          //已经加入此Team的所有User对应UUID
-	TeamPrivileges []string `json:"teamprivileges"` //已经加入此Team的所有User对应的权限UUID,一个Team有统一的读写权限，权限不到个人
-	Repositories   []string `json:"repositories"`   //此Team所有Repository的UUID
-
+	Users          []string `json:"users"`          //
+	TeamPrivileges []string `json:"teamprivileges"` //
+	Repositories   []string `json:"repositories"`   //
+	Memo           string   `json:"memo"`           //
 }
 
 func (organization *Organization) Has(organizationName string) (bool, []byte, error) {

@@ -37,21 +37,24 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
 
         //deal with create repository
         $scope.createRepo = function() {
-            if ($scope.privated.selection.code == 1) {
-                $scope.repository.privated = true;
-            } else {
-                $scope.repository.privated = false;
-            }
+            if ($scope.repoCreateForm.$valid) {
+                alert($scope.repoCreateForm.$valid)
+                if ($scope.privated.selection.code == 1) {
+                    $scope.repository.privated = true;
+                } else {
+                    $scope.repository.privated = false;
+                }
 
-            $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-            $http.post('/w1/repository', $scope.repository)
-                .success(function(data, status, headers, config) {
-                    $scope.addPrivilege = true;
-                    growl.info(data.message);
-                })
-                .error(function(data, status, headers, config) {
-                    growl.error(data.message);
-                });
+                $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+                $http.post('/w1/repository', $scope.repository)
+                    .success(function(data, status, headers, config) {
+                        $scope.addPrivilege = true;
+                        growl.info(data.message);
+                    })
+                    .error(function(data, status, headers, config) {
+                        growl.error(data.message);
+                    });
+            }
         }
 
     }])
@@ -156,14 +159,14 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
             });
     })
     .directive('namespaceValidator', [function() {
-        var NAMESPACE_REGEXP = /^([a-z0-9_]{6,30})$/;
+        var USERNAME_REGEXP = /^([a-z0-9_]{6,30})$/;
 
         return {
             require: 'ngModel',
             restrict: '',
             link: function(scope, element, attrs, ngModel) {
                 ngModel.$validators.usernames = function(value) {
-                    return USERNAME_REGEXP.test(value);
+                    return USERNAME_REGEXP.test(value) || value == "";
                 }
             }
         };

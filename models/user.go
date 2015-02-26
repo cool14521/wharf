@@ -6,23 +6,24 @@ import (
 )
 
 type User struct {
-	UUID          string   `json:"UUID"`          //全局唯一的索引, LedisDB UserList 保存全局所有的用户UUID列表信息，LedisDB独立保存每个用户信息到一个hash,名字为{UUID}
-	Username      string   `json:"username"`      //用于保存用户的登录名,全局唯一
-	Password      string   `json:"password"`      //保存用户MD5后的密码
-	Email         string   `json:"email"`         //保存用户注册的密码，bucket 项目是否有必要
-	Fullname      string   `json:"fullname"`      //保存用户全名，还是昵称
-	Company       string   `json:"company"`       //用户所属公司
-	Location      string   `json:"location"`      //用户所在地
-	Mobile        string   `json:"mobile"`        //用户电话
-	URL           string   `json:"url"`           //用户主页URL
-	Gravatar      string   `json:"gravatar"`      //用户头像地址 如果是邮件地址，使用gravatar.org 进行解析
-	Created       int64    `json:"created"`       //用户创建时间
-	Updated       int64    `json:"updated"`       //用户信息更新时间
-	Repositories  []string `json:"repositories"`  //用户具备所有权的respository对应UUID信息,最新添加的Repository在最前面
-	Organizations []string `json:"organizations"` //用户所有的组织对应UUID信息，最新添加的在最前面
-	Teams         []string `json:"teams"`         //用户所有的Team对应UUID信息，最新添加的在最前面
-	Starts        []string `json:"starts"`        //用户加星的Respository对应UUID信息,最新添加的在最前面
-	Comments      []string `json:"comments"`      //和用户相关的所有评论对应UUID信息，包括自己发的评论和别人评论相关自己的，最新的评论在最前面
+	UUID          string   `json:"UUID"`          //
+	Username      string   `json:"username"`      //
+	Password      string   `json:"password"`      //
+	Email         string   `json:"email"`         //
+	Fullname      string   `json:"fullname"`      //
+	Company       string   `json:"company"`       //
+	Location      string   `json:"location"`      //
+	Mobile        string   `json:"mobile"`        //
+	URL           string   `json:"url"`           //
+	Gravatar      string   `json:"gravatar"`      //
+	Created       int64    `json:"created"`       //
+	Updated       int64    `json:"updated"`       //
+	Repositories  []string `json:"repositories"`  //
+	Organizations []string `json:"organizations"` //
+	Teams         []string `json:"teams"`         //
+	Starts        []string `json:"starts"`        //
+	Comments      []string `json:"comments"`      //
+	Memo          string   `json:"memo"`          //
 }
 
 func (user *User) Has(username string) (bool, []byte, error) {

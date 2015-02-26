@@ -5,49 +5,35 @@
   <head>
     <meta charset="utf-8">
 
-    <title>ContainerOps Platform - Admin</title>
+    <title>ContainerOps Platform - Auth</title>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8">
     
-    <meta name="robots" content="noindex, noflilow">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0">
 
     <link rel="stylesheet" type="text/css" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/bower_components/font-awesome/css/font-awesome.min.css">    
     <link rel="stylesheet" type="text/css" href="/static/bower_components/angular-growl-v2/build/angular-growl.min.css">    
-    <link rel="stylesheet" type="text/css" href="/static/css/bucket.css">
-    <link rel="stylesheet" type="text/css" href="/static/css/header.css">    
-    <link rel="stylesheet" type="text/css" href="/static/css/admin/admin.css">    
+    <link rel="stylesheet" type="text/css" href="/static/css/admin/auth.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bucket.css"> 
   </head>
-  <body ng-app="admin">
+  <body ng-app="auth">
+    <img src="/static/images/auth/bg.jpg" alt="Auth Full Background" class="full-bg animation-pulseSlow">
 
-    <div id="main-container">
-      <<<template "admin-header.html" .>>>
+    <!-- Auth Container  -->
+    <div id="login-container" class="animation-fadeIn">
 
-      <div class="container">
-        <!-- Left Bar -->
-        <div class="row">
-          <div class="col-md-3">
-            <!--System List Group -->
-            <div class="block left-nav">
-              <div class="block-title">
-                <h2><strong>
-                  系统设置
-                </strong></h2>
-              </div>
-              <div class="list-group">
-                <span class="list-group-item"><a href="#"><i class="fa fa-database fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;数据库设置</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-envelope-o fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Email 设置</a></span>
-                <span class="list-group-item"><a href="#"><i class="fa fa-bar-chart fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;数据统计</a></span>
-              </div>
-            </div>
-            <!-- End System List Group -->
-
-          </div>
-        </div>
-        <!-- End Left Bar -->
+      <!-- Auth Title -->
+      <div class="login-title text-center">
+        <!-- <img src="" alt="" class="title-logo"> -->
       </div>
-    </div>
+      <!-- END Auth Title -->
 
+      <div class="block push-bit" ng-view></div>
+      <div growl></div>
+      
+    </div>
+   
     <script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
     <script type="text/javascript" src="/static/bower_components/angular-route/angular-route.min.js"></script>
     <script type="text/javascript" src="/static/bower_components/angular-messages/angular-messages.min.js"></script>
@@ -55,9 +41,7 @@
     <script type="text/javascript" src="/static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
     <script type="text/javascript" src="/static/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
     <script type="text/javascript" src="/static/bower_components/angular-growl-v2/build/angular-growl.min.js"></script>
-    
-    <script type="text/javascript" src="/static/javascript/utils.js"></script>
-    <script type="text/javascript" src="/static/javascript/admin/admin.js"></script>
-    
+    <script type="text/javascript" src="/static/javascript/utils.js"></script>  
+    <script type="text/javascript" src="/static/javascript/admin/auth.js"></script>
   </body>
 </html>
