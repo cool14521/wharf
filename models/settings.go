@@ -101,3 +101,25 @@ func (u *User) Log(action, level int64, actionId string, content []byte) error {
 
 	return nil
 }
+
+func (o *Organization) Log(action, level int64, actionId string, content []byte) error {
+	if uuid, err := GetUUID("log", fmt.Sprintf("%d-%d-%d", action, actionId)); err != nil {
+		return err
+	} else {
+		log := Log{UUID: string(uuid), Created: time.Now().Unix()}
+		log.Action = action
+		log.ActionUUID = actionId
+
+		if err := Save(log, []byte(uuid)); err != nil {
+			return err
+		}
+
+		o.Memo = append(o.Memo, string(uuid))
+
+		if err := o.Save(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
