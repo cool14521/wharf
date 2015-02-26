@@ -8,34 +8,35 @@ import (
 )
 
 type Repository struct {
-	UUID          string   `json:"UUID"`          //
-	Repository    string   `json:"repository"`    //
-	Namespace     string   `json:"namespace"`     //
-	NamespaceType bool     `json:"namespacetype"` //
-	Organization  string   `json:"organization"`  //
-	Tags          []string `json:"tags"`          //
-	Starts        []string `json:"starts"`        //
-	Comments      []string `json:"comments"`      //
-	Short         string   `json:"short"`         //
-	Description   string   `json:"description"`   //
-	JSON          string   `json:"json"`          //
-	Dockerfile    string   `json:"dockerfile"`    //
-	Agent         string   `json:"agent"`         //
-	Links         string   `json:"links"`         //
-	Size          int64    `json:"size"`          //
-	Download      int64    `json:"download"`      //
-	Uploaded      bool     `json:"uploaded"`      //
-	Checksum      string   `json:"checksum"`      //
-	Checksumed    bool     `json:"checksumed"`    //
-	Icon          string   `json:"icon"`          //
-	Sign          string   `json:"sign"`          //
-	Privated      bool     `json:"privated"`      //
-	Clear         string   `json:"clear"`         //
-	Cleared       bool     `json:"cleared"`       //
-	Encrypted     bool     `json:"encrypted"`     //
-	Created       int64    `json:"created"`       //
-	Updated       int64    `json:"updated"`       //
-	Memo          []string `json:"memo"`          //
+	UUID          string    `json:"UUID"`          //
+	Repository    string    `json:"repository"`    //
+	Namespace     string    `json:"namespace"`     //
+	NamespaceType bool      `json:"namespacetype"` //
+	Organization  string    `json:"organization"`  //
+	Tags          []string  `json:"tags"`          //
+	Starts        []string  `json:"starts"`        //
+	Comments      []string  `json:"comments"`      //
+	Short         string    `json:"short"`         //
+	Description   string    `json:"description"`   //
+	JSON          string    `json:"json"`          //
+	Dockerfile    string    `json:"dockerfile"`    //
+	Agent         string    `json:"agent"`         //
+	Links         string    `json:"links"`         //
+	Size          int64     `json:"size"`          //
+	Download      int64     `json:"download"`      //
+	Uploaded      bool      `json:"uploaded"`      //
+	Checksum      string    `json:"checksum"`      //
+	Checksumed    bool      `json:"checksumed"`    //
+	Icon          string    `json:"icon"`          //
+	Sign          string    `json:"sign"`          //
+	Privated      bool      `json:"privated"`      //
+	Clear         string    `json:"clear"`         //
+	Cleared       bool      `json:"cleared"`       //
+	Encrypted     bool      `json:"encrypted"`     //
+	Created       int64     `json:"created"`       //
+	Updated       int64     `json:"updated"`       //
+	Memo          []string  `json:"memo"`          //
+	Privilege     Privilege `json:"privilege"`
 }
 
 type Star struct {
@@ -134,6 +135,14 @@ func (r *Repository) Put(namespace, repository, json, agent string) error {
 	return nil
 }
 
+func (repository *Repository) Get(UUID string) error {
+	if err := Get(repository, []byte(UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *Repository) PutTag(imageId, namespace, repository, tag string) error {
 	if has, _, err := r.Has(namespace, repository); err != nil {
 		return err
@@ -184,6 +193,18 @@ func (r *Repository) PutImages(namespace, repository string) error {
 
 func (p *Privilege) Get(UUID string) error {
 	if err := Get(p, []byte(UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Privilege) Save() error {
+	if err := Save(p, []byte(p.UUID)); err != nil {
+		return err
+	}
+
+	if _, err := LedisDB.HSet([]byte(GLOBAL_PRIVILEGE_INDEX), []byte(fmt.Sprintf("%s:%s:%s", p.Privilege, p.Team, p.Repository)), []byte(p.UUID)); err != nil {
 		return err
 	}
 

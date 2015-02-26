@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
-	"net/http"
-
+	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
+	"net/http"
 )
 
 type TeamWebV1Controller struct {
@@ -15,6 +15,7 @@ type TeamWebV1Controller struct {
 
 func (this *TeamWebV1Controller) URLMapping() {
 	this.Mapping("PostTeam", this.PostTeam)
+	this.Mapping("GetTeams", this.GetTeams)
 }
 
 func (this *TeamWebV1Controller) Prepare() {
@@ -70,6 +71,21 @@ func (this *TeamWebV1Controller) PostTeam() {
 		this.StopRun()
 	}
 
+	user.Teams = append(user.Teams, team.UUID)
+
+	if err := user.Save(); err != nil {
+		beego.Error("[WEB API] User save error:", err.Error())
+
+		result := map[string]string{"message": "User save error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+	user.Get(user.Username, user.Password)
+	this.Ctx.Input.CruSession.Set("user", user)
+
 	org := new(models.Organization)
 
 	if exist, _, _ := org.Has(team.Organization); exist {
@@ -88,6 +104,117 @@ func (this *TeamWebV1Controller) PostTeam() {
 	}
 
 	result := map[string]string{"message": "OK"}
+	this.Data["json"] = result
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
+}
+
+func (this *TeamWebV1Controller) GetTeams() {
+	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+	if exist != true {
+
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+
+	}
+
+	teams := make([]models.Team, 0)
+	for _, teamUUID := range user.Teams {
+		team := new(models.Team)
+		if err := team.Get(teamUUID); err != nil {
+			continue
+		}
+
+		repositories := make([]models.Repository, 0)
+		for _, privilegeUUID := range team.TeamPrivileges {
+			privilege := new(models.Privilege)
+			if err := privilege.Get(privilegeUUID); err != nil {
+				continue
+			}
+			repository := new(models.Repository)
+			if err := repository.Get(privilege.Repository); err != nil {
+				continue
+			}
+			repository.Privilege = *privilege
+			repositories = append(repositories, *repository)
+		}
+
+		team.RepositoryObjects = repositories
+		teams = append(teams, *team)
+	}
+
+	this.Data["json"] = teams
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
+}
+
+func (this *TeamWebV1Controller) PostPrivilege() {
+	var repo map[string]interface{}
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &repo); err != nil {
+		beego.Error(fmt.Sprintf("[WEB API] Unmarshal Repository create data error:: %s", err.Error()))
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	privilege := repo["privilege"].(bool)
+	teamUUID := repo["teamUUID"].(string)
+	repoUUID := repo["repoUUID"].(string)
+
+	privilegeObj := new(models.Privilege)
+	privilegeObj.UUID = utils.GeneralToken("containerops")
+	privilegeObj.Privilege = privilege
+	privilegeObj.Team = teamUUID
+	privilegeObj.Repository = repoUUID
+
+	if err := privilegeObj.Save(); err != nil {
+
+		beego.Error("[WEB API] Privilege save error:", err.Error())
+		result := map[string]string{"message": "Privilege save error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	team := new(models.Team)
+	if err := team.Get(teamUUID); err != nil {
+		beego.Error("[WEB API] Team get error:", err.Error())
+		result := map[string]string{"message": "Team get error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+	team.Repositories = append(team.Repositories, repoUUID)
+	team.TeamPrivileges = append(team.TeamPrivileges, privilegeObj.UUID)
+
+	if err := team.Save(); err != nil {
+		beego.Error("[WEB API] Team save error:", err.Error())
+		result := map[string]string{"message": "Team save error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	result := map[string]string{"message": "Privilege create successfully!"}
 	this.Data["json"] = result
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)

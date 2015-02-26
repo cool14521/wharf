@@ -11,15 +11,17 @@
 angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'ui.codemirror'])
     .controller('AddRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
         $scope.privated = {};
-        $scope.namespaces = [];
+        $scope.namespaces = {};
         $scope.repository = {};
+        $scope.namespaceObject = {};
 
         //init user data
         $scope.addPrivilege = false
         $http.get('/w1/namespaces')
             .success(function(data, status, headers, config) {
                 $scope.namespaces = data;
-                $scope.repository.namespace = data[0];
+                /* $scope.repository.namespace = data[0];*/
+                $scope.namespaceObject = data[0];
             })
             .error(function(data, status, headers, config) {
 
@@ -38,13 +40,15 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
         //deal with create repository
         $scope.createRepo = function() {
             if ($scope.repoCreateForm.$valid) {
-                alert($scope.repoCreateForm.$valid)
                 if ($scope.privated.selection.code == 1) {
                     $scope.repository.privated = true;
                 } else {
                     $scope.repository.privated = false;
                 }
-
+                
+                $scope.repository.namespace =  $scope.namespaceObject.namespace;
+                $scope.repository.namespacetype = $scope.namespaceObject.namespacetype;
+                
                 $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
                 $http.post('/w1/repository', $scope.repository)
                     .success(function(data, status, headers, config) {
@@ -97,7 +101,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
         $scope.privated.selection = $scope.privated.values[0];
 
     }])
-    .controller('SettingOrganizationAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+    .controller('SettingOrganizationAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
         $scope.submitting = false;
         $scope.submit = function() {
             if (true) {
