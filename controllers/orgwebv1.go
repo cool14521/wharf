@@ -189,7 +189,7 @@ func (this *OrganizationWebV1Controller) GetOrganizationDetail() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-
+		this.StopRun()
 	} else {
 		organization := new(models.Organization)
 
@@ -201,11 +201,57 @@ func (this *OrganizationWebV1Controller) GetOrganizationDetail() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+			this.StopRun()
 		}
 
 		this.Data["json"] = organization
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
+		this.StopRun()
 	}
+}
+
+func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
+
+	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	org := new(models.Organization)
+
+	if err := org.Get(this.Ctx.Input.Param(":org")); err != nil {
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Organization load failure"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	repositories := make([]models.Repository, 0)
+
+	for _, repositoryUUID := range org.Repositories {
+		repository := new(models.Repository)
+		if err := repository.Get(repositoryUUID); err != nil {
+			continue
+		}
+		repositories = append(repositories, *repository)
+	}
+
+	this.Data["json"] = repositories
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
 }
