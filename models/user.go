@@ -23,7 +23,7 @@ type User struct {
 	Teams         []string `json:"teams"`         //
 	Starts        []string `json:"starts"`        //
 	Comments      []string `json:"comments"`      //
-	Memo          string   `json:"memo"`          //
+	Memo          []string `json:"memo"`          //
 }
 
 func (user *User) Has(username string) (bool, []byte, error) {

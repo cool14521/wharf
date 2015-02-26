@@ -23,7 +23,8 @@ const (
 	GLOBAL_TAG_INDEX          = "GLOBAL_TAG_INDEX"
 	GLOBAL_COMPOSE_INDEX      = "GLOBAL_COMPOSE_INDEX"
 	GLOBAL_ADMIN_INDEX        = "GLOBAL_ADMIN_INDEX"
-	GLOBAL_PRIVILEGE_INDEX    = "GLOBAL_PRIVILEGE_INDEX"
+    GLOBAL_PRIVILEGE_INDEX    = "GLOBAL_PRIVILEGE_INDEX"
+    GLOBAL_LOG_INDEX          = "GLOBAL_LOG_INDEX"
 )
 
 var (
@@ -73,6 +74,11 @@ func GetUUID(ObjectType, Object string) (UUID []byte, err error) {
 		index = GLOBAL_COMPOSE_INDEX
 	case "admin":
 		index = GLOBAL_ADMIN_INDEX
+<<<<<<< HEAD
+=======
+	case "log":
+		index = GLOBAL_LOG_INDEX
+>>>>>>> 7b24a9297f4a2df442b5660ee1dcd47ae2101c67
 	default:
 
 	}
