@@ -35,42 +35,42 @@ type Repository struct {
 	Encrypted     bool     `json:"encrypted"`     //
 	Created       int64    `json:"created"`       //
 	Updated       int64    `json:"updated"`       //
-	Memo          string   `json:"memo"`          //
+	Memo          []string `json:"memo"`          //
 }
 
 type Star struct {
-	UUID       string `json:"UUID"`       //
-	User       string `json:"user"`       //
-	Repository string `json:"repository"` //
-	Time       int64  `json:"time"`       //
-	Memo       string `json:"memo"`       //
+	UUID       string   `json:"UUID"`       //
+	User       string   `json:"user"`       //
+	Repository string   `json:"repository"` //
+	Time       int64    `json:"time"`       //
+	Memo       []string `json:"memo"`       //
 }
 
 type Comment struct {
-	UUID       string `json:"UUID"`       //
-	Comment    string `json:"comment"`    //
-	User       string `json:"user"`       //
-	Repository string `json:"repository"` //
-	Time       int64  `json:"time"`       //
-	Memo       string `json:"memo"`       //
+	UUID       string   `json:"UUID"`       //
+	Comment    string   `json:"comment"`    //
+	User       string   `json:"user"`       //
+	Repository string   `json:"repository"` //
+	Time       int64    `json:"time"`       //
+	Memo       []string `json:"memo"`       //
 }
 
 type Privilege struct {
-	UUID       string `json:"UUID"`       //
-	Privilege  bool   `json:"privilege"`  //
-	Team       string `json:"team"`       //
-	Repository string `json:"repository"` //
-	Memo       string `json:"memo"`       //
+	UUID       string   `json:"UUID"`       //
+	Privilege  bool     `json:"privilege"`  //
+	Team       string   `json:"team"`       //
+	Repository string   `json:"repository"` //
+	Memo       []string `json:"memo"`       //
 }
 
 type Tag struct {
-	UUID       string `json:"uuid"`       //
-	Name       string `json:"name"`       //
-	ImageId    string `json:"imageid"`    //
-	Namespace  string `json:"namespace"`  //
-	Repository string `json:"repository"` //
-	Sign       string `json:"sign"`       //
-	Memo       string `json:"memo"`       //
+	UUID       string   `json:"uuid"`       //
+	Name       string   `json:"name"`       //
+	ImageId    string   `json:"imageid"`    //
+	Namespace  string   `json:"namespace"`  //
+	Repository string   `json:"repository"` //
+	Sign       string   `json:"sign"`       //
+	Memo       []string `json:"memo"`       //
 }
 
 func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {

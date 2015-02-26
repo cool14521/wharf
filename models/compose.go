@@ -21,7 +21,7 @@ type Compose struct {
 	Privated      bool     `json:"privated"`      //
 	Created       int64    `json:"created"`       //
 	Updated       int64    `json:"updated"`       //
-	Memo          string   `json:"memo"`          //
+	Memo          []string `json:"memo"`          //
 }
 
 func (c *Compose) Has(namespace, compose string) (bool, []byte, error) {

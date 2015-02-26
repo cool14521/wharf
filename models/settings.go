@@ -36,3 +36,40 @@ type Log struct {
 	Level      int64  `json:"level"`      //
 	Created    int64  `json:"created"`    //
 }
+
+type EmailMessage struct {
+	UUID     string   `json:"UUID"` //
+	User     string   `json:""`     //
+	Server   string   `json:""`     //
+	Template string   `json:""`     //
+	Object   string   `json:""`     //
+	Message  string   `json:""`     //
+	Status   string   `json:""`     //
+	Count    int64    `json:""`     //
+	Created  int64    `json:""`     //
+	Updated  int64    `json:""`     //
+	Memo     []string `json:""`     //
+}
+
+type EmailServer struct {
+	UUID    string   `json:"UUID"` //
+	Name    string   `json:""`     //
+	Host    string   `json:""`     //
+	Port    int64    `json:""`     //
+	User    string   `json:""`     //
+	Passwd  string   `json:""`     //
+	API     string   `json:""`     //
+	Created int64    `json:""`     //
+	Updated int64    `json:""`     //
+	Memo    []string `json:""`     //
+}
+
+type EmailTemplate struct {
+	UUID    string    `json:"UUID"` //
+	Server  int64     `json:""`     //
+	Name    string    `json:""`     //
+	Content string    `json:""`     //
+	Created time.Time `json:""`     //
+	Updated time.Time `json:""`     //
+	Memo    []string  `json:""`     //
+}

@@ -12,7 +12,7 @@ type Organization struct {
 	Created      int64    `json:"created"`      //
 	Updated      int64    `json:"updated"`      //
 	Teams        []string `json:"teams"`        //
-	Memo         string   `json:"memo"`         //
+	Memo         []string `json:"memo"`         //
 }
 
 type Team struct {
@@ -24,7 +24,7 @@ type Team struct {
 	Users          []string `json:"users"`          //
 	TeamPrivileges []string `json:"teamprivileges"` //
 	Repositories   []string `json:"repositories"`   //
-	Memo           string   `json:"memo"`           //
+	Memo           []string `json:"memo"`           //
 }
 
 func (organization *Organization) Has(organizationName string) (bool, []byte, error) {
