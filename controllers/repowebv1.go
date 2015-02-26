@@ -19,6 +19,19 @@ func (this *RepoWebAPIV1Controller) URLMapping() {
 }
 
 func (this *RepoWebAPIV1Controller) PostRepository() {
+
+	var user models.User
+	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+	if exist != true {
+		beego.Error("[WEB API] Load session failure")
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
 	var repo models.Repository
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &repo); err != nil {
@@ -49,7 +62,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 			this.ServeJson()
 			this.StopRun()
 		} else {
-			repo.UUID = string(utils.GeneralKey(fmt.Sprint(repo.Namespace, repo.Repository)))
+			repo.UUID = utils.GeneralToken(fmt.Sprint(repo.Namespace, repo.Repository))
 
 			if err := repo.Save(); err != nil {
 				beego.Error("[WEB API] Repository save error:", err.Error())
@@ -61,6 +74,33 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 				this.StopRun()
 			}
 
+			if repo.NamespaceType {
+				org := new(models.Organization)
+				if exist, _, _ := org.Has(repo.Namespace); exist {
+					org.Repositories = append(org.Repositories, repo.UUID)
+					if err := org.Save(); err != nil {
+						beego.Error("[WEB API] Repository save error:", err.Error())
+						result := map[string]string{"message": "Repository save error."}
+						this.Data["json"] = result
+
+						this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+						this.ServeJson()
+						this.StopRun()
+					}
+				}
+			} else {
+				user.Repositories = append(user.Repositories, repo.UUID)
+				if err := user.Save(); err != nil {
+					beego.Error("[WEB API] Repository save error:", err.Error())
+					result := map[string]string{"message": "Repository save error."}
+					this.Data["json"] = result
+
+					this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+					this.ServeJson()
+					this.StopRun()
+				}
+				this.Ctx.Input.CruSession.Set("user", user)
+			}
 			result := map[string]string{"message": "Repository create successfully!"}
 			this.Data["json"] = result
 
