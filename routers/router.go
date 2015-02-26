@@ -32,12 +32,14 @@ func init() {
 		beego.NSRouter("/users/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUser"),
 		beego.NSRouter("/team", &controllers.TeamWebV1Controller{}, "post:PostTeam"),
 		beego.NSRouter("/teams", &controllers.TeamWebV1Controller{}, "get:GetTeams"),
+		beego.NSRouter("/team/privilege", &controllers.TeamWebV1Controller{}, "post:PostPrivilege"),
 
 		//organization routers
 		beego.NSRouter("/organizations", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizations"),
 		beego.NSRouter("/organization", &controllers.OrganizationWebV1Controller{}, "post:PostOrganization"),
 		beego.NSRouter("/organization", &controllers.OrganizationWebV1Controller{}, "put:PutOrganization"),
 		beego.NSRouter("/organizations/:org", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizationDetail"),
+		beego.NSRouter("/organizations/:org/repo", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizationRepo"),
 	)
 
 	//Docker Registry API V1 remain
