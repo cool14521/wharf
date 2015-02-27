@@ -23,7 +23,9 @@ func init() {
 		beego.NSRouter("/signin", &controllers.UserWebAPIV1Controller{}, "post:Signin"),
 		beego.NSRouter("/signup", &controllers.UserWebAPIV1Controller{}, "post:Signup"),
 		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "get:GetProfile"),
+		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "put:PutProfile"),
 		beego.NSRouter("/namespaces", &controllers.UserWebAPIV1Controller{}, "get:GetNamespaces"),
+		beego.NSRouter("/gravatar", &controllers.UserWebAPIV1Controller{}, "post:PostGravatar"),
 
 		//repository routers
 		beego.NSRouter("/repository", &controllers.RepoWebAPIV1Controller{}, "post:PostRepository"),
