@@ -68,7 +68,7 @@ SavePath = /tmp/session
 * `Endpoints` is very important parameter, set the same value as your domain or IP. For example, you run `wharf` with domain `xxx.org`, then `Endpoints` should be `xxx.org`.
 * `DataDir` is where `ledis` data is located.
 * The `wharf` session provider default is `ledis`, the `Provider` and `SavePath` is session data storage path.
-
+* The bucket.conf should be in folder conf with app.conf. If you wanna change the bucket.conf name, you should be modify the include bucket.conf in theapp.conf last line.
 
 # Nginx Configuration
 
