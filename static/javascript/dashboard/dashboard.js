@@ -45,10 +45,10 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
                 } else {
                     $scope.repository.privated = false;
                 }
-                
-                $scope.repository.namespace =  $scope.namespaceObject.namespace;
+
+                $scope.repository.namespace = $scope.namespaceObject.namespace;
                 $scope.repository.namespacetype = $scope.namespaceObject.namespacetype;
-                
+
                 $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
                 $http.post('/w1/repository', $scope.repository)
                     .success(function(data, status, headers, config) {

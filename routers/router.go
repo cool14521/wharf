@@ -12,7 +12,7 @@ func init() {
 	beego.Router("/auth", &controllers.WebController{}, "get:GetAuth")
 	beego.Router("/setting", &controllers.WebController{}, "get:GetSetting")
 	beego.Router("/dashboard", &controllers.WebController{}, "get:GetDashboard")
-
+	beego.Router("/signout", &controllers.WebController{}, "get:GetSignout")
 	beego.Router("/admin/auth", &controllers.WebController{}, "get:GetAdminAuth")
 	beego.Router("/admin", &controllers.WebController{}, "get:GetAdmin")
 

@@ -100,3 +100,15 @@ func (this *WebController) GetAdminAuth() {
 	this.Render()
 	this.StopRun()
 }
+
+func (this *WebController) GetSignout() {
+	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+		this.TplNames = "auth.html"
+		this.Render()
+
+		this.StopRun()
+	} else {
+		this.Ctx.Input.CruSession.Delete("user")
+		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
+	}
+}
