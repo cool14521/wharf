@@ -400,3 +400,54 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	this.ServeJson()
 	this.StopRun()
 }
+
+func (this *UserWebAPIV1Controller) PutAccount() {
+	var u map[string]interface{}
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
+		beego.Error(fmt.Sprintf("[WEB API] JSON unmarshal failure: %s", err.Error()))
+		result := map[string]string{"message": "Update password failure"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+	beego.Debug("[WEB API] Password updated:", string(this.Ctx.Input.CopyBody()))
+
+	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+	if exist != true {
+
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	} else if u["oldPassword"].(string) != user.Password {
+		result := map[string]string{"message": "password not match"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	user.Password = u["newPassword"].(string)
+	if err := user.Save(); err != nil {
+		result := map[string]string{"message": "Update password failure"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	result := map[string]string{"message": "Update password success!"}
+	this.Data["json"] = &result
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
+}
