@@ -118,6 +118,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 		this.ServeJson()
 		this.StopRun()
 	}
+
 	user.Get(user.Username, user.Password)
 	this.Ctx.Input.CruSession.Set("user", user)
 
@@ -148,6 +149,7 @@ func (this *TeamWebV1Controller) GetTeams() {
 	for _, teamUUID := range user.Teams {
 		team := new(models.Team)
 		if err := team.Get(teamUUID); err != nil {
+			beego.Error("[WEB API] team load failure,uuid=", teamUUID, err.Error())
 			continue
 		}
 
@@ -168,7 +170,6 @@ func (this *TeamWebV1Controller) GetTeams() {
 		team.RepositoryObjects = repositories
 		teams = append(teams, *team)
 	}
-
 	this.Data["json"] = teams
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
