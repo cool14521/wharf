@@ -57,13 +57,14 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         }
     }])
     .controller('SettingAccountCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
+        $scope.submitting = false;
         $scope.submit = function() {
             if ($scope.accountForm.$valid) {
                 $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
                 $http.put('/w1/account', $scope.user)
                     .success(function(data, status, headers, config) {
+                        $scope.submitting = true;
                         growl.info(data.message);
-                        $window.location.href = '/setting';
                     })
                     .error(function(data, status, headers, config) {
                         $scope.submitting = false;
