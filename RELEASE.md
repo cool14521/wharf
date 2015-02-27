@@ -1,37 +1,36 @@
 RELEASE
-=============
+=======
 
-Wharf is a ContainerOps platform which is the next generation DevOps, never meant to replace the DevOps or traditional approach. The wharf’s goal is building a pipeline with Docker, Rocket and other containers from development to deployment & operations. ContainerOps is all about the change process. When you push commit to the version control system, the Wharf will build a container image included run codes with dependence system automatically. Then the image could be used in continuous integration or continuous deployment with Rocket, LXC or Atomic. We are focusing on continuous changes from version control system to production. 
+Wharf is a successor of ContainerOps platform whose concept is built upon the DevOps, which means it's a higher level solution over traditional approach and DevOps, but not an alternative. The ultimate goal of Wharf is building a pipeline form development to deployment & operations through Docker, Rocket and other container solutions.
 
-Now we are pre-releasing early version of Wharf, it’s an alternative Docker Registry for just now. It will be core of our ContainerOps vision. We are working hard for more fearless and will assemble the whole ContainerOps platform in the next months.
-This is early alpha stuff, you’ve been warned.
+ContainerOps is all about product workflow. Wharf builds and runs a container image you defined whenever new code is being pushed, along with corresponding dependence system. But it's not all, the image will also work with continuous integration, or continuous deployment with Rocket, LXC or Atomic, etc. Wharf is focusing on the continuous changes from version control system to production environment.
 
-# Project Location
+Now, it's time to announce our pre-release and core of ContainerOps version of Wharf, you can replace Docker Registry with it. Please make sure you know that Wharf is currently under alpha stage.
 
-https://github.com/dockercn/wharf
+Our team is still working really hard for your happiness with the complete version of ContainerOps platform, which comes in next few months.
 
+## Project
 
-# Reporting Issues
+You can find Wharf on [GitHub](https://github.com/dockercn/wharf).
 
-Please submit issue at https://github.com/dockercn/wharf/issues
+## Reporting Issues
 
+Please submit issues at [GitHub](https://github.com/dockercn/wharf/issues).
 
-# Maintainers
+## Maintainers
 
-Meaglith Ma https://twitter.com/genedna
-Allen Chen https://github.com/chliang2030598
-Leo Meng https://github.com/fivestarsky
-Unknwon https://tiwtter.com/joe2010xtmf
+- [Meaglith Ma](https://twitter.com/genedna)
+- [Allen Chen](https://github.com/chliang2030598)
+- [Leo Meng](https://github.com/fivestarsky)
+- [Unknwon](https://github.com/Unknwon)
 
-
-# Licensing
+## License
 
 Wharf is licensed under the MIT License.
 
+## Wharf-related Projects
 
-# We Are Working On Other Projects of Wharf Related
+We are also working on other Wharf-related projects:
 
-* Vessel [https://githbu.com/dockercn/vessel] A continuous integration system build with Docker. 
-* Rudder [https://github.com/dockercn/rudder]
-A Docker client of Golang.
-
+* (Vessel)[https://githbu.com/dockercn/vessel]: a continuous integration system build with Docker.
+* (Rudder)[https://github.com/dockercn/rudder]: a Docker client for Golang.
