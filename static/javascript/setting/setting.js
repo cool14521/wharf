@@ -282,8 +282,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                     growl.error(data.message);
                 });
         }
-
-
     }])
     //routes
     .config(function($routeProvider, $locationProvider) {
