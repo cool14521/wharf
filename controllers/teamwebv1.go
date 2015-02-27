@@ -60,6 +60,41 @@ func (this *TeamWebV1Controller) PostTeam() {
 	team.UUID = utils.GeneralToken(team.Team)
 	team.Username = user.Username
 
+	org := new(models.Organization)
+
+	if exist, _, _ := org.Has(team.Organization); exist {
+		org.Teams = append(org.Teams, team.UUID)
+	}
+
+	if err := org.Save(); err != nil {
+		beego.Error("[WEB API] team save error:", err.Error())
+
+		result := map[string]string{"message": "team save error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	usersUUID := make([]string, 0)
+	for _, username := range team.Users {
+		user := new(models.User)
+		if _, UUID, _ := user.Has(username); len(string(UUID)) > 0 {
+			usersUUID = append(usersUUID, string(UUID))
+
+			user.JoinOrganizations = append(user.JoinOrganizations, org.UUID)
+			user.JoinTeams = append(user.JoinTeams, team.UUID)
+
+			if err := user.Save(); err != nil {
+				beego.Error("[WEB API] user save error:", err.Error())
+			}
+		}
+		continue
+	}
+
+	team.Users = usersUUID
+
 	if err := team.Save(); err != nil {
 		beego.Error("[WEB API] Team save error:", err.Error())
 
@@ -85,23 +120,6 @@ func (this *TeamWebV1Controller) PostTeam() {
 	}
 	user.Get(user.Username, user.Password)
 	this.Ctx.Input.CruSession.Set("user", user)
-
-	org := new(models.Organization)
-
-	if exist, _, _ := org.Has(team.Organization); exist {
-		org.Teams = append(org.Teams, team.UUID)
-	}
-
-	if err := org.Save(); err != nil {
-		beego.Error("[WEB API] team save error:", err.Error())
-
-		result := map[string]string{"message": "team save error."}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
-		this.StopRun()
-	}
 
 	result := map[string]string{"message": "OK"}
 	this.Data["json"] = result
