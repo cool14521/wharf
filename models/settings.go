@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -33,15 +32,6 @@ const (
 	ACTION_ADD_STAR
 	ACTION_DEL_STAR
 )
-
-type Log struct {
-	UUID       string `json:"UUID"`       //
-	Action     int64  `json:"action"`     //
-	ActionUUID string `json:"actionuuid"` //
-	Level      int64  `json:"level"`      //
-	Content    []byte `json:"content"`    //
-	Created    int64  `json:"created"`    //
-}
 
 type EmailMessage struct {
 	UUID     string   `json:"UUID"`     //
@@ -78,48 +68,4 @@ type EmailTemplate struct {
 	Created time.Time `json:"created"` //
 	Updated time.Time `json:"updated"` //
 	Memo    []string  `json:"memo"`    //
-}
-
-func (u *User) Log(action, level int64, actionId string, content []byte) error {
-	if uuid, err := GetUUID("log", fmt.Sprintf("%d-%d-%d", action, actionId)); err != nil {
-		return err
-	} else {
-		log := Log{UUID: string(uuid), Created: time.Now().Unix()}
-		log.Action = action
-		log.ActionUUID = actionId
-
-		if err := Save(log, []byte(uuid)); err != nil {
-			return err
-		}
-
-		u.Memo = append(u.Memo, string(uuid))
-
-		if err := u.Save(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (o *Organization) Log(action, level int64, actionId string, content []byte) error {
-	if uuid, err := GetUUID("log", fmt.Sprintf("%d-%d-%d", action, actionId)); err != nil {
-		return err
-	} else {
-		log := Log{UUID: string(uuid), Created: time.Now().Unix()}
-		log.Action = action
-		log.ActionUUID = actionId
-
-		if err := Save(log, []byte(uuid)); err != nil {
-			return err
-		}
-
-		o.Memo = append(o.Memo, string(uuid))
-
-		if err := o.Save(); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

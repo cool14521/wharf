@@ -113,7 +113,7 @@ func (i *Image) PutJSON(imageId, json string) error {
 		return err
 	} else if has == false {
 		i.ImageId = imageId
-		i.UUID = string(utils.GeneralKey(imageId))
+		i.UUID = string(utils.GeneralKey())
 		i.JSON = json
 		i.Created = time.Now().Unix()
 

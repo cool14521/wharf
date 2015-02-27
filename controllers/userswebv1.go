@@ -118,9 +118,6 @@ func (this *UserWebAPIV1Controller) Signin() {
 			user.Gravatar = "/static/images/default_user.jpg"
 		}
 
-		//memo, _ := json.Marshal(this.Ctx.Input.Header)
-		//user.Log(models.ACTION_SIGNIN, models.LEVELINFORMATIONAL, user.UUID, memo)
-
 		this.Ctx.Input.CruSession.Set("user", user)
 
 		result := map[string]string{"message": "User Singin Successfully!"}
@@ -164,7 +161,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			this.ServeJson()
 			this.StopRun()
 		} else {
-			user.UUID = string(utils.GeneralKey(user.Username))
+			user.UUID = string(utils.GeneralKey())
 			user.Created = time.Now().Unix()
 
 			if err := user.Save(); err != nil {
@@ -176,9 +173,6 @@ func (this *UserWebAPIV1Controller) Signup() {
 				this.ServeJson()
 				this.StopRun()
 			}
-
-			//memo, _ := json.Marshal(this.Ctx.Input.Header)
-			//user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, user.UUID, memo)
 
 			result := map[string]string{"message": "User Singup Successfully!"}
 			this.Data["json"] = result
