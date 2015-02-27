@@ -6,6 +6,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
+	"github.com/satori/go.uuid"
 	"net/http"
 )
 
@@ -57,7 +58,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 	beego.Info("[Web API] Add team successfully: ", string(this.Ctx.Input.CopyBody()))
 
-	team.UUID = utils.GeneralToken(team.Team)
+	team.UUID = string(utils.GeneralKey(team.Team))
 	team.Username = user.Username
 
 	org := new(models.Organization)
@@ -118,6 +119,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 		this.ServeJson()
 		this.StopRun()
 	}
+
 	user.Get(user.Username, user.Password)
 	this.Ctx.Input.CruSession.Set("user", user)
 
@@ -148,6 +150,7 @@ func (this *TeamWebV1Controller) GetTeams() {
 	for _, teamUUID := range user.Teams {
 		team := new(models.Team)
 		if err := team.Get(teamUUID); err != nil {
+			beego.Error("[WEB API] team load failure,uuid=", teamUUID, err.Error())
 			continue
 		}
 
@@ -168,7 +171,6 @@ func (this *TeamWebV1Controller) GetTeams() {
 		team.RepositoryObjects = repositories
 		teams = append(teams, *team)
 	}
-
 	this.Data["json"] = teams
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
@@ -193,7 +195,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 	repoUUID := repo["repoUUID"].(string)
 
 	privilegeObj := new(models.Privilege)
-	privilegeObj.UUID = utils.GeneralToken("containerops")
+	privilegeObj.UUID = string(utils.GeneralKey(uuid.NewV4().String()))
 	privilegeObj.Privilege = privilege
 	privilegeObj.Team = teamUUID
 	privilegeObj.Repository = repoUUID

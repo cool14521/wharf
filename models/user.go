@@ -29,7 +29,6 @@ type User struct {
 }
 
 func (user *User) Has(username string) (bool, []byte, error) {
-
 	UUID, err := GetUUID("user", username)
 
 	if err != nil {

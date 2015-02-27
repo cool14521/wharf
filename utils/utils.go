@@ -13,8 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/satori/go.uuid"
 )
 
 func Int64ToBytes(i int64) []byte {
@@ -89,18 +87,18 @@ func ToString(args ...interface{}) string {
 	return result
 }
 
-func GeneralKey() []byte {
-	md5String := fmt.Sprintf("%v%v", uuid.NewV4().String(), string(time.Now().Unix()))
-	h := md5.New()
-	h.Write([]byte(md5String))
-	return h.Sum(nil)
-}
+// func GeneralKey(key string) []byte {
+// 	md5String := fmt.Sprintf("%v%v", key, time.Now())
+// 	h := md5.New()
+// 	h.Write([]byte(md5String))
+// 	return []byte(hex.EncodeToString(h.Sum(nil)))
+// }
 
-func GeneralToken(key string) string {
-	md5String := fmt.Sprintf("%v%v", key, time.Now())
+func GeneralKey(key string) []byte {
+	md5String := fmt.Sprintf("%s%d", key, time.Now().Unix())
 	h := md5.New()
 	h.Write([]byte(md5String))
-	return hex.EncodeToString(h.Sum(nil))
+	return []byte(hex.EncodeToString(h.Sum(nil)))
 }
 
 func EncodePassword(username string, password string) string {

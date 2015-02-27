@@ -67,7 +67,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 	}
 
 	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
-		token := utils.GeneralToken(username + passwd)
+		token := string(utils.GeneralKey(username + passwd))
 		this.SetSession("token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
@@ -194,7 +194,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 	}
 
 	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
-		token := utils.GeneralToken(username + passwd)
+		token := string(utils.GeneralKey(username + passwd))
 		this.Ctx.Input.CruSession.Set("token", token)
 
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)

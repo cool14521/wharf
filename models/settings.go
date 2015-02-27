@@ -1,9 +1,5 @@
 package models
 
-import (
-	"time"
-)
-
 const (
 	LEVELEMERGENCY = iota
 	LevelALERT
@@ -33,6 +29,15 @@ const (
 	ACTION_DEL_STAR
 )
 
+type Log struct {
+	UUID       string `json:"UUID"`       //
+	Action     int64  `json:"action"`     //
+	ActionUUID string `json:"actionuuid"` //
+	Level      int64  `json:"level"`      //
+	Content    string `json:"content"`    //
+	Created    int64  `json:"created"`    //
+}
+
 type EmailMessage struct {
 	UUID     string   `json:"UUID"`     //
 	User     string   `json:"user"`     //
@@ -48,24 +53,24 @@ type EmailMessage struct {
 }
 
 type EmailServer struct {
-	UUID    string   `json:"UUID"`    //
-	Name    string   `json:"name"`    //
-	Host    string   `json:"host"`    //
-	Port    int64    `json:"port"`    //
-	User    string   `json:"user"`    //
-	Passwd  string   `json:"passwd"`  //
-	API     string   `json:"api"`     //
-	Created int64    `json:"created"` //
-	Updated int64    `json:"updated"` //
-	Memo    []string `json:"memo"`    //
+	UUID     string   `json:"UUID"`    //
+	Name     string   `json:"name"`    //
+	Host     string   `json:"host"`    //
+	Port     int64    `json:"port"`    //
+	User     string   `json:"user"`    //
+	Password string   `json:"passwd"`  //
+	API      string   `json:"api"`     //
+	Created  int64    `json:"created"` //
+	Updated  int64    `json:"updated"` //
+	Memo     []string `json:"memo"`    //
 }
 
 type EmailTemplate struct {
-	UUID    string    `json:"UUID"`    //
-	Server  int64     `json:"server"`  //
-	Name    string    `json:"name"`    //
-	Content string    `json:"content"` //
-	Created time.Time `json:"created"` //
-	Updated time.Time `json:"updated"` //
-	Memo    []string  `json:"memo"`    //
+	UUID    string   `json:"UUID"`    //
+	Server  int64    `json:"server"`  //
+	Name    string   `json:"name"`    //
+	Content string   `json:"content"` //
+	Created int64    `json:"created"` //
+	Updated int64    `json:"updated"` //
+	Memo    []string `json:"memo"`    //
 }

@@ -3,9 +3,9 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
 	"github.com/dockercn/wharf/utils"
+	"github.com/satori/go.uuid"
+	"time"
 )
 
 type Image struct {
@@ -113,7 +113,7 @@ func (i *Image) PutJSON(imageId, json string) error {
 		return err
 	} else if has == false {
 		i.ImageId = imageId
-		i.UUID = string(utils.GeneralKey())
+		i.UUID = string(utils.GeneralKey(uuid.NewV4().String()))
 		i.JSON = json
 		i.Created = time.Now().Unix()
 

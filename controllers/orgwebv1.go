@@ -60,7 +60,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 	beego.Debug("[WEB API] organization create: %s", string(this.Ctx.Input.CopyBody()))
 
-	org.UUID = utils.GeneralToken(org.Organization)
+	org.UUID = string(utils.GeneralKey(org.Organization))
 
 	org.Username = user.Username
 

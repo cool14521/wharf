@@ -1,5 +1,4 @@
-Wharf - ContainerOps Open Source Platform
-=============================
+# Wharf - ContainerOps Open Source Platform
 
 **This is early stuff. You've been warned.**
 
@@ -23,6 +22,8 @@ go get -u github.com/codegangsta/cli
 go get -u github.com/siddontang/ledisdb/ledis
 go get -u github.com/garyburd/redigo/redis
 go get -u github.com/shurcooL/go/github_flavored_markdown
+go get -u github.com/satori/go.uuid
+go get -u github.com/nfnt/resize
 go build
 ```
 
@@ -68,7 +69,7 @@ SavePath = /tmp/session
 * `Endpoints` is very important parameter, set the same value as your domain or IP. For example, you run `wharf` with domain `xxx.org`, then `Endpoints` should be `xxx.org`.
 * `DataDir` is where `ledis` data is located.
 * The `wharf` session provider default is `ledis`, the `Provider` and `SavePath` is session data storage path.
-
+* The bucket.conf should be in folder conf with app.conf. If you wanna change the bucket.conf name, you should be modify the include bucket.conf in theapp.conf last line.
 
 # Nginx Configuration
 

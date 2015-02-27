@@ -42,7 +42,23 @@ func authBasic(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) 
 
 func authNamespace(Ctx *context.Context) (Auth bool, NamespaceType bool, Code int, Message []byte, Read bool, Write bool) {
 	namespace := string(Ctx.Input.Param(":namespace"))
-	repository := string(Ctx.Input.Param(":repository"))
+	repository := string(Ctx.Input.Param(":repo_name"))
+
+	if Ctx.Input.IsGet() {
+		repo := new(models.Repository)
+		isHas, _, err := repo.Has(namespace, repository)
+		if err != nil {
+			beego.Error("[REGISTRY API V1] Auth Repository Error:", err.Error())
+			return false, false, http.StatusForbidden, []byte("Auth Repository Error"), false, false
+		}
+		if !isHas {
+			beego.Error("[REGISTRY API V1] Repository Not Exist:", err.Error())
+			return false, false, http.StatusForbidden, []byte("Repository Not Exist"), false, false
+		}
+		if !repo.Privated {
+			return true, true, 0, nil, true, false
+		}
+	}
 
 	org := new(models.Organization)
 	isOrg, _, err := org.Has(namespace)
@@ -67,7 +83,11 @@ func authNamespace(Ctx *context.Context) (Auth bool, NamespaceType bool, Code in
 
 	if isOrg == true {
 
-		for _, value := range user.Organizations {
+		username, passwd, _ := utils.DecodeBasicAuth(Ctx.Input.Header("Authorization"))
+		user = new(models.User)
+		user.Get(username, passwd)
+
+		for _, value := range user.JoinOrganizations {
 			organization := new(models.Organization)
 
 			if err := organization.Get(value); err != nil {
@@ -81,24 +101,27 @@ func authNamespace(Ctx *context.Context) (Auth bool, NamespaceType bool, Code in
 		}
 
 		if NamespaceType == false {
+			beego.Error("[REGISTRY API V1] User not in the organization")
 			return false, false, http.StatusForbidden, []byte("User not in the organization"), false, false
 		}
 
-		for _, value := range user.Teams {
+		for _, value := range user.JoinTeams {
 			team := new(models.Team)
 
 			if err := team.Get(value); err != nil {
 				beego.Error("[REGISTRY API V1] Search Team Error")
 				return false, false, http.StatusForbidden, []byte("Search Team Error"), false, false
 			}
-
 			for _, v := range team.TeamPrivileges {
 				privilege := new(models.Privilege)
 				if err := privilege.Get(v); err != nil {
+					beego.Error("[REGISTRY API V1] Search Team Privilege Error")
 					return false, false, http.StatusForbidden, []byte("Search Team Privilege Error"), false, false
 				}
 
-				if privilege.Repository == repository {
+				repo := new(models.Repository)
+				repo.Get(privilege.Repository)
+				if repo.Repository == repository {
 					if privilege.Privilege == true {
 						Read = true
 						Write = true

@@ -89,7 +89,6 @@ func GetUUID(ObjectType, Object string) (UUID []byte, err error) {
 }
 
 func Save(obj interface{}, key []byte) (err error) {
-
 	s := reflect.TypeOf(obj).Elem()
 
 	for i := 0; i < s.NumField(); i++ {
