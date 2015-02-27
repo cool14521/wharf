@@ -9,22 +9,24 @@ type Organization struct {
 	Organization string   `json:"organization"` //
 	Username     string   `json:"username"`     //
 	Description  string   `json:"description"`  //
+	Repositories []string `json:"repositories"` //
 	Created      int64    `json:"created"`      //
 	Updated      int64    `json:"updated"`      //
 	Teams        []string `json:"teams"`        //
-	Memo         string   `json:"memo"`         //
+	Memo         []string `json:"memo"`         //
 }
 
 type Team struct {
-	UUID           string   `json:"UUID"`           //
-	Team           string   `json:"team"`           //
-	Organization   string   `json:"organization"`   //
-	Username       string   `json:"username"`       //
-	Description    string   `json:"description"`    //
-	Users          []string `json:"users"`          //
-	TeamPrivileges []string `json:"teamprivileges"` //
-	Repositories   []string `json:"repositories"`   //
-	Memo           string   `json:"memo"`           //
+	UUID              string       `json:"UUID"`           //
+	Team              string       `json:"team"`           //
+	Organization      string       `json:"organization"`   //
+	Username          string       `json:"username"`       //
+	Description       string       `json:"description"`    //
+	Users             []string     `json:"users"`          //
+	TeamPrivileges    []string     `json:"teamprivileges"` //
+	Repositories      []string     `json:"repositories"`   //
+	Memo              []string     `json:"memo"`           //
+	RepositoryObjects []Repository `json:"repositoryobjects"`
 }
 
 func (organization *Organization) Has(organizationName string) (bool, []byte, error) {

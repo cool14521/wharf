@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/astaxie/beego"
 
@@ -160,7 +161,8 @@ func (this *UserWebAPIV1Controller) Signup() {
 			this.ServeJson()
 			this.StopRun()
 		} else {
-			user.UUID = string(utils.GeneralKey(user.Username))
+			user.UUID = string(utils.GeneralKey())
+			user.Created = time.Now().Unix()
 
 			if err := user.Save(); err != nil {
 				beego.Error("[WEB API] User save error:", err.Error())
@@ -182,6 +184,11 @@ func (this *UserWebAPIV1Controller) Signup() {
 	}
 }
 
+type Namespace struct {
+	Namespace     string `json:"namespace"`     //仓库所有者的名字
+	NamespaceType bool   `json:"namespacetype"` // false 为普通用户，true为组织
+}
+
 func (this *UserWebAPIV1Controller) GetNamespaces() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		beego.Error("[WEB API] Load session failure")
@@ -192,11 +199,15 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 		this.ServeJson()
 		this.StopRun()
 	} else {
-		namespaces := []string{user.Username}
+		namespaces := make([]Namespace, 0)
+		namespaceUser := Namespace{Namespace: user.Username, NamespaceType: false}
+		namespaces = append(namespaces, namespaceUser)
+
 		orgs, _ := user.Orgs(user.Username)
 
 		for k, _ := range orgs {
-			namespaces = append(namespaces, k)
+			namespaceOrg := Namespace{Namespace: k, NamespaceType: true}
+			namespaces = append(namespaces, namespaceOrg)
 		}
 
 		this.Data["json"] = namespaces

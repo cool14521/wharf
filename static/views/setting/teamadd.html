@@ -38,10 +38,10 @@ Create new team
              <div class="form-add-member">
                     add<i class="fa fa-plus fa-fw" data-toggle="modal" data-target="#myModal"></i>
             </div>
-            <input type="hidden" ng-model="team.users" name="users">
+            <input type="hidden" ng-model="team.users">
             <div class="form-content input-long"> 
                 <div class="org-group-gravatar" ng-repeat="add in users">
-                    {{add.username}}<img ng-src="{{add.gravatar}}" class="team-profile-show team-profile">
+                    {{add.username}}
                 </div>
             </div>
         </div>
@@ -62,16 +62,6 @@ Create new team
                 <div class="modal-body">
 
                     <div class="input-group">
-                        <!--
-                    <input id="searchKey" name="searchKey" ng-model="user.username" type="text" class="form-control" onkeydown="if(event.keyCode==13)Search()" placeholder="Search user" />
-                    <span class="input-group-btn">
-                       
-  							<a class="btn submit" id="userlable" href="javascript:void(0);" ng-click="Search();" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-search fw"></i></a>
-                    		<ul class="dropdown-menu" role="menu" aria-labelledby="userlable" ng-repeat="usermodel in users">
-                                <li>{{usermodel.username}}</li>
-                    		</ul>          
-                	</span>
-    -->
                         <input autocomplete="off" class="ui-autocomplete-input" id="tags" value="" type="text">
                     </div>
 
