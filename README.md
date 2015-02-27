@@ -3,7 +3,13 @@ Wharf - ContainerOps Open Source Platform
 
 **This is early stuff. You've been warned.**
 
-Wharf is a ContainerOps platform which is the next generation DevOps, never meant to replace the DevOps or traditional approach. The wharf’s goal is building a pipeline with Docker, Rocket and other containers from development to deployment & operations. ContainerOps is all about the change process. When you push commit to the version control system, the Wharf will build a container image included run codes with dependence system automatically. Then the image could be used in continuous integration or continuous deployment with Rocket, LXC or Atomic. We are focusing on continuous changes from version control system to production.
+Wharf is a successor of ContainerOps platform whose concept is built upon the DevOps, which means it's a higher level solution over traditional approach and DevOps, but not an alternative. The ultimate goal of Wharf is building a pipeline form development to deployment & operations through Docker, Rocket and other container solutions.
+
+ContainerOps is all about product workflow. Wharf builds and runs a container image you defined whenever new code is being pushed, along with corresponding dependence system. But it's not all, the image will also work with continuous integration, or continuous deployment with Rocket, LXC or Atomic, etc. Wharf is focusing on the continuous changes from version control system to production environment.
+
+Now, it's time to announce our pre-release and core of ContainerOps version of Wharf, you can replace Docker Registry with it. Please make sure you know that Wharf is currently under alpha stage.
+
+Our team is still working really hard for your happiness with the complete version of ContainerOps platform, which comes in next few months.
 
 ![](http://7vzqdz.com1.z0.glb.clouddn.com/wharf.png)
 
