@@ -29,3 +29,4 @@ conf/bucket.conf
 var/*
 cert/*
 data/gravatar/*
+wharf.iml

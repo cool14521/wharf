@@ -75,7 +75,6 @@ type Tag struct {
 }
 
 func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {
-
 	UUID, err := GetUUID("repository", fmt.Sprintf("%s:%s", namespace, repository))
 
 	if err != nil {
