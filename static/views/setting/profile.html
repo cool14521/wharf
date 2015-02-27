@@ -16,35 +16,7 @@
                             <img class="avatar" ng-src="{{user.gravatar}}" style="height:100px;width:100px;">
                         </div>
                         <div class="col-md-5">
-                            <div style="overflow: hidden;" accept="image/*" ng-file-select="" ng-model="files" class="upload-button ng-isolate-scope ng-pristine ng-valid" ng-file-change="upload(files)" ng-multiple="false" ng-accept="'image/*'" tabindex="0">Upload new picture
-                                <input ng-file-generated-elem="true" tabindex="-1" style="width: 1px; height: 1px; opacity: 0; position: absolute; padding: 0px; margin: 0px; overflow: hidden;" accept="image/*" type="file">
-                            </div>
-                            <!-- 注释掉上传文件展示和统计部分
-                            <ul ng-show="files.length > 0" class="response">
-                                <li class="sel-file" ng-repeat="f in files">
-                                    <img ng-show="f.dataUrl" ng-src="{{f.dataUrl}}" class="thumb" style="width:100px;">
-                                    <span class="progress" ng-show="f.progress >= 0">
-<div style="width:{{f.progress}}%">{{f.progress}}%</div>
-</span>
-                                    <button class="button" ng-click="f.upload.abort()" ng-show="f.upload != null && f.progress < 100">Abort</button>
-                                    {{f.name}} - size: {{f.size}}B - type: {{f.type}}
-                                    <a ng-show="f.result" href="javascript:void(0)" ng-click="f.showDetail = !f.showDetail">details</a>
-                                    <div ng-show="f.showDetail">
-                                        <br/>
-                                        <div data-ng-show="f.result.result == null">{{f.result}}</div>
-                                        <ul>
-                                            <li ng-repeat="item in f.result.result">
-                                                <div data-ng-show="item.name">file name: {{item.name}}</div>
-                                                <div data-ng-show="item.fieldName">name: {{item.fieldName}}</div>
-                                                <div data-ng-show="item.size">size on the serve: {{item.size}}</div>
-                                                <div data-ng-show="item.value">value: {{item.value}}</div>
-                                            </li>
-                                        </ul>
-                                        <div data-ng-show="f.result.requestHeaders" class="reqh">request headers: {{f.result.requestHeaders}}</div>
-                                    </div>
-                                </li>
-                            </ul>
-							-->
+                          <div class="upload-button ng-isolate-scope ng-pristine ng-valid" ng-file-select ng-file-change="upload($files)" ng-multiple="multiple" accept="image/*">Upload new picture</div>
                             <div id="editArea"></div>
                         </div>
                     </div>
@@ -58,7 +30,7 @@
                     <lable>Name</lable>
                 </div>
                 <div class="form-content input-long">
-                    <input type="text" size="30" ng-model="user.username" />
+                    <input type="text" size="30" ng-model="user.username"  readOnly/>
                 </div>
             </div>
             <div class="form-group">

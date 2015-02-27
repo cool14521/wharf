@@ -9,6 +9,15 @@ import (
 
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
+
+	"fmt"
+	"github.com/nfnt/resize"
+	"image"
+	"image/jpeg"
+	"image/png"
+	"io"
+	"os"
+	"strings"
 )
 
 type UserWebAPIV1Controller struct {
@@ -222,4 +231,172 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 		this.ServeJson()
 		this.StopRun()
 	}
+}
+
+func (this *UserWebAPIV1Controller) PostGravatar() {
+
+	file, fileHeader, err := this.Ctx.Request.FormFile("file")
+	if err != nil {
+		beego.Error(fmt.Sprintf("[image] upload gravatar err,err=%s", err))
+
+		result := map[string]string{"message": "Upload gravatar failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	prefix := strings.Split(fileHeader.Filename, ".")[0]
+	suffix := strings.Split(fileHeader.Filename, ".")[1]
+	if suffix != "png" && suffix != "jpg" && suffix != "jpeg" {
+		result := map[string]string{"message": "gravatar must be .jpg,.jepg or .png", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	if _, err := os.Stat(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)); err == nil {
+		os.Remove(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix))
+	}
+	f, err := os.OpenFile(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename), os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		result := map[string]string{"message": "Upload gravatar failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+	io.Copy(f, file)
+	f.Close()
+
+	// decode jpeg into image.Image
+	var img image.Image
+	imageFile, err := os.Open(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename))
+	if err != nil {
+		result := map[string]string{"message": "Upload gravatar failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+	switch suffix {
+	case "png":
+		img, err = png.Decode(imageFile)
+	case "jpg":
+		img, err = jpeg.Decode(imageFile)
+	case "jpeg":
+		img, err = jpeg.Decode(imageFile)
+	}
+	if err != nil {
+		imageFile.Close()
+		result := map[string]string{"message": "Upload gravatar resize failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+	imageFile.Close()
+	// resize to width 1000 using Lanczos resampling
+	// and preserve aspect ratio
+	m := resize.Resize(100, 100, img, resize.Lanczos3)
+
+	out, err := os.Create(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix))
+	if err != nil {
+		result := map[string]string{"message": "Upload gravatar resize failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+	defer out.Close()
+	// write new image to file
+	switch suffix {
+	case "png":
+		png.Encode(out, m)
+	case "jpg":
+		jpeg.Encode(out, m, nil)
+	case "jpeg":
+		jpeg.Encode(out, m, nil)
+	}
+
+	//删除用户自己上传的图片
+	os.Remove(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename))
+
+	result := map[string]string{"message": "Please click button to finish uploading gravatar", "url": fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)}
+	this.Data["json"] = &result
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
+	return
+}
+
+func (this *UserWebAPIV1Controller) PutProfile() {
+
+	var u map[string]interface{}
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
+		beego.Error(fmt.Sprintf("[WEB API] JSON unmarshal failure: %s", err.Error()))
+		result := map[string]string{"message": "Update User failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+	if exist != true {
+
+		beego.Error("[WEB API] Load session failure")
+
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+
+	}
+
+	if strings.Contains(fmt.Sprint(u["gravatar"]), "resize") {
+
+		suffix := strings.Split(fmt.Sprint(u["gravatar"]), ".")[1]
+		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", user.Username, "_show.", suffix)
+		if _, err := os.Stat(gravatar); err == nil {
+			os.Remove(gravatar)
+		}
+
+		os.Rename(fmt.Sprint(u["gravatar"]), gravatar)
+		u["gravatar"] = gravatar
+	}
+
+	user.Email = u["email"].(string)
+	user.Fullname = u["fullname"].(string)
+	user.Mobile = u["mobile"].(string)
+	user.Gravatar = u["gravatar"].(string)
+	user.Company = u["company"].(string)
+	user.URL = u["url"].(string)
+
+	if err := user.Save(); err != nil {
+		result := map[string]string{"message": "User save failure"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	this.Ctx.Input.CruSession.Set("user", user)
+
+	result := map[string]string{"message": "Success!"}
+	this.Data["json"] = &result
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
 }
