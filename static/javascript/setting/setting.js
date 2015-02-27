@@ -20,6 +20,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             });
 
         //deal with fileupload start
+        $scope.submmitting = false;
         $scope.upload = function(files) {
             $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
             if (files && files.length) {
@@ -29,9 +30,9 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                         url: '/w1/gravatar',
                         file: file
                     }).progress(function(evt) {
-                        var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
-                        console.log('progress: ' + progressPercentage + '% ' +
-                            evt.config.file.name);
+                        //var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+                        //console.log('progress: ' + progressPercentage + '% ' +
+                        //   evt.config.file.name);
                     }).success(function(data, status, headers, config) {
                         growl.info(data.message);
                         $scope.user.gravatar = data.url
@@ -45,6 +46,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
                 $http.put('/w1/profile', $scope.user)
                     .success(function(data, status, headers, config) {
+                        $scope.submmitting = true;
                         growl.info(data.message);
                     })
                     .error(function(data, status, headers, config) {
