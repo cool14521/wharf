@@ -177,8 +177,8 @@ func (this *UserWebAPIV1Controller) Signup() {
 				this.StopRun()
 			}
 
-			//memo, _ := json.Marshal(this.Ctx.Input.Header)
-			//user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, user.UUID, memo)
+			memo, _ := json.Marshal(this.Ctx.Input.Header)
+			user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, user.UUID, memo)
 
 			result := map[string]string{"message": "User Singup Successfully!"}
 			this.Data["json"] = result

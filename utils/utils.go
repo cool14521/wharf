@@ -87,8 +87,15 @@ func ToString(args ...interface{}) string {
 	return result
 }
 
+// func GeneralKey(key string) []byte {
+// 	md5String := fmt.Sprintf("%v%v", key, time.Now())
+// 	h := md5.New()
+// 	h.Write([]byte(md5String))
+// 	return []byte(hex.EncodeToString(h.Sum(nil)))
+// }
+
 func GeneralKey(key string) []byte {
-	md5String := fmt.Sprintf("%v%v", key, time.Now())
+	md5String := fmt.Sprintf("%s%d", key, time.Now().Unix())
 	h := md5.New()
 	h.Write([]byte(md5String))
 	return []byte(hex.EncodeToString(h.Sum(nil)))

@@ -1,5 +1,12 @@
 package models
 
+import (
+	"fmt"
+	"time"
+
+	"github.com/dockercn/wharf/utils"
+)
+
 const (
 	LEVELEMERGENCY = iota
 	LevelALERT
@@ -28,6 +35,15 @@ const (
 	ACTION_ADD_STAR
 	ACTION_DEL_STAR
 )
+
+type Log struct {
+	UUID       string `json:"UUID"`       //
+	Action     int64  `json:"action"`     //
+	ActionUUID string `json:"actionuuid"` //
+	Level      int64  `json:"level"`      //
+	Content    string `json:"content"`    //
+	Created    int64  `json:"created"`    //
+}
 
 type EmailMessage struct {
 	UUID     string   `json:"UUID"`     //
@@ -64,4 +80,25 @@ type EmailTemplate struct {
 	Created int64    `json:"created"` //
 	Updated int64    `json:"updated"` //
 	Memo    []string `json:"memo"`    //
+}
+
+func (user *User) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	fmt.Println(log)
+
+	if err := Save(log, []byte(log.UUID)); err != nil {
+		return err
+	}
+
+	user.Memo = append(user.Memo, log.UUID)
+
+	fmt.Println(user)
+
+	if err := user.Save(); err != nil {
+		return err
+	}
+
+	return nil
 }
