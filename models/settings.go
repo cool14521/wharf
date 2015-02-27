@@ -81,24 +81,3 @@ type EmailTemplate struct {
 	Updated int64    `json:"updated"` //
 	Memo    []string `json:"memo"`    //
 }
-
-func (user *User) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
-	log.UUID = string(utils.GeneralKey(actionUUID))
-
-	fmt.Println(log)
-
-	if err := Save(log, []byte(log.UUID)); err != nil {
-		return err
-	}
-
-	user.Memo = append(user.Memo, log.UUID)
-
-	fmt.Println(user)
-
-	if err := user.Save(); err != nil {
-		return err
-	}
-
-	return nil
-}
