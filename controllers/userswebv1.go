@@ -164,7 +164,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			this.ServeJson()
 			this.StopRun()
 		} else {
-			user.UUID = utils.GeneralToken(user.Username)
+			user.UUID = string(utils.GeneralKey(user.Username))
 			user.Created = time.Now().Unix()
 
 			if err := user.Save(); err != nil {
