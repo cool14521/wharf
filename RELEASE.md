@@ -1,5 +1,4 @@
-RELEASE
-=======
+# RELEASE
 
 Wharf is a successor of ContainerOps platform whose concept is built upon the DevOps, which means it's a higher level solution over traditional approach and DevOps, but not an alternative. The ultimate goal of Wharf is building a pipeline form development to deployment & operations through Docker, Rocket and other container solutions.
 
@@ -13,11 +12,15 @@ Our team is still working really hard for your happiness with the complete versi
 
 You can find Wharf on [GitHub](https://github.com/dockercn/wharf).
 
+## How To Run Wharf
+
+https://github.com/dockercn/wharf/wiki/How-To-Run-Wharf
+
 ## Reporting Issues
 
 Please submit issues at [GitHub](https://github.com/dockercn/wharf/issues).
 
-## Maintainers
+## Core Maintainers
 
 - [Meaglith Ma](https://twitter.com/genedna)
 - [Allen Chen](https://github.com/chliang2030598)

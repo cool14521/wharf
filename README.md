@@ -1,5 +1,4 @@
-Wharf - ContainerOps Open Source Platform
-=============================
+# Wharf - ContainerOps Open Source Platform
 
 **This is early stuff. You've been warned.**
 
