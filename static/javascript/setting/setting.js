@@ -207,7 +207,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         $scope.users = [];
         $scope.team = new Object();
         $scope.team.users = [];
-        $scope.findUser = new Object();
         //初始化organization数据
         $http.get('/w1/organizations')
             .success(function(data, status, headers, config) {
@@ -236,23 +235,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             }
         }
 
-        $scope.Search = function() {
-            /*
-            $http.get('/w1/users/'+$scope.user.username)
-                .success(function(data, status, headers, config) {
-                    $scope.users = data;
-
-                })
-                .error(function(data, status, headers, config) {
-                    $timeout(function() {
-                        //$window.location.href = '/auth';
-                        alert(data);
-                    }, 3000);
-                });
-            $('.dropdown-toggle').dropdown();
-            */
-        }
-
         var availableTags = ["chliang2030598", "fivestarsky"];
 
         $("#tags").autocomplete({
@@ -261,10 +243,20 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 
 
         $scope.addUserFunc = function() {
+            $scope.findUser = {}
             $scope.findUser.username = document.getElementById("tags").value;
+
+            //adjust user already add
+            for (var i = 0; i < $scope.users.length; i++) {
+                if ($scope.users[i].username == document.getElementById("tags").value) {
+                    growl.error("user already exist!");
+                    $('#myModal').modal('toggle');
+                    return;
+                }
+            }
             $scope.users.push($scope.findUser);
             $scope.team.users.push($scope.findUser.username);
-            $('#myModal').modal('hide');
+            $('#myModal').modal('toggle');
         }
 
     }])
