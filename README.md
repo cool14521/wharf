@@ -22,6 +22,7 @@ go get -u github.com/codegangsta/cli
 go get -u github.com/siddontang/ledisdb/ledis
 go get -u github.com/garyburd/redigo/redis
 go get -u github.com/shurcooL/go/github_flavored_markdown
+go get -u github.com/satori/go.uuid
 go build
 ```
 
