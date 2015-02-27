@@ -1,12 +1,5 @@
 package models
 
-import (
-	"fmt"
-	"time"
-
-	"github.com/dockercn/wharf/utils"
-)
-
 const (
 	LEVELEMERGENCY = iota
 	LevelALERT

@@ -48,12 +48,12 @@ func authNamespace(Ctx *context.Context) (Auth bool, NamespaceType bool, Code in
 		repo := new(models.Repository)
 		isHas, _, err := repo.Has(namespace, repository)
 		if err != nil {
-			beego.Error("[REGISTRY API V1] 判断Repository是否存在时出现错误 : ", err.Error())
-			return false, false, http.StatusForbidden, []byte("判断Repository是否存在时出现错误"), false, false
+			beego.Error("[REGISTRY API V1] Auth Repository Error:", err.Error())
+			return false, false, http.StatusForbidden, []byte("Auth Repository Error"), false, false
 		}
 		if !isHas {
-			beego.Error("[REGISTRY API V1] Repository不存在 : ", err.Error())
-			return false, false, http.StatusForbidden, []byte("Repository不存在"), false, false
+			beego.Error("[REGISTRY API V1] Repository Not Exist:", err.Error())
+			return false, false, http.StatusForbidden, []byte("Repository Not Exist"), false, false
 		}
 		if !repo.Privated {
 			return true, true, 0, nil, true, false
