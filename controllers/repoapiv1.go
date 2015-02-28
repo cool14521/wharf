@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -35,7 +36,6 @@ func (this *RepoAPIV1Controller) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
-
 }
 
 func (this *RepoAPIV1Controller) PutRepository() {
@@ -71,6 +71,20 @@ func (this *RepoAPIV1Controller) PutRepository() {
 		this.SetSession("token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
+	}
+
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+
+	user := new(models.User)
+	if _, _, err := user.Has(username); err != nil {
+		beego.Error("[REGISTRY API V1] Get user error: %s", err.Error())
+	}
+
+	if err := user.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
+	}
+	if err := repo.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
 
 	this.SetSession("username", username)
@@ -116,6 +130,11 @@ func (this *RepoAPIV1Controller) PutTag() {
 		this.StopRun()
 	}
 
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := repo.Log(models.ACTION_PUT_TAG, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
+	}
+
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
 	this.StopRun()
@@ -146,6 +165,11 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
+	}
+
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := repo.Log(models.ACTION_PUT_REPO_IMAGES, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
@@ -193,6 +217,17 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 		this.StopRun()
 	}
 
+	repo.Download += 1
+
+	if err := repo.Save(); err != nil {
+		beego.Error("[REGISTRY API V1] Update download count error: ", err.Error())
+	}
+
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := repo.Log(models.ACTION_GET_REPO, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
+	}
+
 	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
 		token := string(utils.GeneralKey(username + passwd))
 		this.Ctx.Input.CruSession.Set("token", token)
@@ -204,6 +239,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 	this.Ctx.Input.CruSession.Set("namespace", namespace)
 	this.Ctx.Input.CruSession.Set("repository", repository)
 	this.Ctx.Input.CruSession.Set("access", "read")
+
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(repo.JSON))
 	this.StopRun()

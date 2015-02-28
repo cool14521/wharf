@@ -1,8 +1,10 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"encoding/json"
 	"net/http"
+
+	"github.com/astaxie/beego"
 
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
@@ -41,7 +43,7 @@ func (this *UserAPIV1Controller) PostUsers() {
 func (this *UserAPIV1Controller) GetUsers() {
 	if username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization")); err != nil {
 
-		beego.Error("[USER API] Decode Basic Auth Error:", err.Error())
+		beego.Error("[REGISTRY API V1] Decode Basic Auth Error:", err.Error())
 
 		result := map[string]string{"error": "Decode authorization failure."}
 		this.Data["json"] = &result
@@ -54,7 +56,7 @@ func (this *UserAPIV1Controller) GetUsers() {
 		user := new(models.User)
 
 		if err := user.Get(username, passwd); err != nil {
-			beego.Error("[USER API] Search user error: ", err.Error())
+			beego.Error("[REGISTRY API V1] Search user error: ", err.Error())
 
 			result := map[string]string{"error": "User authorization failure."}
 			this.Data["json"] = &result
@@ -64,7 +66,12 @@ func (this *UserAPIV1Controller) GetUsers() {
 			this.StopRun()
 		}
 
-		beego.Info("[User API]", username, "authorization successfully")
+		beego.Info("[REGISTRY API V1]", username, "authorization successfully")
+
+		memo, _ := json.Marshal(this.Ctx.Input.Header)
+		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_API, user.UUID, memo); err != nil {
+			beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
+		}
 
 		result := map[string]string{"status": "User authorization successfully."}
 		this.Data["json"] = &result
