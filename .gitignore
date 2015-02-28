@@ -27,6 +27,5 @@ wharf
 nohup.out
 conf/bucket.conf
 var/*
-cert/*
 data/gravatar/*
 wharf.iml
