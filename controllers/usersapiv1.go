@@ -66,6 +66,11 @@ func (this *UserAPIV1Controller) GetUsers() {
 
 		beego.Info("[User API]", username, "authorization successfully")
 
+		memo, _ := json.Marshal(this.Ctx.Input.Header)
+		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_API, user.UUID, memo); err != nil {
+			beego.Error("[WEB API] Log Erro:", err.Error())
+		}
+
 		result := map[string]string{"status": "User authorization successfully."}
 		this.Data["json"] = &result
 
