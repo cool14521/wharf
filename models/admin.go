@@ -9,3 +9,15 @@ type Admin struct {
 	Updated  int64    `json:"updated"`  //
 	Memo     []string `json:"memo"`     //
 }
+
+func (admin *Admin) Save() error {
+	if err := Save(admin, []byte(admin.UUID)); err != nil {
+		return err
+	}
+
+	if _, err := LedisDB.HSet([]byte(GLOBAL_ADMIN_INDEX), []byte(admin.Username), []byte(admin.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}

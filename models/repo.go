@@ -241,3 +241,19 @@ func (t *Tag) Save() error {
 func (t *Tag) GetByUUID(uuid string) error {
 	return Get(t, []byte(uuid))
 }
+
+func (star *Star) Save() error {
+	if err := Save(star, []byte(star.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (comment *Comment) Save() error {
+	if err := Save(comment, []byte(comment.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}

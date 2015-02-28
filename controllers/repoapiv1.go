@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -71,6 +72,11 @@ func (this *RepoAPIV1Controller) PutRepository() {
 		this.SetSession("token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
+	}
+
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := repo.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+		beego.Error("[WEB API] Log Erro:", err.Error())
 	}
 
 	this.SetSession("username", username)

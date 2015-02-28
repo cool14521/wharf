@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	"net/http"
+	"time"
 
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
@@ -63,6 +64,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 			this.StopRun()
 		} else {
 			repo.UUID = string(utils.GeneralKey(fmt.Sprint(repo.Namespace, repo.Repository)))
+			repo.Created = time.Now().Unix()
 
 			if err := repo.Save(); err != nil {
 				beego.Error("[WEB API] Repository save error:", err.Error())
@@ -101,6 +103,15 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 				}
 				this.Ctx.Input.CruSession.Set("user", user)
 			}
+
+			memo, _ := json.Marshal(this.Ctx.Input.Header)
+			if err := repo.Log(models.ACTION_ADD_REPO, models.LEVELINFORMATIONAL, models.TYPE_WEB, repo.UUID, memo); err != nil {
+				beego.Error("[WEB API] Log Erro:", err.Error())
+			}
+			if err := user.Log(models.ACTION_ADD_REPO, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+				beego.Error("[WEB API] Log Erro:", err.Error())
+			}
+
 			result := map[string]string{"message": "Repository create successfully!"}
 			this.Data["json"] = result
 

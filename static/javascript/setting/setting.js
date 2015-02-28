@@ -61,7 +61,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         $scope.submit = function() {
             if ($scope.accountForm.$valid) {
                 $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-                $http.put('/w1/account', $scope.user)
+                $http.put('/w1/password', $scope.user)
                     .success(function(data, status, headers, config) {
                         $scope.submitting = true;
                         growl.info(data.message);
