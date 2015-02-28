@@ -147,10 +147,27 @@ func (this *TeamWebV1Controller) GetTeams() {
 	}
 
 	teams := make([]models.Team, 0)
+
+	orgUUID := this.Ctx.Input.Param(":org")
+	org := new(models.Organization)
+	if err := org.Get(orgUUID); err != nil {
+		beego.Error(fmt.Sprintf("[WEB API] Get organization error:: %s", err.Error()))
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
 	for _, teamUUID := range user.Teams {
 		team := new(models.Team)
 		if err := team.Get(teamUUID); err != nil {
 			beego.Error("[WEB API] team load failure,uuid=", teamUUID, err.Error())
+			continue
+		}
+
+		if team.Organization != org.Organization {
 			continue
 		}
 
