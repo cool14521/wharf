@@ -119,3 +119,156 @@ func (user *User) Log(action, level int64, actionUUID string, content []byte) er
 
 	return nil
 }
+
+func (admin *Admin) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	admin.Memo = append(admin.Memo, log.UUID)
+
+	if err := admin.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (org *Organization) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	org.Memo = append(org.Memo, log.UUID)
+
+	if err := org.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (team *Team) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	team.Memo = append(team.Memo, log.UUID)
+
+	if err := team.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *Repository) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	repo.Memo = append(repo.Memo, log.UUID)
+
+	if err := repo.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (compose *Compose) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	compose.Memo = append(compose.Memo, log.UUID)
+
+	if err := compose.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (image *Image) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	image.Memo = append(image.Memo, log.UUID)
+
+	if err := image.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (star *Star) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	star.Memo = append(star.Memo, log.UUID)
+
+	if err := star.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (comment *Comment) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	comment.Memo = append(comment.Memo, log.UUID)
+
+	if err := comment.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Privilege) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	p.Memo = append(p.Memo, log.UUID)
+
+	if err := p.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
