@@ -168,7 +168,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := repo.Log(models.ACTION_PUT_IMAGES, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+	if err := repo.Log(models.ACTION_PUT_REPO_IMAGES, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
 		beego.Error("[WEB API] Log Erro:", err.Error())
 	}
 

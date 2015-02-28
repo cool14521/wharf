@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -98,9 +99,9 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 
 	image := new(models.Image)
 
-	json := string(this.Ctx.Input.CopyBody())
+	j := string(this.Ctx.Input.CopyBody())
 
-	if err := image.PutJSON(imageId, json); err != nil {
+	if err := image.PutJSON(imageId, j); err != nil {
 		beego.Error("[REGISTRY API V1] Put Image JSON Error: ", err.Error())
 		result := map[string]string{"Error": "Put Image JSON Error"}
 		this.Data["json"] = result
@@ -108,6 +109,11 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
+	}
+
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := image.Log(models.ACTION_PUT_IMAGES_JSON, models.LEVELINFORMATIONAL, models.TYPE_WEB, image.UUID, memo); err != nil {
+		beego.Error("[REGISTRY API V1] Log Error:", err.Error())
 	}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
@@ -163,6 +169,11 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 		this.StopRun()
 	}
 
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := image.Log(models.ACTION_PUT_IMAGES_LAYER, models.LEVELINFORMATIONAL, models.TYPE_WEB, image.UUID, memo); err != nil {
+		beego.Error("[REGISTRY API V1] Log Error:", err.Error())
+	}
+
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
 	this.StopRun()
@@ -200,6 +211,11 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
+	}
+
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := image.Log(models.ACTION_PUT_IMAGES_CHECKSUM, models.LEVELINFORMATIONAL, models.TYPE_WEB, image.UUID, memo); err != nil {
+		beego.Error("[REGISTRY API V1] Log Error:", err.Error())
 	}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
