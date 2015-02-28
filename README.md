@@ -16,7 +16,7 @@ Our team is still working really hard for your happiness with the complete versi
 
 Clone code into directory `$GOPATH/src/githhub.com/dockercn` and then exec commands:
 
-```
+```bash
 go get -u github.com/astaxie/beego
 go get -u github.com/codegangsta/cli
 go get -u github.com/siddontang/ledisdb/ledis
