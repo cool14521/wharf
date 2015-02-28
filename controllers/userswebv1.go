@@ -30,6 +30,9 @@ func (this *UserWebAPIV1Controller) URLMapping() {
 	this.Mapping("Signup", this.Signup)
 	this.Mapping("Signin", this.Signin)
 	this.Mapping("GetNamespaces", this.GetNamespaces)
+	this.Mapping("PostGravatar", this.PostGravatar)
+	this.Mapping("PutProfile", this.PutProfile)
+	this.Mapping("PutPassword", this.PutPassword)
 }
 
 func (this *UserWebAPIV1Controller) Prepare() {
@@ -238,7 +241,6 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 }
 
 func (this *UserWebAPIV1Controller) PostGravatar() {
-
 	file, fileHeader, err := this.Ctx.Request.FormFile("file")
 	if err != nil {
 		beego.Error(fmt.Sprintf("[image] upload gravatar err,err=%s", err))
@@ -265,6 +267,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 	if _, err := os.Stat(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)); err == nil {
 		os.Remove(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix))
 	}
+
 	f, err := os.OpenFile(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		result := map[string]string{"message": "Upload gravatar failure", "url": "/auth"}
@@ -274,6 +277,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 		this.ServeJson()
 		this.StopRun()
 	}
+
 	io.Copy(f, file)
 	f.Close()
 
@@ -288,6 +292,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 		this.ServeJson()
 		this.StopRun()
 	}
+
 	switch suffix {
 	case "png":
 		img, err = png.Decode(imageFile)
@@ -296,6 +301,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 	case "jpeg":
 		img, err = jpeg.Decode(imageFile)
 	}
+
 	if err != nil {
 		imageFile.Close()
 		result := map[string]string{"message": "Upload gravatar resize failure", "url": "/auth"}
@@ -305,7 +311,9 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 		this.ServeJson()
 		this.StopRun()
 	}
+
 	imageFile.Close()
+
 	// resize to width 1000 using Lanczos resampling
 	// and preserve aspect ratio
 	m := resize.Resize(100, 100, img, resize.Lanczos3)
@@ -334,11 +342,11 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 	os.Remove(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename))
 
 	result := map[string]string{"message": "Please click button to finish uploading gravatar", "url": fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)}
+
 	this.Data["json"] = &result
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
 	this.StopRun()
-	return
 }
 
 func (this *UserWebAPIV1Controller) PutProfile() {
@@ -356,7 +364,6 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if exist != true {
-
 		beego.Error("[WEB API] Load session failure")
 
 		result := map[string]string{"message": "Session load failure", "url": "/auth"}
@@ -365,11 +372,9 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
-
 	}
 
 	if strings.Contains(fmt.Sprint(u["gravatar"]), "resize") {
-
 		suffix := strings.Split(fmt.Sprint(u["gravatar"]), ".")[1]
 		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", user.Username, "_show.", suffix)
 		if _, err := os.Stat(gravatar); err == nil {
@@ -398,6 +403,11 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 
 	this.Ctx.Input.CruSession.Set("user", user)
 
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := user.Log(models.ACTION_UPDATE_PROFILE, models.LEVELINFORMATIONAL, user.UUID, memo); err != nil {
+		beego.Error("[WEB API] Log Erro:", err.Error())
+	}
+
 	result := map[string]string{"message": "Success!"}
 	this.Data["json"] = &result
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
@@ -405,7 +415,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	this.StopRun()
 }
 
-func (this *UserWebAPIV1Controller) PutAccount() {
+func (this *UserWebAPIV1Controller) PutPassword() {
 	var u map[string]interface{}
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
 		beego.Error(fmt.Sprintf("[WEB API] JSON unmarshal failure: %s", err.Error()))
@@ -416,11 +426,11 @@ func (this *UserWebAPIV1Controller) PutAccount() {
 		this.ServeJson()
 		this.StopRun()
 	}
+
 	beego.Debug("[WEB API] Password updated:", string(this.Ctx.Input.CopyBody()))
 
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if exist != true {
-
 		beego.Error("[WEB API] Load session failure")
 
 		result := map[string]string{"message": "Session load failure", "url": "/auth"}
@@ -446,6 +456,11 @@ func (this *UserWebAPIV1Controller) PutAccount() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
+	}
+
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := user.Log(models.ACTION_UPDATE_PASSWORD, models.LEVELINFORMATIONAL, user.UUID, memo); err != nil {
+		beego.Error("[WEB API] Log Erro:", err.Error())
 	}
 
 	result := map[string]string{"message": "Update password success!"}
