@@ -68,7 +68,8 @@ func authNamespace(Ctx *context.Context) (Auth bool, NamespaceType bool, Code in
 	}
 
 	user := new(models.User)
-	isUser, _, err := user.Has(namespace)
+	authUsername, _, _ := utils.DecodeBasicAuth(Ctx.Input.Header("Authorization"))
+	isUser, _, err := user.Has(authUsername)
 	if err != nil {
 		beego.Error("[REGISTRY API V1] Search User Error: ", err.Error())
 		return false, false, http.StatusForbidden, []byte("Search User Error"), false, false
