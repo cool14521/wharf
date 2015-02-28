@@ -28,11 +28,9 @@ func (this *OrganizationWebV1Controller) Prepare() {
 }
 
 func (this *OrganizationWebV1Controller) PostOrganization() {
-
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
 
 	if exist != true {
-
 		beego.Error("[WEB API] Load session failure")
 
 		result := map[string]string{"message": "Session load failure", "url": "/auth"}
@@ -41,13 +39,11 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
-
 	}
 
 	var org models.Organization
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
-
 		beego.Error("[WEB API] Unmarshal organization data error:", err.Error())
 
 		result := map[string]string{"message": err.Error()}
@@ -88,6 +84,14 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 		this.StopRun()
 	}
 
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	if err := user.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEB, org.UUID, memo); err != nil {
+		beego.Error("[WEB API] Log Erro:", err.Error())
+	}
+	if err := org.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+		beego.Error("[WEB API] Log Erro:", err.Error())
+	}
+
 	user.Get(user.Username, user.Password)
 	this.Ctx.Input.CruSession.Set("user", user)
 
@@ -101,7 +105,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 func (this *OrganizationWebV1Controller) PutOrganization() {
 
-	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 
 		beego.Error("[WEB API] Load session failure")
 
@@ -135,6 +139,14 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+		}
+
+		memo, _ := json.Marshal(this.Ctx.Input.Header)
+		if err := user.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEB, org.UUID, memo); err != nil {
+			beego.Error("[WEB API] Log Erro:", err.Error())
+		}
+		if err := org.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+			beego.Error("[WEB API] Log Erro:", err.Error())
 		}
 
 		result := map[string]string{"message": "Update organization successfully."}
