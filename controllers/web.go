@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -18,6 +19,9 @@ func (this *WebController) URLMapping() {
 	this.Mapping("GetDashboard", this.GetDashboard)
 	this.Mapping("GetSetting", this.GetSetting)
 	this.Mapping("GetRepository", this.GetRepository)
+	this.Mapping("GetAdmin", this.GetAdmin)
+	this.Mapping("GetAdminAuth", this.GetAdminAuth)
+	this.Mapping("GetSignout", this.GetSignout)
 }
 
 func (this *WebController) Prepare() {
@@ -95,19 +99,22 @@ func (this *WebController) GetAdmin() {
 func (this *WebController) GetAdminAuth() {
 	this.TplNames = "admin-auth.html"
 
-	this.Data["username"] = "genedna"
-
 	this.Render()
 	this.StopRun()
 }
 
 func (this *WebController) GetSignout() {
-	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		this.TplNames = "auth.html"
 		this.Render()
 
 		this.StopRun()
 	} else {
+		memo, _ := json.Marshal(this.Ctx.Input.Header)
+		if err := user.Log(models.ACTION_SINGOUT, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+			beego.Error("[WEB] Log Erro:", err.Error())
+		}
+
 		this.Ctx.Input.CruSession.Delete("user")
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
 	}

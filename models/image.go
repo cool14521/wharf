@@ -3,9 +3,11 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dockercn/wharf/utils"
-	"github.com/satori/go.uuid"
 	"time"
+
+	"github.com/satori/go.uuid"
+
+	"github.com/dockercn/wharf/utils"
 )
 
 type Image struct {

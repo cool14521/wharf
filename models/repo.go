@@ -125,8 +125,8 @@ func (r *Repository) Put(namespace, repository, json, agent string) error {
 	r.Namespace, r.Repository, r.JSON, agent = namespace, repository, json, agent
 
 	r.Updated = time.Now().Unix()
-	r.Checksumed = false
-	r.Uploaded = false
+	r.Checksumed, r.Uploaded, r.Cleared, r.Encrypted = false, false, false, false
+	r.Size, r.Download = 0, 0
 
 	if err := r.Save(); err != nil {
 		return err
