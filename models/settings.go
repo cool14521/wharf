@@ -1,5 +1,11 @@
 package models
 
+import (
+	"time"
+
+	"github.com/dockercn/wharf/utils"
+)
+
 const (
 	LEVELEMERGENCY = iota
 	LevelALERT
@@ -73,4 +79,43 @@ type EmailTemplate struct {
 	Created int64    `json:"created"` //
 	Updated int64    `json:"updated"` //
 	Memo    []string `json:"memo"`    //
+}
+
+func (l *Log) Has(uuid string) (bool, []byte, error) {
+	if len(uuid) <= 0 {
+		return false, nil, nil
+	}
+
+	err := Get(l, []byte(uuid))
+
+	return true, []byte(uuid), err
+}
+
+func (l *Log) Save() error {
+	if err := Save(l, []byte(l.UUID)); err != nil {
+		return err
+	}
+
+	if _, err := LedisDB.HSet([]byte(GLOBAL_LOG_INDEX), []byte(l.UUID), []byte(l.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (user *User) Log(action, level int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+	log.UUID = string(utils.GeneralKey(actionUUID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	user.Memo = append(user.Memo, log.UUID)
+
+	if err := user.Save(); err != nil {
+		return err
+	}
+
+	return nil
 }

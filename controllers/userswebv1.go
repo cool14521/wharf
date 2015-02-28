@@ -127,6 +127,11 @@ func (this *UserWebAPIV1Controller) Signin() {
 			user.Gravatar = "/static/images/default_user.jpg"
 		}
 
+		memo, _ := json.Marshal(this.Ctx.Input.Header)
+		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, user.UUID, memo); err != nil {
+			beego.Error("[WEB API] Log Erro:", err.Error())
+		}
+
 		this.Ctx.Input.CruSession.Set("user", user)
 
 		result := map[string]string{"message": "User Singin Successfully!"}
@@ -181,6 +186,11 @@ func (this *UserWebAPIV1Controller) Signup() {
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 				this.ServeJson()
 				this.StopRun()
+			}
+
+			memo, _ := json.Marshal(this.Ctx.Input.Header)
+			if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, user.UUID, memo); err != nil {
+				beego.Error("[WEB API] Log Erro:", err.Error())
 			}
 
 			result := map[string]string{"message": "User Singup Successfully!"}
