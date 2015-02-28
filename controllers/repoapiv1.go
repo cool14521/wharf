@@ -75,7 +75,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := repo.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, repo.UUID, memo); err != nil {
+	if err := repo.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
 		beego.Error("[WEB API] Log Erro:", err.Error())
 	}
 

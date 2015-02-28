@@ -131,7 +131,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 		}
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, user.UUID, memo); err != nil {
+		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
 			beego.Error("[WEB API] Log Erro:", err.Error())
 		}
 
@@ -192,7 +192,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			}
 
 			memo, _ := json.Marshal(this.Ctx.Input.Header)
-			if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, user.UUID, memo); err != nil {
+			if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
 				beego.Error("[WEB API] Log Erro:", err.Error())
 			}
 
@@ -404,7 +404,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	this.Ctx.Input.CruSession.Set("user", user)
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_UPDATE_PROFILE, models.LEVELINFORMATIONAL, user.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_UPDATE_PROFILE, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
 		beego.Error("[WEB API] Log Erro:", err.Error())
 	}
 
@@ -459,7 +459,7 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_UPDATE_PASSWORD, models.LEVELINFORMATIONAL, user.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_UPDATE_PASSWORD, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
 		beego.Error("[WEB API] Log Erro:", err.Error())
 	}
 

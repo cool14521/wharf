@@ -7,6 +7,11 @@ import (
 )
 
 const (
+	TYPE_WEB = iota
+	TYPE_API
+)
+
+const (
 	LEVELEMERGENCY = iota
 	LevelALERT
 	LEVELCRITICAL
@@ -41,6 +46,7 @@ type Log struct {
 	Action     int64  `json:"action"`     //
 	ActionUUID string `json:"actionuuid"` //
 	Level      int64  `json:"level"`      //
+	Type       int64  `json:"type"`       //
 	Content    string `json:"content"`    //
 	Created    int64  `json:"created"`    //
 }
@@ -104,8 +110,8 @@ func (l *Log) Save() error {
 	return nil
 }
 
-func (user *User) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (user *User) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -121,8 +127,8 @@ func (user *User) Log(action, level int64, actionUUID string, content []byte) er
 	return nil
 }
 
-func (admin *Admin) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (admin *Admin) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -138,8 +144,8 @@ func (admin *Admin) Log(action, level int64, actionUUID string, content []byte) 
 	return nil
 }
 
-func (org *Organization) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (org *Organization) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -155,8 +161,8 @@ func (org *Organization) Log(action, level int64, actionUUID string, content []b
 	return nil
 }
 
-func (team *Team) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (team *Team) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -172,8 +178,8 @@ func (team *Team) Log(action, level int64, actionUUID string, content []byte) er
 	return nil
 }
 
-func (repo *Repository) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (repo *Repository) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -189,8 +195,8 @@ func (repo *Repository) Log(action, level int64, actionUUID string, content []by
 	return nil
 }
 
-func (compose *Compose) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (compose *Compose) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -206,8 +212,8 @@ func (compose *Compose) Log(action, level int64, actionUUID string, content []by
 	return nil
 }
 
-func (image *Image) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (image *Image) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -223,8 +229,8 @@ func (image *Image) Log(action, level int64, actionUUID string, content []byte) 
 	return nil
 }
 
-func (star *Star) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (star *Star) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -240,8 +246,8 @@ func (star *Star) Log(action, level int64, actionUUID string, content []byte) er
 	return nil
 }
 
-func (comment *Comment) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (comment *Comment) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -257,8 +263,8 @@ func (comment *Comment) Log(action, level int64, actionUUID string, content []by
 	return nil
 }
 
-func (p *Privilege) Log(action, level int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Content: string(content), Created: time.Now().Unix()}
+func (p *Privilege) Log(action, level, t int64, actionUUID string, content []byte) error {
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
