@@ -122,6 +122,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 $http.post('/w1/organization', $scope.organization)
                     .success(function(data, status, headers, config) {
                         $scope.submitting = true;
+                        $window.location.href = '/setting';
                         growl.info(data.message);
                     })
                     .error(function(data, status, headers, config) {
@@ -136,19 +137,25 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         }
     }])
     .controller('SettingTeamCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-        //初始化加载user的organization信息
-        $http.get('/w1/organizations')
+        //get teams data
+        $scope.repositoryAdd = {};
+        $scope.repo = {};
+        $http.get('/w1/' + $routeParams.org + '/teams')
             .success(function(data, status, headers, config) {
-                $scope.team = data
+                $scope.teams = data;
+                /*  if length(data) == 0 {
+                      $scope.organizationShow = false;
+                      return
+                  }
+                  $scope.organizationShow = true;*/
             })
             .error(function(data, status, headers, config) {
-
+                $timeout(function() {
+                    //$window.location.href = '/auth';
+                    alert(data.message);
+                }, 3000);
             });
-
-        $scope.submit = function() {
-
-        }
-
+        
         $scope.createTeam = function() {
             $window.location.href = '/setting#/team/add';
         }
@@ -233,7 +240,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         //get teams data
         $scope.repositoryAdd = {};
         $scope.repo = {};
-        $http.get('/w1/'+$routeParams.org+'/teams')
+        $http.get('/w1/' + $routeParams.org + '/teams')
             .success(function(data, status, headers, config) {
                 $scope.teams = data;
                 /*  if length(data) == 0 {
