@@ -98,6 +98,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 			beego.Error("[WEB API]User found err,err:=", err.Error())
 			continue
 		}
+	}
 
 	team.Users = usersUUID
 
@@ -322,7 +323,7 @@ func (this *TeamWebV1Controller) GetTeam() {
 
 func (this *TeamWebV1Controller) PutTeam() {
 
-	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+	_, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if exist != true {
 
 		beego.Error("[WEB API] Load session failure")
