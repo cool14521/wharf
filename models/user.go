@@ -44,6 +44,13 @@ func (user *User) Has(username string) (bool, []byte, error) {
 	return true, UUID, err
 }
 
+func (user *User) GetByUUID(UUID string) error {
+	if err := Get(user, []byte(UUID)); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (user *User) Save() error {
 	//https://github.com/docker/docker/blob/28f09f06326848f4117baf633ec9fc542108f051/registry/registry.go#L27
 	validNamespace := regexp.MustCompile(`^([a-z0-9_]{4,30})$`)
