@@ -233,7 +233,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         //get teams data
         $scope.repositoryAdd = {};
         $scope.repo = {};
-        $http.get('/w1/teams')
+        $http.get('/w1/'+$routeParams.org+'/teams')
             .success(function(data, status, headers, config) {
                 $scope.teams = data;
                 /*  if length(data) == 0 {
