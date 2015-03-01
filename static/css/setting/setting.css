@@ -375,12 +375,11 @@ canvas {
 .iconActive {
     color: #4183c4;
 }
-
 .org-group-gravatar {
-    margin-top:10px;
+    margin-top: 10px;
 }
 .addUserUsername {
-    float:left;
+    float: left;
 }
 .removeUserButton {
     height: 30px;
@@ -396,3 +395,48 @@ canvas {
     margin-left: 5px;
     border-radius: 3px;
 }
+
+/*Repo add repository start*/
+.repoCreateForm>.form-group>.form-content>select {
+    margin-top: 10px;
+    width: 220px;
+    border: 1px solid #bdc3c7;
+    float: left;
+}
+.repoCreateForm>.form-group>.form-content>.slash {
+    float: left;
+    font-size: 21px;
+    color: #666;
+    margin: 0px 8px;
+    margin-top: 10px;
+}
+.repoCreateForm>.form-group>.form-content>input {
+    height: 42px;
+    padding: 8px 12px;
+    font-family: "Lato", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.467;
+    color: #34495e;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    box-shadow: none;
+    margin-top: 10px;
+    width: 220px;
+    border: 1px solid #bdc3c7;
+}
+.form-group>button {
+    color: #fff;
+    background-color: #60b044;
+    position: relative;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 7px 12px;
+    white-space: nowrap;
+}
+.cancelRepoBtn {
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 15px;
+}
+
+/*Repo add repository end*/

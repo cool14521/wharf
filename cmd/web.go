@@ -51,7 +51,7 @@ func runWeb(c *cli.Context) {
 	models.InitDb()
 
 	beego.SetStaticPath(beego.AppConfig.String("docker::StaticPath"), fmt.Sprintf("%s/images", beego.AppConfig.String("docker::BasePath")))
-	beego.SetStaticPath(beego.AppConfig.String("docker::Gravatar"), beego.AppConfig.String("docker::Gravatar"))
+	beego.SetStaticPath(beego.AppConfig.String("gravatar"), beego.AppConfig.String("gravatar"))
 
 	beego.Run(fmt.Sprintf("%v:%v", address, port))
 }

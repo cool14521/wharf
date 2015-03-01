@@ -20,7 +20,7 @@ Create new team
             <div class="form-content input-long">
                 <input type="text" size="30" ng-model="team.team" name="team" required namespace-validator/>
                 <div class="error-message" ng-messages="teamForm.team.$error" ng-if="teamForm.team.$dirty">
-                    <div ng-message="required">Please enter your repository.</div>
+                    <div ng-message="required">Please enter your team.</div>
                     <div ng-message="usernames">New unique Team name; 3 - 30 characters. Only lowercase letters, digits and _ - . characters are allowed</div>
                 </div>
             </div>
@@ -38,7 +38,7 @@ Create new team
                 <lable>Team member</lable>
             </div>
              <div class="form-add-member">
-                    add<i class="fa fa-plus fa-fw" data-toggle="modal" data-target="#myModal"></i>
+                 <i class="fa fa-user-plus fa-fw" data-toggle="modal" data-target="#myModal"></i>
             </div>
             <input type="hidden" ng-model="team.users">
             <div class="form-content input-long"> 
