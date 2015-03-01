@@ -112,7 +112,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 		this.ServeJson()
 		this.StopRun()
 	}
-	fmt.Printf("%#v\n", team)
+
 	user.Teams = append(user.Teams, team.UUID)
 
 	if err := user.Save(); err != nil {
@@ -353,6 +353,18 @@ func (this *TeamWebV1Controller) PutTeam() {
 
 	beego.Info("[Web API] start update team", string(this.Ctx.Input.CopyBody()))
 
+	org := new(models.Organization)
+	if exist, _, _ := org.Has(team.Organization); !exist {
+		beego.Error("[WEB API] Organization load error.")
+
+		result := map[string]string{"message": "Organization load error"}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
 	teamOld := new(models.Team)
 	if err := teamOld.Get(this.Ctx.Input.Param(":uuid")); err != nil {
 		beego.Error("[WEB API]team load error.", err.Error())
@@ -363,10 +375,64 @@ func (this *TeamWebV1Controller) PutTeam() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		this.StopRun()
+	} else {
+		for _, userUUID := range teamOld.Users {
+			user := new(models.User)
+			if err := user.GetByUUID(userUUID); err == nil {
+				joinOrganizations := make([]string, 0)
+				for _, joinOrganization := range user.JoinOrganizations {
+					if joinOrganization == org.UUID {
+						continue
+					}
+					joinOrganizations = append(joinOrganizations, joinOrganization)
+				}
+
+				joinTeams := make([]string, 0)
+				for _, joinTeam := range user.JoinTeams {
+					if joinTeam == teamOld.UUID {
+						continue
+					}
+					joinTeams = append(joinTeams, joinTeam)
+				}
+
+				user.JoinOrganizations = joinOrganizations
+				user.JoinTeams = joinTeams
+				if err := user.Save(); err != nil {
+					beego.Error("[WEB API V1] user save error:", err.Error())
+				}
+			} else {
+				beego.Error("[WEB API]User found err,err:=", err.Error())
+				continue
+			}
+		}
 	}
 
-	teamOld.Description = team.Description
-	teamOld.Users = team.Users
+	usersUUID := make([]string, 0)
+	for _, username := range team.Users {
+		user := new(models.User)
+		if _, UUID, err := user.Has(username); len(string(UUID)) > 0 && err == nil {
+			usersUUID = append(usersUUID, string(UUID))
+
+			user.JoinOrganizations = append(user.JoinOrganizations, org.UUID)
+			user.JoinTeams = append(user.JoinTeams, team.UUID)
+			if len(user.Gravatar) == 0 {
+				user.Gravatar = "/static/images/default_user.jpg"
+			}
+			if err := user.Save(); err != nil {
+				beego.Error("[WEB API V1] user save error:", err.Error())
+			}
+		} else {
+			beego.Error("[WEB API]User found err,err:=", err.Error())
+			continue
+		}
+	}
+
+	team.UUID = teamOld.UUID
+	team.Username = teamOld.Username
+	team.Users = usersUUID
+	team.TeamPrivileges = teamOld.TeamPrivileges
+	team.Repositories = teamOld.Repositories
+	team.Memo = teamOld.Memo
 
 	if err := team.Save(); err != nil {
 		beego.Error("[WEB API]team save error.", err.Error())

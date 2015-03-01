@@ -117,7 +117,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
     .controller('SettingOrganizationAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
         $scope.submitting = false;
         $scope.submit = function() {
-            if (true) {
+            if ($scope.org.$valid) {
                 $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
                 $http.post('/w1/organization', $scope.organization)
                     .success(function(data, status, headers, config) {
@@ -169,23 +169,47 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         $http.get('/w1/team/' + $routeParams.teamUUID)
             .success(function(data, status, headers, config) {
                 $scope.team = data;
+                var usernames = [];
+                for (var i = 0; i < $scope.team.userobjects.length; i++) {
+                    usernames.push($scope.team.userobjects[i].username);           
+                }
+            	 $scope.team.users = usernames;
             })
             .error(function(data, status, headers, config) {
                 growl.error(data.message);
             });
 
-        $scope.removeUser = function(userUUID) {
+        $scope.addUserFunc = function() {
+            $scope.findUser = {}
+            $scope.findUser.username = document.getElementById("tags").value;
+
+            //adjust user already add
+            for (var i = 0; i < $scope.team.userobjects.length; i++) {
+                if ($scope.team.userobjects[i].username == document.getElementById("tags").value) {
+                    growl.error("user already exist!");
+                    $('#myModal').modal('toggle');
+                    return;
+                }
+            }
+            $scope.team.users.push($scope.findUser.username);
+            $scope.team.userobjects.push($scope.findUser);
+            $('#myModal').modal('toggle');
+            return
+        }
+
+        $scope.removeUser = function(username) {
             var userUUIDSNew = [];
             var usersNew = [];
-            for (var i = 0; i < $scope.team.userobjects; i++) {
-                if ($scope.team.userobjects[i].UUID == userUUID) {
+            for (var i = 0; i < $scope.team.userobjects.length; i++) {
+                if ($scope.team.userobjects[i].username == username) {
                     continue;
                 }
-                userUUIDSNew.push($scope.team.userobjects[i].UUID);
+                userUUIDSNew.push($scope.team.userobjects[i].username);
                 usersNew.push($scope.team.userobjects[i]);
             }
             $scope.team.users = userUUIDSNew;
             $scope.team.userobjects = usersNew;
+            return
         }
 
         $scope.submit = function() {
@@ -194,8 +218,9 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 growl.error("Team must have members!");
                 return
             }
+
             $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-            $http.put('/w1/team/'+ $routeParams.teamUUID, $scope.team)
+            $http.put('/w1/team/' + $routeParams.teamUUID, $scope.team)
                 .success(function(data, status, headers, config) {
                     $scope.submitting = true;
                     growl.info(data.message);
