@@ -263,11 +263,11 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 		this.StopRun()
 	}
 
-	if _, err := os.Stat(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)); err == nil {
-		os.Remove(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix))
+	if _, err := os.Stat(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix)); err == nil {
+		os.Remove(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix))
 	}
 
-	f, err := os.OpenFile(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename), os.O_WRONLY|os.O_CREATE, 0666)
+	f, err := os.OpenFile(fmt.Sprintf("%s%s%s", beego.AppConfig.String("gravatar"), "/", fileHeader.Filename), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		result := map[string]string{"message": "Upload gravatar failure", "url": "/auth"}
 		this.Data["json"] = &result
@@ -282,7 +282,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 	// decode jpeg into image.Image
 	var img image.Image
-	imageFile, err := os.Open(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename))
+	imageFile, err := os.Open(fmt.Sprintf("%s%s%s", beego.AppConfig.String("gravatar"), "/", fileHeader.Filename))
 	if err != nil {
 		result := map[string]string{"message": "Upload gravatar failure", "url": "/auth"}
 		this.Data["json"] = &result
@@ -317,7 +317,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 	// and preserve aspect ratio
 	m := resize.Resize(100, 100, img, resize.Lanczos3)
 
-	out, err := os.Create(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix))
+	out, err := os.Create(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix))
 	if err != nil {
 		result := map[string]string{"message": "Upload gravatar resize failure", "url": "/auth"}
 		this.Data["json"] = &result
@@ -338,9 +338,9 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 	}
 
 	//删除用户自己上传的图片
-	os.Remove(fmt.Sprintf("%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", fileHeader.Filename))
+	os.Remove(fmt.Sprintf("%s%s%s", beego.AppConfig.String("gravatar"), "/", fileHeader.Filename))
 
-	result := map[string]string{"message": "Please click button to finish uploading gravatar", "url": fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", prefix, "_resize.", suffix)}
+	result := map[string]string{"message": "Please click button to finish uploading gravatar", "url": fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix)}
 
 	this.Data["json"] = &result
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
@@ -374,7 +374,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 
 	if strings.Contains(fmt.Sprint(u["gravatar"]), "resize") {
 		suffix := strings.Split(fmt.Sprint(u["gravatar"]), ".")[1]
-		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("docker::Gravatar"), "/", user.Username, "_show.", suffix)
+		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", user.Username, "_show.", suffix)
 		if _, err := os.Stat(gravatar); err == nil {
 			os.Remove(gravatar)
 		}
