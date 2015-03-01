@@ -36,26 +36,27 @@ runmode = dev
 
 enablehttptls = true
 httpsport = 443
-httpcertfile = cert/wharf.crt
-httpkeyfile = cert/wharf.key
+httpcertfile = cert/containerops.me/containerops.me.crt
+httpkeyfile = cert/containerops.me/containerops.me.key
+
+gravatar = data/gravatar
 
 [docker]
 BasePath = /tmp/registry
 StaticPath = files
-Endpoints = 127.0.0.1
+Endpoints = containerops.me
 Version = 0.8.0
 Config = prod
 Standalone = true
 OpenSignup = false
-Gravatar = data/gravatar
 
 [ledisdb]
 DataDir = /tmp/ledisdb
 DB = 8
 
 [log]
-FilePath = /tmp/log
-FileName = bucket-log
+FilePath = /tmp
+FileName = containerops.log
 
 [session]
 Provider = ledis
@@ -75,6 +76,8 @@ SavePath = /tmp/session
 
 It's a Nginx config example. You can change **client_max_body_size** what limited upload file size.
 
+You should copy `containerops.me` keys from `cert/containerops.me` to `/etc/nginx`, then run **Wharf** with `http` mode and listen on `127.0.0.1:9911`.
+
 ```nginx
 upstream wharf_upstream {
   server 127.0.0.1:9911;
@@ -82,21 +85,21 @@ upstream wharf_upstream {
 
 server {
   listen 80;
-  server_name xxx.org;
-  rewrite  ^/(.*)$  https://xxx.org/$1  permanent;
+  server_name containerops.me;
+  rewrite  ^/(.*)$  https://containerops.me/$1  permanent;
 }
 
 server {
   listen 443;
 
-  server_name xxx.org;
+  server_name containerops.me;
 
-  access_log /var/log/nginx/xxx.log;
-  error_log /var/log/nginx/xxx-errror.log;
+  access_log /var/log/nginx/containerops-me.log;
+  error_log /var/log/nginx/containerops-me-errror.log;
 
   ssl on;
-  ssl_certificate /etc/nginx/ssl/xxx/x.crt;
-  ssl_certificate_key /etc/nginx/ssl/xxx/x.key;
+  ssl_certificate /etc/nginx/containerops.me.crt;
+  ssl_certificate_key /etc/nginx/containerops.me.key;
 
   client_max_body_size 1024m;
   chunked_transfer_encoding on;
