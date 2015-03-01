@@ -54,6 +54,9 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
                     .success(function(data, status, headers, config) {
                         $scope.addPrivilege = true;
                         growl.info(data.message);
+                        $timeout(function() {
+                            $window.location.href = '/dashboard';
+                        }, 3000);
                     })
                     .error(function(data, status, headers, config) {
                         growl.error(data.message);
@@ -63,13 +66,110 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
 
     }])
     .controller('PublicRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
-
+        $scope.repoTop = [];
+        $scope.repoBottom = [];
+        $scope.user = {};
+        $http.get('/w1/repositories')
+            .success(function(data, status, headers, config) {
+                $scope.user = data;
+                var repositories = $scope.user.repositoryobjects;
+                var count = 0;
+                for (var i = 0; i < repositories.length; i++) {
+                    if (repositories[i].privated) {
+                        continue;
+                    }
+                    if (repositories[i].starts == null) {
+                        repositories[i].totalStars = 0;
+                    } else {
+                        repositories[i].totalStars = repositories[i].starts.length;
+                    }
+                    if (count > 6) {
+                        $scope.repoBottom.push(repositories[i]);
+                        continue;
+                    }
+                    count++;
+                    $scope.repoTop.push(repositories[i]);
+                }
+            })
+            .error(function(data, status, headers, config) {
+                growl.error(data.message);
+            });
     }])
     .controller('RepositoriesCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
+        $scope.repoTop = [];
+        $scope.repoBottom = [];
+        $scope.user = {};
+        $http.get('/w1/repositories')
+            .success(function(data, status, headers, config) {
+                $scope.user = data;
+                var repositories = $scope.user.repositoryobjects;
+                var conut = 0;
+                for (var i = 0; i < repositories.length; i++) {
+                    if (repositories[i].starts == null) {
+                        repositories[i].totalStars = 0;
+                    } else {
+                        repositories[i].totalStars = repositories[i].starts.length;
+                    }
+                    if (i > 5) {
+                        $scope.repoBottom.push(repositories[i]);
+                        continue;
+                    }
+                    $scope.repoTop.push(repositories[i]);
+                }
+            })
+            .error(function(data, status, headers, config) {
+                growl.error(data.message);
+            });
+    }])
+    .controller('OrgRepositoriesCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window','$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $window,$routeParams) {
+        $scope.repoTop = [];
 
+        $http.get('/w1/organizations/' + $routeParams.orgUUID + '/repo')
+            .success(function(data, status, headers, config) {
+                var repositories = data;
+            
+                for (var i = 0; i < repositories.length; i++) {
+                    if (repositories[i].starts == null) {
+                        repositories[i].totalStars = 0;
+                    } else {
+                        repositories[i].totalStars = repositories[i].starts.length;
+                    }
+                    $scope.repoTop.push(repositories[i]);
+                }
+            })
+            .error(function(data, status, headers, config) {
+                growl.error(data.message);
+            });
     }])
     .controller('PrivateRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
-
+        $scope.repoTop = [];
+        $scope.repoBottom = [];
+        $scope.user = {};
+        $http.get('/w1/repositories')
+            .success(function(data, status, headers, config) {
+                $scope.user = data;
+                var repositories = $scope.user.repositoryobjects;
+                var conut = 0;
+                for (var i = 0; i < repositories.length; i++) {
+                    if (!repositories[i].privated) {
+                        continue;
+                    }
+                    if (repositories[i].starts == null) {
+                        repositories[i].totalStars = 0;
+                    } else {
+                        repositories[i].totalStars = repositories[i].starts.length;
+                    }
+                    if (conut > 6) {
+                        $scope.repoBottom.push(repositories[i]);
+                        continue;
+                    }
+                    $scope.repoTop.push(repositories[i]);
+                    conut++;
+                }
+            })
+            .error(function(data, status, headers, config) {
+                growl.error(data.message);
+            });
     }])
     .controller('StarRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
 
@@ -122,6 +222,19 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
             $window.location.href = '/setting#/org/add';
         }
     }])
+    .controller('OrganizationListCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
+        //init organization  info
+        $http.get('/w1/organizations')
+            .success(function(data, status, headers, config) {
+                $scope.organizaitons = data;
+            })
+            .error(function(data, status, headers, config) {
+                $timeout(function() {
+                    //$window.location.href = '/auth';
+
+                }, 3000);
+            });
+    }])
     //routes
     .config(function($routeProvider, $locationProvider) {
         $routeProvider
@@ -160,6 +273,10 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
             .when('/org/add', {
                 templateUrl: '/static/views/setting/organizationadd.html',
                 controller: 'SettingOrganizationAddCtrl'
+            })
+            .when('/org/:orgUUID/repo', {
+                templateUrl: '/static/views/dashboard/organizationrepo.html',
+                controller: 'OrgRepositoriesCtrl'
             });
     })
     .directive('namespaceValidator', [function() {
