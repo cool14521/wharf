@@ -27,6 +27,13 @@ go get -u github.com/nfnt/resize
 go build
 ```
 
+## TODO In The Feature
+
+1. Docker Registry V2 support.
+2. Docker Hub repository sync automatically.
+3. Rocket **CAS** support.
+4. More relative pages.
+
 # Wharf Runtime Configuration
 
 Please add a runtime config file named `bucket.conf` under `wharf/conf` before starting `wharf` service.
@@ -132,6 +139,15 @@ Run directly:
 ```bash
 ./wharf web --address 0.0.0.0 --port 80
 ```
+
+# How To Use
+
+1. Add **containerops.com** in your `hosts` file like `192.168.1.66 containerops.me` .
+2. Registry a user at `https://containerops.me/auth`.
+3. Login with new user use `docker login containerops.com`.
+4. Then `push` with `docker push github.com/somebody/ubuntu`.
+5. You could `pull` with `docker pull -a github.com/somebody/ubuntu`.
+6. Work fun!
 
 # Reporting Issues
 
