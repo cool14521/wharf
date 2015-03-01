@@ -148,8 +148,10 @@ func authNamespace(Ctx *context.Context) (Auth bool, NamespaceType bool, Code in
 }
 
 func authToken(Ctx *context.Context) (bool, int, []byte) {
+
 	if strings.Index(Ctx.Input.Header("Authorization"), "Token") == -1 {
 		return false, http.StatusUnauthorized, []byte("No Basic Auth And Token In HTTP Header Authorization")
+
 	}
 
 	r, _ := regexp.Compile(`Token (?P<token>\w+)`)
@@ -181,7 +183,8 @@ func AuthPutRepository(Ctx *context.Context) (bool, int, []byte) {
 }
 
 func AuthPutRepositoryTag(Ctx *context.Context) (bool, int, []byte) {
-	if auth, code, message := authToken(Ctx); auth == false {
+	authBasic, _, _ := authBasic(Ctx)
+	if auth, code, message := authToken(Ctx); auth == false && !authBasic {
 		return auth, code, message
 	}
 
@@ -194,6 +197,7 @@ func AuthPutRepositoryTag(Ctx *context.Context) (bool, int, []byte) {
 }
 
 func AuthPutRepositoryImage(Ctx *context.Context) (bool, int, []byte) {
+
 	if auth, code, message := authBasic(Ctx); auth == false {
 		return auth, code, message
 	}
@@ -225,8 +229,8 @@ func AuthGetRepositoryImages(Ctx *context.Context) (bool, int, []byte) {
 }
 
 func AuthGetRepositoryTags(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	if auth, code, message := authToken(Ctx); auth == false {
+	authBasic, _, _ := authBasic(Ctx)
+	if auth, code, message := authToken(Ctx); auth == false && !authBasic {
 		return auth, code, message
 	}
 
@@ -239,8 +243,8 @@ func AuthGetRepositoryTags(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrI
 }
 
 func AuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-
-	if auth, code, message := authToken(Ctx); auth == false {
+	authBasic, _, _ := authBasic(Ctx)
+	if auth, code, message := authToken(Ctx); auth == false && !authBasic {
 		return auth, code, message
 	}
 
@@ -263,7 +267,9 @@ func AuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo [
 }
 
 func AuthPutImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-	if auth, code, message := authToken(Ctx); auth == false {
+	authBasic, _, _ := authBasic(Ctx)
+	if auth, code, message := authToken(Ctx); auth == false && !authBasic {
+		beego.Error("[REGISTRY API V1] 验证Token错误")
 		return auth, code, message
 	}
 
@@ -276,7 +282,10 @@ func AuthPutImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo [
 }
 
 func AuthPutImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-	if auth, code, message := authToken(Ctx); auth == false {
+
+	authBasic, _, _ := authBasic(Ctx)
+
+	if auth, code, message := authToken(Ctx); auth == false && !authBasic {
 		return auth, code, message
 	}
 
@@ -289,7 +298,10 @@ func AuthPutImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo 
 }
 
 func AuthPutChecksum(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-	if auth, code, message := authToken(Ctx); auth == false {
+
+	authBasic, _, _ := authBasic(Ctx)
+
+	if auth, code, message := authToken(Ctx); auth == false && !authBasic {
 		return auth, code, message
 	}
 
@@ -302,7 +314,8 @@ func AuthPutChecksum(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []
 }
 
 func AuthGetImageAncestry(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-	if auth, code, message := authToken(Ctx); auth == false {
+	authBasic, _, _ := authBasic(Ctx)
+	if auth, code, message := authToken(Ctx); auth == false && !authBasic {
 		return auth, code, message
 	}
 
@@ -315,7 +328,8 @@ func AuthGetImageAncestry(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrIn
 }
 
 func AuthGetImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
-	if auth, code, message := authToken(Ctx); auth == false {
+	authBasic, _, _ := authBasic(Ctx)
+	if auth, code, message := authToken(Ctx); auth == false && !authBasic {
 		return auth, code, message
 	}
 
