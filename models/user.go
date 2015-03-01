@@ -106,7 +106,6 @@ func (user *User) Get(username, password string) error {
 			}
 		}
 	}
-
 	return nil
 }
 
@@ -128,4 +127,18 @@ func (user *User) Orgs(username string) (map[string]string, error) {
 	}
 
 	return result, nil
+}
+
+func (user *User) All() []*User {
+	vfValues, _ := LedisDB.HGetAll([]byte(GLOBAL_USER_INDEX))
+
+	allUsers := make([]*User, 0, 1)
+
+	for _, vfValue := range vfValues {
+		nowUser := new(User)
+		nowUser.Has(string(vfValue.Field))
+		allUsers = append(allUsers, nowUser)
+	}
+
+	return allUsers
 }
