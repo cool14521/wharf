@@ -122,3 +122,36 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 		}
 	}
 }
+
+func (this *RepoWebAPIV1Controller) GetRepositories() {
+	var user models.User
+	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+	if exist != true {
+		beego.Error("[WEB API V1] Load session failure")
+		result := map[string]string{"message": "Session load failure", "url": "/auth"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	repositories := make([]models.Repository, 0)
+	for _, repoUUID := range user.Repositories {
+		repo := new(models.Repository)
+		if err := repo.Get(repoUUID); err != nil {
+			beego.Error("[WEB API] Repository get error,err=", err.Error())
+			continue
+		} else if repo.NamespaceType {
+			continue
+		}
+		repositories = append(repositories, *repo)
+	}
+
+	user.RepositoryObjects = repositories
+	this.Data["json"] = &user
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
+}
