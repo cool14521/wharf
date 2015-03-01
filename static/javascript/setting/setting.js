@@ -165,20 +165,36 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         }
     }])
     .controller('SettingTeamEditCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
+        var availableTags = [];
         //get team data
         $http.get('/w1/team/' + $routeParams.teamUUID)
             .success(function(data, status, headers, config) {
                 $scope.team = data;
                 var usernames = [];
                 for (var i = 0; i < $scope.team.userobjects.length; i++) {
-                    usernames.push($scope.team.userobjects[i].username);           
+                    usernames.push($scope.team.userobjects[i].username);
                 }
-            	 $scope.team.users = usernames;
+                $scope.team.users = usernames;
             })
             .error(function(data, status, headers, config) {
                 growl.error(data.message);
             });
 
+        $http.get('/w1/users')
+            .success(function(data, status, headers, config) {
+                $scope.allUser = data;
+                for (var i = 0; i < $scope.allUser.length; i++) {
+                    availableTags.push($scope.allUser[i].username);
+                }
+            })
+            .error(function(data, status, headers, config) {
+                growl.error(data.message);
+                return
+            });
+        $("#tags").autocomplete({
+            source: availableTags
+        });
+        
         $scope.addUserFunc = function() {
             $scope.findUser = {}
             $scope.findUser.username = document.getElementById("tags").value;
@@ -238,6 +254,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         $scope.team = new Object();
         $scope.team.organization = $routeParams.org;
         $scope.team.users = [];
+        var availableTags = [];
         //初始化organization数据
         $http.get('/w1/organizations')
             .success(function(data, status, headers, config) {
@@ -247,6 +264,21 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 growl.error(data.message);
                 return
             });
+
+        $http.get('/w1/users')
+            .success(function(data, status, headers, config) {
+                $scope.allUser = data;
+                for (var i = 0; i < $scope.allUser.length; i++) {
+                    availableTags.push($scope.allUser[i].username);
+                }
+            })
+            .error(function(data, status, headers, config) {
+                growl.error(data.message);
+                return
+            });
+        $("#tags").autocomplete({
+            source: availableTags
+        });
 
         $scope.submit = function() {
             if ($scope.teamForm.$valid) {
@@ -266,12 +298,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                     });
             }
         }
-
-        var availableTags = ["chliang2030598", "fivestarsky"];
-
-        $("#tags").autocomplete({
-            source: availableTags
-        });
 
 
         $scope.addUserFunc = function() {
@@ -311,11 +337,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         $http.get('/w1/organizations')
             .success(function(data, status, headers, config) {
                 $scope.organizaitons = data;
-                /*  if length(data) == 0 {
-                      $scope.organizationShow = false;
-                      return
-                  }
-                  $scope.organizationShow = true;*/
             })
             .error(function(data, status, headers, config) {
                 $timeout(function() {

@@ -464,3 +464,14 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 	this.ServeJson()
 	this.StopRun()
 }
+
+func (this *UserWebAPIV1Controller) GetUsers() {
+	user := new(models.User)
+
+	users := user.All()
+	this.Data["json"] = &users
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	this.StopRun()
+}
