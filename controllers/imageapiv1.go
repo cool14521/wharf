@@ -30,6 +30,7 @@ func (this *ImageAPIV1Controller) URLMapping() {
 func (this *ImageAPIV1Controller) Prepare() {
 	beego.Debug("[Header]")
 	beego.Debug(this.Ctx.Request.Header)
+	beego.Debug(this.Ctx.Request.URL)
 
 	this.EnableXSRF = false
 
@@ -86,10 +87,12 @@ func (this *ImageAPIV1Controller) GetImageJSON() {
 }
 
 func (this *ImageAPIV1Controller) PutImageJSON() {
+
+	beego.Error("进入PutImageJSON")
 	if auth, code, message := modules.AuthPutImageJSON(this.Ctx); auth == false {
 		result := map[string]string{"message": string(message)}
 		this.Data["json"] = result
-
+		beego.Error("进入PutImageJSON1")
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
 		this.StopRun()
@@ -122,15 +125,14 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 }
 
 func (this *ImageAPIV1Controller) PutImageLayer() {
+	beego.Error("进入PutImageLayer")
 	if auth, code, message := modules.AuthPutImageLayer(this.Ctx); auth == false {
 		result := map[string]string{"message": string(message)}
 		this.Data["json"] = result
-
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
 		this.StopRun()
 	}
-
 	imageId := string(this.Ctx.Input.Param(":image_id"))
 
 	image := new(models.Image)
@@ -148,7 +150,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 	}
 
 	data, _ := ioutil.ReadAll(this.Ctx.Request.Body)
-
+	beego.Error("进入PutImageLayer3")
 	if err := ioutil.WriteFile(layerfile, data, 0777); err != nil {
 		beego.Error("[REGISTRY API V1] Put Image Layer File Error: ", err.Error())
 		result := map[string]string{"Error": "Put Image Layer File Error"}
