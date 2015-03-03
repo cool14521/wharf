@@ -44,9 +44,9 @@
                             </div>
                             <div class="list-group">
                                 <span class="list-group-item"><a href="#repo"><i class="fa fa-database fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Repositories</a></span>
-                                <span class="list-group-item"><a href="#publicRepo"><i class="fa fa-unlock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Public&nbsp;&nbsp;repositories</a></span>
-                                <span class="list-group-item"><a href="#privateRepo"><i class="fa fa-lock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Private&nbsp;&nbsp;repositories</a></span>
-                                <span class="list-group-item"><a href="#starRepo"><i class="fa fa-star fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Starred&nbsp;&nbsp;repositories</a></span>
+                                <span class="list-group-item"><a href="#repo/public"><i class="fa fa-unlock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Public&nbsp;&nbsp;repositories</a></span>
+                                <span class="list-group-item"><a href="#repo/private"><i class="fa fa-lock fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Private&nbsp;&nbsp;repositories</a></span>
+                                <span class="list-group-item"><a href="#repo/star"><i class="fa fa-star fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Starred&nbsp;&nbsp;repositories</a></span>
                                 <span class="list-group-item"><a href="#comment"><i class="fa fa-comments fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Comments</a></span>
                             </div>
                         </div>
@@ -70,13 +70,16 @@
                         <!-- End Job List Group -->
 
                         <!-- Job List Group -->
-                        <div class="block left-nav">
-                            <div class="block-title">
-                                <h2><strong>
+                        <div ng-controller="OrganizationListCtrl">
+                            <div class="block left-nav">
+                                <div class="block-title">
+                                    <h2><strong>
                   Organization
                 </strong></h2>
-                            </div>
-                            <div class="list-group">
+                                </div>
+                                <div class="list-group">
+                                    <span class="list-group-item" ng-repeat="org in organizaitons"><a ng-href="#org/{{org.UUID}}/repo"><i class="fa fa-sitemap fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;{{org.organization}}</a></span>
+                                </div>
                             </div>
                         </div>
                         <!-- End Job List Group -->

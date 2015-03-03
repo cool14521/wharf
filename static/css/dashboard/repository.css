@@ -92,7 +92,7 @@
     margin-left: 40px;
     margin-top: 30px;
     border-radius: 5px;
-    padding-bottom: 15px;
+    min-height:200px;
 }
 .repositoryBoxTime {
     margin-top: 15px;
@@ -106,6 +106,7 @@
     text-align: justify;
     font-size: 14px;
     margin-top: 15px;
+    min-height:50px;
 }
 .repositoryBoxIcon {
     font-size: 22px;
@@ -174,6 +175,7 @@
 }
 .repo-list-item-content-desc {
     color: #434A54;
+    min-width:420px;
 }
 .repo-list-item-icons {
     float: left;

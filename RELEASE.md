@@ -8,6 +8,13 @@ Now, it's time to announce our pre-release and core of ContainerOps version of W
 
 Our team is still working really hard for your happiness with the complete version of ContainerOps platform, which comes in next few months.
 
+## The Feature TODO
+
+1. Docker Registry V2 support.
+2. Docker Hub repository sync automatically.
+3. Rocket **CAS** support.
+4. More relative pages.
+
 ## Project
 
 You can find Wharf on [GitHub](https://github.com/dockercn/wharf).

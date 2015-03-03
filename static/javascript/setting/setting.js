@@ -9,6 +9,62 @@
 
 //Auth Page Module
 angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'angularFileUpload'])
+    .controller('AddRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
+        $scope.privated = {};
+        $scope.namespaces = {};
+        $scope.repository = {};
+        $scope.namespaceObject = {};
+
+        //init user data
+        $scope.addPrivilege = false
+        $http.get('/w1/namespaces')
+            .success(function(data, status, headers, config) {
+                $scope.namespaces = data;
+                /* $scope.repository.namespace = data[0];*/
+                $scope.namespaceObject = data[0];
+            })
+            .error(function(data, status, headers, config) {
+
+            });
+        $scope.privated = {};
+        $scope.privated.values = [{
+            code: 0,
+            name: "Public"
+        }, {
+            code: 1,
+            name: "Private"
+        }];
+
+        $scope.privated.selection = $scope.privated.values[0];
+
+        //deal with create repository
+        $scope.createRepo = function() {
+            if ($scope.repoCreateForm.$valid) {
+                if ($scope.privated.selection.code == 1) {
+                    $scope.repository.privated = true;
+                } else {
+                    $scope.repository.privated = false;
+                }
+
+                $scope.repository.namespace = $scope.namespaceObject.namespace;
+                $scope.repository.namespacetype = $scope.namespaceObject.namespacetype;
+
+                $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+                $http.post('/w1/repository', $scope.repository)
+                    .success(function(data, status, headers, config) {
+                        $scope.addPrivilege = true;
+                        growl.info(data.message);
+                        $timeout(function() {
+                            $window.location.href = '/dashboard';
+                        }, 3000);
+                    })
+                    .error(function(data, status, headers, config) {
+                        growl.error(data.message);
+                    });
+            }
+        }
+
+    }])
     .controller('SettingProfileCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', function($scope, $cookies, $http, growl, $location, $timeout, $upload) {
         //init user info
         $http.get('/w1/profile')
@@ -165,19 +221,35 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         }
     }])
     .controller('SettingTeamEditCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
+        var availableTags = [];
         //get team data
         $http.get('/w1/team/' + $routeParams.teamUUID)
             .success(function(data, status, headers, config) {
                 $scope.team = data;
                 var usernames = [];
                 for (var i = 0; i < $scope.team.userobjects.length; i++) {
-                    usernames.push($scope.team.userobjects[i].username);           
+                    usernames.push($scope.team.userobjects[i].username);
                 }
-            	 $scope.team.users = usernames;
+                $scope.team.users = usernames;
             })
             .error(function(data, status, headers, config) {
                 growl.error(data.message);
             });
+
+        $http.get('/w1/users')
+            .success(function(data, status, headers, config) {
+                $scope.allUser = data;
+                for (var i = 0; i < $scope.allUser.length; i++) {
+                    availableTags.push($scope.allUser[i].username);
+                }
+            })
+            .error(function(data, status, headers, config) {
+                growl.error(data.message);
+                return
+            });
+        $("#tags").autocomplete({
+            source: availableTags
+        });
 
         $scope.addUserFunc = function() {
             $scope.findUser = {}
@@ -238,6 +310,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         $scope.team = new Object();
         $scope.team.organization = $routeParams.org;
         $scope.team.users = [];
+        var availableTags = [];
         //初始化organization数据
         $http.get('/w1/organizations')
             .success(function(data, status, headers, config) {
@@ -247,6 +320,21 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                 growl.error(data.message);
                 return
             });
+
+        $http.get('/w1/users')
+            .success(function(data, status, headers, config) {
+                $scope.allUser = data;
+                for (var i = 0; i < $scope.allUser.length; i++) {
+                    availableTags.push($scope.allUser[i].username);
+                }
+            })
+            .error(function(data, status, headers, config) {
+                growl.error(data.message);
+                return
+            });
+        $("#tags").autocomplete({
+            source: availableTags
+        });
 
         $scope.submit = function() {
             if ($scope.teamForm.$valid) {
@@ -266,12 +354,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
                     });
             }
         }
-
-        var availableTags = ["chliang2030598", "fivestarsky"];
-
-        $("#tags").autocomplete({
-            source: availableTags
-        });
 
 
         $scope.addUserFunc = function() {
@@ -311,11 +393,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
         $http.get('/w1/organizations')
             .success(function(data, status, headers, config) {
                 $scope.organizaitons = data;
-                /*  if length(data) == 0 {
-                      $scope.organizationShow = false;
-                      return
-                  }
-                  $scope.organizationShow = true;*/
             })
             .error(function(data, status, headers, config) {
                 $timeout(function() {
@@ -405,6 +482,10 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
             .when('/notification', {
                 templateUrl: '/static/views/setting/notification.html',
                 controller: 'SettingNotificationCtrl'
+            })
+            .when('/repo/add', {
+                templateUrl: '/static/views/dashboard/repositoryadd.html',
+                controller: 'AddRepositoryCtrl'
             })
             .when('/org/add', {
                 templateUrl: '/static/views/setting/organizationadd.html',
