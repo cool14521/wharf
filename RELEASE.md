@@ -42,5 +42,5 @@ Wharf is licensed under the MIT License.
 
 We are also working on other Wharf-related projects:
 
-* (Vessel)[https://githbu.com/dockercn/vessel]: a continuous integration system build with Docker.
-* (Rudder)[https://github.com/dockercn/rudder]: a Docker client for Golang.
+* [Vessel](https://githbu.com/dockercn/vessel): a continuous integration system build with Docker.
+* [Rudder](https://github.com/dockercn/rudder): a Docker client for Golang.
