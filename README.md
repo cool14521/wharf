@@ -139,7 +139,7 @@ Please submit issue at https://github.com/dockercn/wharf/issues
 * Meaglith Ma https://twitter.com/genedna
 * Allen Chen https://github.com/chliang2030598
 * Leo Meng https://github.com/fivestarsky
-* Unknwon https://tiwtter.com/joe2010xtmf
+* Unknwon https://twitter.com/joe2010xtmf
 
 # Licensing
 
