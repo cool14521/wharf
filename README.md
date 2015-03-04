@@ -142,11 +142,11 @@ Run directly:
 
 # How To Use
 
-1. Add **containerops.com** in your `hosts` file like `192.168.1.66 containerops.me` .
+1. Add **containerops.me** in your `hosts` file like `192.168.1.66 containerops.me` with IP which run `wharf` .
 2. Registry a user at `https://containerops.me/auth`.
-3. Login with new user use `docker login containerops.com`.
-4. Then `push` with `docker push github.com/somebody/ubuntu`.
-5. You could `pull` with `docker pull -a github.com/somebody/ubuntu`.
+3. Login with new user use `docker login containerops.me`.
+4. Then `push` with `docker push containerops.me/somebody/ubuntu`.
+5. You could `pull` with `docker pull -a containerops.me/somebody/ubuntu`.
 6. Work fun!
 
 # Reporting Issues
