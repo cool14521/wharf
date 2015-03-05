@@ -31,7 +31,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	var repo models.Repository
@@ -43,7 +43,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else {
 		beego.Debug("[WEB API V1] Repository create:", string(this.Ctx.Input.CopyBody()))
 		if exist, _, err := repo.Has(repo.Namespace, repo.Repository); err != nil {
@@ -53,7 +53,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
-			this.StopRun()
+			return
 		} else if exist == true {
 			beego.Error("[WEB API V1] Repository already exist:", fmt.Sprint(repo.Namespace, "/", repo.Repository))
 
@@ -62,7 +62,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
-			this.StopRun()
+			return
 		} else {
 			repo.UUID = string(utils.GeneralKey(fmt.Sprint(repo.Namespace, repo.Repository)))
 			repo.Created = time.Now().Unix()
@@ -74,7 +74,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 				this.ServeJson()
-				this.StopRun()
+				return
 			}
 
 			if repo.NamespaceType {
@@ -88,7 +88,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 
 						this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 						this.ServeJson()
-						this.StopRun()
+						return
 					}
 				}
 			} else {
@@ -100,7 +100,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 
 					this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 					this.ServeJson()
-					this.StopRun()
+					return
 				}
 				this.Ctx.Input.CruSession.Set("user", user)
 			}
@@ -118,7 +118,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.ServeJson()
-			this.StopRun()
+			return
 		}
 	}
 }
@@ -133,7 +133,7 @@ func (this *RepoWebAPIV1Controller) GetRepositories() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	repositories := make([]models.Repository, 0)
@@ -153,5 +153,5 @@ func (this *RepoWebAPIV1Controller) GetRepositories() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }

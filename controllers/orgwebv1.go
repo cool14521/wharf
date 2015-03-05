@@ -39,7 +39,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	var org models.Organization
@@ -52,7 +52,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	beego.Debug("[WEB API V1] organization create: %s", string(this.Ctx.Input.CopyBody()))
@@ -69,7 +69,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	user.Organizations = append(user.Organizations, org.UUID)
@@ -82,7 +82,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -101,7 +101,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
 
 func (this *OrganizationWebV1Controller) PutOrganization() {
@@ -115,6 +115,7 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+		return
 
 	} else {
 
@@ -128,6 +129,7 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+			return
 		}
 
 		beego.Debug("[WEB API V1] organization update: %s", string(this.Ctx.Input.CopyBody()))
@@ -140,6 +142,7 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
+			return
 		}
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -155,6 +158,7 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
+		return
 	}
 }
 
@@ -168,6 +172,7 @@ func (this *OrganizationWebV1Controller) GetOrganizations() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
+		return
 
 	} else {
 
@@ -189,6 +194,7 @@ func (this *OrganizationWebV1Controller) GetOrganizations() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
+		return
 	}
 }
 
@@ -202,7 +208,7 @@ func (this *OrganizationWebV1Controller) GetOrganizationDetail() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else {
 		organization := new(models.Organization)
 
@@ -214,14 +220,14 @@ func (this *OrganizationWebV1Controller) GetOrganizationDetail() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
-			this.StopRun()
+			return
 		}
 
 		this.Data["json"] = organization
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 }
 
@@ -236,7 +242,7 @@ func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	org := new(models.Organization)
@@ -249,7 +255,7 @@ func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	repositories := make([]models.Repository, 0)
@@ -266,5 +272,5 @@ func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }

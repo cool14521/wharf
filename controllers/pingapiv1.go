@@ -36,5 +36,5 @@ func (this *PingAPIV1Controller) GetPing() {
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 
 	this.ServeJson()
-	this.StopRun()
+	return
 }

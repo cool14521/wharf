@@ -38,6 +38,7 @@ func (this *UserAPIV1Controller) PostUsers() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 	this.ServeJson()
+	return
 }
 
 func (this *UserAPIV1Controller) GetUsers() {
@@ -50,7 +51,7 @@ func (this *UserAPIV1Controller) GetUsers() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 		this.ServeJson()
-		this.StopRun()
+		return
 
 	} else {
 		user := new(models.User)
@@ -63,7 +64,7 @@ func (this *UserAPIV1Controller) GetUsers() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 			this.ServeJson()
-			this.StopRun()
+			return
 		}
 
 		beego.Info("[REGISTRY API V1]", username, "authorization successfully")
@@ -78,6 +79,6 @@ func (this *UserAPIV1Controller) GetUsers() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 }

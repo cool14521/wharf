@@ -49,7 +49,7 @@ func (this *ImageAPIV1Controller) GetImageJSON() {
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	imageId := string(this.Ctx.Input.Param(":image_id"))
@@ -66,7 +66,7 @@ func (this *ImageAPIV1Controller) GetImageJSON() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	if checksum, err = image.GetChecksum(imageId); err != nil {
@@ -76,14 +76,14 @@ func (this *ImageAPIV1Controller) GetImageJSON() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else {
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Checksum", string(checksum))
 	}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body(json)
-	this.StopRun()
+	return
 }
 
 func (this *ImageAPIV1Controller) PutImageJSON() {
@@ -95,7 +95,7 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 		beego.Error("进入PutImageJSON1")
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	imageId := this.Ctx.Input.Param(":image_id")
@@ -111,7 +111,7 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -121,7 +121,7 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
-	this.StopRun()
+	return
 }
 
 func (this *ImageAPIV1Controller) PutImageLayer() {
@@ -131,7 +131,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 		this.Data["json"] = result
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 	imageId := string(this.Ctx.Input.Param(":image_id"))
 
@@ -158,7 +158,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	if err := image.PutLayer(imageId, layerfile, true, int64(len(data))); err != nil {
@@ -168,7 +168,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -178,7 +178,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
-	this.StopRun()
+	return
 }
 
 func (this *ImageAPIV1Controller) PutChecksum() {
@@ -188,7 +188,7 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	imageId := string(this.Ctx.Input.Param(":image_id"))
@@ -202,7 +202,7 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	if err := image.PutAncestry(imageId); err != nil {
@@ -212,7 +212,7 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -222,7 +222,7 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
-	this.StopRun()
+	return
 }
 
 func (this *ImageAPIV1Controller) GetImageAncestry() {
@@ -232,7 +232,7 @@ func (this *ImageAPIV1Controller) GetImageAncestry() {
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	imageId := string(this.Ctx.Input.Param(":image_id"))
@@ -246,7 +246,7 @@ func (this *ImageAPIV1Controller) GetImageAncestry() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else if has == false {
 		beego.Error("[REGISTRY API V1] Read Image None: ", err.Error())
 		result := map[string]string{"Error": "Read Image None"}
@@ -254,12 +254,12 @@ func (this *ImageAPIV1Controller) GetImageAncestry() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(image.Ancestry))
-	this.StopRun()
+	return
 }
 
 func (this *ImageAPIV1Controller) GetImageLayer() {
@@ -269,7 +269,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	imageId := string(this.Ctx.Input.Param(":image_id"))
@@ -283,7 +283,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else if has == false {
 		beego.Error("[REGISTRY API V1] Read Image None Error")
 		result := map[string]string{"Error": "Read Image None"}
@@ -291,7 +291,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	layerfile := image.Path
@@ -303,7 +303,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	file, err := ioutil.ReadFile(layerfile)
@@ -314,7 +314,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/octet-stream")
@@ -322,5 +322,5 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Length", string(int64(len(file))))
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body(file)
-	this.StopRun()
+	return
 }
