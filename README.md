@@ -52,10 +52,11 @@ gravatar = data/gravatar
 BasePath = /tmp/registry
 StaticPath = files
 Endpoints = containerops.me
-Version = 0.8.0
+Version = 0.9.0
 Config = prod
 Standalone = true
-OpenSignup = false
+Encrypt = false
+API = v1
 
 [ledisdb]
 DataDir = /tmp/ledisdb
@@ -63,11 +64,14 @@ DB = 8
 
 [log]
 FilePath = /tmp
-FileName = containerops.log
+FileName = containerops-log
 
 [session]
 Provider = ledis
 SavePath = /tmp/session
+
+[domain]
+Domain = containerops.me
 ```
 
 * Application run mode must be `dev` or `prod`.
@@ -78,6 +82,7 @@ SavePath = /tmp/session
 * `DataDir` is where `ledis` data is located.
 * The `wharf` session provider default is `ledis`, the `Provider` and `SavePath` is session data storage path.
 * The bucket.conf should be in folder conf with app.conf. If you wanna change the bucket.conf name, you should be modify the include bucket.conf in theapp.conf last line.
+* **Important** `API = v1` means we fully support `Docker Registry API V1' and will support `Docker Registry API V2` in the next version.
 
 # Nginx Configuration
 
