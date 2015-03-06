@@ -40,7 +40,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 
 	}
 
@@ -54,7 +54,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 
 	}
 
@@ -77,7 +77,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	usersUUID := make([]string, 0)
@@ -110,7 +110,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	user.Teams = append(user.Teams, team.UUID)
@@ -123,7 +123,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -142,7 +142,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
 
 func (this *TeamWebV1Controller) GetTeams() {
@@ -156,7 +156,7 @@ func (this *TeamWebV1Controller) GetTeams() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 
 	}
 
@@ -171,7 +171,7 @@ func (this *TeamWebV1Controller) GetTeams() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	for _, teamUUID := range user.Teams {
@@ -217,7 +217,7 @@ func (this *TeamWebV1Controller) GetTeams() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
 
 func (this *TeamWebV1Controller) PostPrivilege() {
@@ -230,7 +230,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	privilege := repo["privilege"].(bool)
@@ -251,7 +251,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	team := new(models.Team)
@@ -262,7 +262,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 	team.Repositories = append(team.Repositories, repoUUID)
 	team.TeamPrivileges = append(team.TeamPrivileges, privilegeObj.UUID)
@@ -274,7 +274,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -287,7 +287,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
 
 func (this *TeamWebV1Controller) GetTeam() {
@@ -300,7 +300,7 @@ func (this *TeamWebV1Controller) GetTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	userObjects := make([]models.User, 0)
@@ -318,7 +318,7 @@ func (this *TeamWebV1Controller) GetTeam() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
 
 func (this *TeamWebV1Controller) PutTeam() {
@@ -333,7 +333,7 @@ func (this *TeamWebV1Controller) PutTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 
 	}
 
@@ -347,7 +347,7 @@ func (this *TeamWebV1Controller) PutTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 
 	}
 
@@ -362,7 +362,7 @@ func (this *TeamWebV1Controller) PutTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	teamOld := new(models.Team)
@@ -374,7 +374,7 @@ func (this *TeamWebV1Controller) PutTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else {
 		for _, userUUID := range teamOld.Users {
 			user := new(models.User)
@@ -442,7 +442,7 @@ func (this *TeamWebV1Controller) PutTeam() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	result := map[string]string{"message": "OK"}
@@ -450,5 +450,5 @@ func (this *TeamWebV1Controller) PutTeam() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }

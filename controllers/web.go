@@ -32,7 +32,7 @@ func (this *WebController) Prepare() {
 func (this *WebController) GetIndex() {
 	this.TplNames = "index.html"
 	this.Render()
-	this.StopRun()
+	return
 }
 
 func (this *WebController) GetAuth() {
@@ -40,7 +40,7 @@ func (this *WebController) GetAuth() {
 		this.TplNames = "auth.html"
 		this.Render()
 
-		this.StopRun()
+		return
 	} else {
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/dashboard")
 	}
@@ -51,13 +51,13 @@ func (this *WebController) GetDashboard() {
 		beego.Error("[WEB API] Load session failure")
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
 
-		this.StopRun()
+		return
 	} else {
 		this.TplNames = "dashboard.html"
 		this.Data["username"] = user.Username
 
 		this.Render()
-		this.StopRun()
+		return
 	}
 }
 
@@ -66,13 +66,13 @@ func (this *WebController) GetSetting() {
 		beego.Error("[WEB API] Load session failure")
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
 
-		this.StopRun()
+		return
 	} else {
 		this.TplNames = "setting.html"
 		this.Data["username"] = user.Username
 
 		this.Render()
-		this.StopRun()
+		return
 	}
 }
 
@@ -84,7 +84,7 @@ func (this *WebController) GetRepository() {
 	this.TplNames = "repository.html"
 
 	this.Render()
-	this.StopRun()
+	return
 }
 
 func (this *WebController) GetAdmin() {
@@ -93,14 +93,14 @@ func (this *WebController) GetAdmin() {
 	this.Data["username"] = "genedna"
 
 	this.Render()
-	this.StopRun()
+	return
 }
 
 func (this *WebController) GetAdminAuth() {
 	this.TplNames = "admin-auth.html"
 
 	this.Render()
-	this.StopRun()
+	return
 }
 
 func (this *WebController) GetSignout() {
@@ -108,7 +108,7 @@ func (this *WebController) GetSignout() {
 		this.TplNames = "auth.html"
 		this.Render()
 
-		this.StopRun()
+		return
 	} else {
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
 		if err := user.Log(models.ACTION_SINGOUT, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {

@@ -16,7 +16,11 @@ func init() {
 	beego.Router("/admin/auth", &controllers.WebController{}, "get:GetAdminAuth")
 	beego.Router("/admin", &controllers.WebController{}, "get:GetAdmin")
 
-	beego.Router("/u/:namespace/:repository", &controllers.WebController{}, "get:GetRepository")
+	//Docker Repository View Page
+	beego.Router("/d/:namespace/:repository", &controllers.WebController{}, "get:GetRepository")
+
+	//Static File Route
+	beego.Router("/pubkeys.gpg", &controllers.FileController{}, "get:GetGPG")
 
 	//Web API
 	web := beego.NewNamespace("/w1",

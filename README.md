@@ -27,6 +27,13 @@ go get -u github.com/nfnt/resize
 go build
 ```
 
+## TODO In The Feature
+
+1. Docker Registry V2 support.
+2. Docker Hub repository sync automatically.
+3. Rocket **CAS** support.
+4. More relative pages.
+
 # Wharf Runtime Configuration
 
 Please add a runtime config file named `bucket.conf` under `wharf/conf` before starting `wharf` service.
@@ -133,6 +140,15 @@ Run directly:
 ./wharf web --address 0.0.0.0 --port 80
 ```
 
+# How To Use
+
+1. Add **containerops.me** in your `hosts` file like `192.168.1.66 containerops.me` with IP which run `wharf` .
+2. Registry a user at `https://containerops.me/auth`.
+3. Login with new user use `docker login containerops.me`.
+4. Then `push` with `docker push containerops.me/somebody/ubuntu`.
+5. You could `pull` with `docker pull -a containerops.me/somebody/ubuntu`.
+6. Work fun!
+
 # Reporting Issues
 
 Please submit issue at https://github.com/dockercn/wharf/issues
@@ -142,7 +158,7 @@ Please submit issue at https://github.com/dockercn/wharf/issues
 * Meaglith Ma https://twitter.com/genedna
 * Allen Chen https://github.com/chliang2030598
 * Leo Meng https://github.com/fivestarsky
-* Unknwon https://tiwtter.com/joe2010xtmf
+* Unknwon https://twitter.com/joe2010xtmf
 
 # Licensing
 
@@ -150,6 +166,5 @@ Wharf is licensed under the MIT License.
 
 # We Are Working On Other Projects of Wharf Related
 
-[Vessel](https://githbu.com/dockercn/vessel) A continuous integration system build with Docker.
-
-[Rudder](https://github.com/dockercn/rudder) A Docker client of Golang.
+* [Vessel](https://github.com/dockercn/vessel): a continuous integration system build with Docker.
+* [Rudder](https://github.com/dockercn/rudder): a Docker client for Golang.

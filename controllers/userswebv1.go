@@ -49,14 +49,14 @@ func (this *UserWebAPIV1Controller) GetProfile() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 
 	} else {
 		this.Data["json"] = user
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 }
 
@@ -68,7 +68,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 
 	} else {
 		user := new(models.User)
@@ -80,7 +80,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
-			this.StopRun()
+			return
 		} else if exist == false && err == nil {
 			beego.Info("[WEB API V1] Search user none:", this.Ctx.Input.Param(":username"))
 			result := map[string]string{"message": "Search user error"}
@@ -88,7 +88,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
-			this.StopRun()
+			return
 		} else {
 			users := make([]models.User, 0)
 			users = append(users, *user)
@@ -96,7 +96,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 			this.Data["json"] = users
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.ServeJson()
-			this.StopRun()
+			return
 		}
 	}
 }
@@ -111,7 +111,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else {
 		beego.Debug("[WEB API V1] User signin:", string(this.Ctx.Input.CopyBody()))
 
@@ -122,7 +122,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
-			this.StopRun()
+			return
 		}
 
 		if user.Gravatar == "" {
@@ -141,7 +141,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
-		this.StopRun()
+		return
 
 	}
 }
@@ -156,7 +156,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else {
 		beego.Debug("[WEB API V1] User signup:", string(this.Ctx.Input.CopyBody()))
 		if exist, _, err := user.Has(user.Username); err != nil {
@@ -166,7 +166,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
-			this.StopRun()
+			return
 		} else if exist == true {
 			beego.Error("[WEB API V1] User already exist:", user.Username)
 
@@ -175,7 +175,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
-			this.StopRun()
+			return
 		} else {
 			user.UUID = string(utils.GeneralKey(user.Username))
 			user.Created = time.Now().Unix()
@@ -187,7 +187,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 				this.ServeJson()
-				this.StopRun()
+				return
 			}
 
 			memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -200,7 +200,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.ServeJson()
-			this.StopRun()
+			return
 		}
 	}
 }
@@ -218,7 +218,7 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else {
 		namespaces := make([]Namespace, 0)
 		namespaceUser := Namespace{Namespace: user.Username, NamespaceType: false}
@@ -235,7 +235,7 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 }
 
@@ -249,7 +249,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	prefix := strings.Split(fileHeader.Filename, ".")[0]
@@ -260,7 +260,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	if _, err := os.Stat(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix)); err == nil {
@@ -274,7 +274,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	io.Copy(f, file)
@@ -289,7 +289,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	switch suffix {
@@ -308,7 +308,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	imageFile.Close()
@@ -324,7 +324,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 	defer out.Close()
 	// write new image to file
@@ -345,7 +345,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 	this.Data["json"] = &result
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
 
 func (this *UserWebAPIV1Controller) PutProfile() {
@@ -357,7 +357,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
@@ -369,7 +369,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	if strings.Contains(fmt.Sprint(u["gravatar"]), "resize") {
@@ -392,7 +392,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	this.Ctx.Input.CruSession.Set("user", user)
@@ -406,7 +406,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	this.Data["json"] = &result
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
 
 func (this *UserWebAPIV1Controller) PutPassword() {
@@ -418,7 +418,7 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	beego.Debug("[WEB API V1] Password updated:", string(this.Ctx.Input.CopyBody()))
@@ -432,14 +432,14 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else if u["oldPassword"].(string) != user.Password {
 		result := map[string]string{"message": "password not match"}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	user.Password = u["newPassword"].(string)
@@ -449,7 +449,7 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -462,7 +462,7 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
 
 func (this *UserWebAPIV1Controller) GetUsers() {
@@ -473,5 +473,5 @@ func (this *UserWebAPIV1Controller) GetUsers() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
