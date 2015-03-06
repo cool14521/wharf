@@ -120,14 +120,29 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
             .error(function(data, status, headers, config) {
                 growl.error(data.message);
             });
+
+        $scope.totalItems = 64;
+        $scope.currentPage = 4;
+
+        $scope.setPage = function(pageNo) {
+            $scope.currentPage = pageNo;
+        };
+
+        $scope.pageChanged = function() {
+            $log.log('Page changed to: ' + $scope.currentPage);
+        };
+
+        $scope.maxSize = 5;
+        $scope.bigTotalItems = 175;
+        $scope.bigCurrentPage = 1;
     }])
-    .controller('OrgRepositoriesCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window','$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $window,$routeParams) {
+    .controller('OrgRepositoriesCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $window, $routeParams) {
         $scope.repoTop = [];
 
         $http.get('/w1/organizations/' + $routeParams.orgUUID + '/repo')
             .success(function(data, status, headers, config) {
                 var repositories = data;
-            
+
                 for (var i = 0; i < repositories.length; i++) {
                     if (repositories[i].starts == null) {
                         repositories[i].totalStars = 0;
