@@ -48,8 +48,12 @@
     padding: 7px 12px;
     white-space: nowrap;
 }
-
 .form-group>.form-title>lable {
-font-weight: bold;
-font-size: 13px;
+    font-weight: bold;
+    font-size: 13px;
+}
+.paginationArea {
+    align-content: center;
+    text-align: center;
+    margin-top: 50px;
 }
