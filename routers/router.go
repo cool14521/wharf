@@ -82,6 +82,11 @@ func init() {
 		),
 	)
 
+	//Docker Registry API V2
+	apiv2 := beego.NewNamespace("/v2",
+		beego.NSRouter("/", &controllers.PingAPIV2Controller{}, "get:GetPing"),
+	)
+
 	//Dockerfile Build API V1
 	buildv1 := beego.NewNamespace("/b1",
 		beego.NSRouter("/build", &controllers.BuilderAPIV1Controller{}, "post:PostBuild"),
@@ -90,5 +95,10 @@ func init() {
 
 	beego.AddNamespace(web)
 	beego.AddNamespace(apiv1)
+
+	if beego.AppConfig.String("docker::API") == "v2" {
+		beego.AddNamespace(apiv2)
+	}
+
 	beego.AddNamespace(buildv1)
 }
