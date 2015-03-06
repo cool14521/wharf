@@ -8,7 +8,7 @@
 'use strict';
 
 //Auth Page Module
-angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'ui.codemirror'])
+angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'ui.codemirror', 'ui.bootstrap'])
     .controller('AddRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
         $scope.privated = {};
         $scope.namespaces = {};
@@ -95,10 +95,17 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
                 growl.error(data.message);
             });
     }])
-    .controller('RepositoriesCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
+    .controller('RepositoriesCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', '$log', function($scope, $cookies, $http, growl, $location, $timeout, $window, $log) {
         $scope.repoTop = [];
         $scope.repoBottom = [];
+        $scope.repoBottomShow = [];
         $scope.user = {};
+        
+        $scope.bigTotalItems = 0;
+        $scope.maxSize = 10;
+        $scope.perPage = 5;
+        $scope.bigCurrentPage = 1;
+        
         $http.get('/w1/repositories')
             .success(function(data, status, headers, config) {
                 $scope.user = data;
@@ -116,25 +123,17 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
                     }
                     $scope.repoTop.push(repositories[i]);
                 }
+                $scope.bigTotalItems = $scope.repoBottom.length;
+                $scope.repoBottomShow = $scope.repoBottom.slice(0, $scope.perPage);
             })
             .error(function(data, status, headers, config) {
                 growl.error(data.message);
             });
 
-        $scope.totalItems = 64;
-        $scope.currentPage = 4;
-
-        $scope.setPage = function(pageNo) {
-            $scope.currentPage = pageNo;
-        };
-
         $scope.pageChanged = function() {
-            $log.log('Page changed to: ' + $scope.currentPage);
+            $scope.repoBottomShow = $scope.repoBottom.slice(($scope.bigCurrentPage - 1) * $scope.perPage, $scope.bigCurrentPage * $scope.perPage);
         };
 
-        $scope.maxSize = 5;
-        $scope.bigTotalItems = 175;
-        $scope.bigCurrentPage = 1;
     }])
     .controller('OrgRepositoriesCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $window, $routeParams) {
         $scope.repoTop = [];
