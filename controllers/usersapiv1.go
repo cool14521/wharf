@@ -41,6 +41,7 @@ func (this *UserAPIV1Controller) PostUsers() {
 	return
 }
 
+//There is nothing in request body, just authorization through Basic Authorization.
 func (this *UserAPIV1Controller) GetUsers() {
 	if username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization")); err != nil {
 
@@ -52,7 +53,6 @@ func (this *UserAPIV1Controller) GetUsers() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
 		this.ServeJson()
 		return
-
 	} else {
 		user := new(models.User)
 
