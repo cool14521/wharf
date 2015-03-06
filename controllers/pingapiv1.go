@@ -32,7 +32,6 @@ func (this *PingAPIV1Controller) GetPing() {
 	result := map[string]bool{"result": true}
 	this.Data["json"] = &result
 
-	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 
 	this.ServeJson()

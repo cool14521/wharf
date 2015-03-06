@@ -2510,6 +2510,8 @@ margin-left: 8px;
 .pager li > span span + [class*="fui-"] {
 margin-left: 8px;
 }
+
+/*
 .pagination {
 position: relative;
 display: block;
@@ -2654,6 +2656,7 @@ outline: none;
 -webkit-transition: .25s ease-out;
 transition: .25s ease-out;
 }
+
 .pagination li > a:hover,
 .pagination li > span:hover,
 .pagination li > a:focus,
@@ -3061,6 +3064,7 @@ border-left: none;
 .pagination-dropdown.dropup {
 position: relative;
 }
+*/
 .tooltip {
 z-index: 1070;
 font-size: 14px;
