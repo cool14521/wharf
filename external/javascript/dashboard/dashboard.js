@@ -105,7 +105,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
         $scope.maxSize = 10;
         $scope.perPage = 5;
         $scope.bigCurrentPage = 1;
-        
+        $scope.pagingShow = false;
         $http.get('/w1/repositories')
             .success(function(data, status, headers, config) {
                 $scope.user = data;
@@ -124,6 +124,9 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
                     $scope.repoTop.push(repositories[i]);
                 }
                 $scope.bigTotalItems = $scope.repoBottom.length;
+            	if($scope.repoBottom.length>5){
+                    $scope.pagingShow = true;
+                }
                 $scope.repoBottomShow = $scope.repoBottom.slice(0, $scope.perPage);
             })
             .error(function(data, status, headers, config) {

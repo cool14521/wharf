@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -16,14 +14,15 @@ import (
 )
 
 func Int64ToBytes(i int64) []byte {
-	b_buf := new(bytes.Buffer)
-	binary.Write(b_buf, binary.BigEndian, i)
-	return b_buf.Bytes()
+	return []byte(strconv.FormatInt(i, 10))
 }
 
 func BytesToInt64(b []byte) int64 {
-	b_buf := bytes.NewBuffer(b)
-	x, _ := binary.ReadVarint(b_buf)
+	x, err := strconv.ParseInt(string(b), 0, 64)
+	if err != nil {
+		fmt.Println("err:=", err)
+		return 0
+	}
 	return x
 }
 

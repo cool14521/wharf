@@ -8,7 +8,7 @@
         <div class="row">
             <div class="repositoriesArea">
                 <div ng-class="{repoPrivate: repo.privated}" class="col-md-3 repositoryBox" ng-repeat="repo in repoTop">
-                    <p class="repositoryBoxTime">0 hours ago</p>
+                    <p class="repositoryBoxTime">{{repo.created|date:'yyyy-MM-dd HH:mm:ss'}}</p>
                     <span class="repositoryBoxNamespace"><strong><i class="fa fa-lock fa-2" ng-show="repo.privated"></i><i class="fa fa-unlock fw" ng-show="!repo.privated"></i>&nbsp;&nbsp;{{repo.repository}}</strong></span>
                     <p class="repositoryBoxDesc">{{repo.short}}</p>
                     <div class="repositoryBoxIcon">
@@ -39,7 +39,7 @@
             </div>
         </div>
         <div class="paginationArea">
-            <pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" items-per-page="perPage" ng-change="pageChanged()"></pagination>
+            <pagination ng-show="pagingShow" total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" items-per-page="perPage" ng-change="pageChanged()"></pagination>
         </div>
     </div>
 </div>
