@@ -65,7 +65,8 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 			return
 		} else {
 			repo.UUID = string(utils.GeneralKey(fmt.Sprint(repo.Namespace, repo.Repository)))
-			repo.Created = time.Now().Unix()
+			repo.Created = time.Now().UnixNano() / int64(time.Millisecond)
+			repo.Updated = repo.Created
 
 			if err := repo.Save(); err != nil {
 				beego.Error("[WEB API V1] Repository save error:", err.Error())
