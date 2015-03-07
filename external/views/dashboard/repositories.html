@@ -29,7 +29,7 @@
                             <div class="repo-list-item-content-title"><i class="fa fa-lock fa-2" ng-show="repo.privated"></i><i class="fa fa-unlock fw" ng-show="!repo.privated"></i>&nbsp;&nbsp;{{repo.namespace+"/"+repo.repository}}</div>
                             <p class="repo-list-item-content-desc">{{repo.short}}</p>
                         </div>
-                        <div class="repo-list-item-content-time">0 minutes ago</div>
+                        <div class="repo-list-item-content-time">{{repo.created|date:'yyyy-MM-dd HH:mm:ss'}}</div>
                     </div>
                     <div class="repo-list-item-icons">
                         <i class="fa fa-cloud-download fa-3 icon1">&nbsp;</i><span class="iconTitle first">{{repo.download}}</span>
