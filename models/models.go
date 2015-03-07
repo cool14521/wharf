@@ -111,7 +111,6 @@ func Save(obj interface{}, key []byte) (err error) {
 			if _, err := LedisDB.HSet(key, []byte(s.Field(i).Name), utils.Int64ToBytes(value.Int())); err != nil {
 				return err
 			}
-
 		case reflect.Slice:
 			if "[]string" == value.Type().String() && !value.IsNil() {
 				strJson := "["
