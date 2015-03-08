@@ -17,6 +17,12 @@ Our team is still working really hard for your happiness with the complete versi
 Clone code into directory `$GOPATH/src/githhub.com/dockercn` and then exec commands:
 
 ```bash
+godep go build
+```
+
+or
+
+```bash
 go get -u github.com/astaxie/beego
 go get -u github.com/codegangsta/cli
 go get -u github.com/siddontang/ledisdb/ledis
@@ -24,6 +30,8 @@ go get -u github.com/garyburd/redigo/redis
 go get -u github.com/shurcooL/go/github_flavored_markdown
 go get -u github.com/satori/go.uuid
 go get -u github.com/nfnt/resize
+go get -u github.com/dockercn/wharf/cmd
+go get -u github.com/tools/godep
 go build
 ```
 
