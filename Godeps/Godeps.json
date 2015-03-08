@@ -1,0 +1,132 @@
+{
+	"ImportPath": "github.com/magicshui/wharf",
+	"GoVersion": "go1.4",
+	"Deps": [
+		{
+			"ImportPath": "github.com/BurntSushi/toml",
+			"Comment": "v0.1.0-18-g443a628",
+			"Rev": "443a628bc233f634a75bcbdd71fe5350789f1afa"
+		},
+		{
+			"ImportPath": "github.com/astaxie/beego",
+			"Comment": "v1.4.3-4-gc4aa33f",
+			"Rev": "c4aa33fb1b7ee01fa7dcc9bb29bbdf408b47fa72"
+		},
+		{
+			"ImportPath": "github.com/boltdb/bolt",
+			"Comment": "v1.0-43-gcf33c9e",
+			"Rev": "cf33c9e0ca0a23509b8bb8edfc63e4776bb1a330"
+		},
+		{
+			"ImportPath": "github.com/codegangsta/cli",
+			"Comment": "1.2.0-74-g50c77ec",
+			"Rev": "50c77ecec0068c9aef9d90ae0fd0fdf410041da3"
+		},
+		{
+			"ImportPath": "github.com/cupcake/rdb",
+			"Rev": "3454dcabd33cb8ea8261ffd6a45f4d836eb504cc"
+		},
+		{
+			"ImportPath": "github.com/dockercn/wharf/cmd",
+			"Comment": "0.0.3-41-ga73fc79",
+			"Rev": "a73fc79fc1401e3de1e4afd870886e25a34dec7d"
+		},
+		{
+			"ImportPath": "github.com/dockercn/wharf/controllers",
+			"Comment": "0.0.3-41-ga73fc79",
+			"Rev": "a73fc79fc1401e3de1e4afd870886e25a34dec7d"
+		},
+		{
+			"ImportPath": "github.com/dockercn/wharf/models",
+			"Comment": "0.0.3-41-ga73fc79",
+			"Rev": "a73fc79fc1401e3de1e4afd870886e25a34dec7d"
+		},
+		{
+			"ImportPath": "github.com/dockercn/wharf/modules",
+			"Comment": "0.0.3-41-ga73fc79",
+			"Rev": "a73fc79fc1401e3de1e4afd870886e25a34dec7d"
+		},
+		{
+			"ImportPath": "github.com/dockercn/wharf/routers",
+			"Comment": "0.0.3-41-ga73fc79",
+			"Rev": "a73fc79fc1401e3de1e4afd870886e25a34dec7d"
+		},
+		{
+			"ImportPath": "github.com/dockercn/wharf/utils",
+			"Comment": "0.0.3-41-ga73fc79",
+			"Rev": "a73fc79fc1401e3de1e4afd870886e25a34dec7d"
+		},
+		{
+			"ImportPath": "github.com/edsrzf/mmap-go",
+			"Rev": "6c75090c55983bef2e129e173681b20d24871ef8"
+		},
+		{
+			"ImportPath": "github.com/nfnt/resize",
+			"Rev": "8f4493144849aa7855fc525f5953c439180e6f25"
+		},
+		{
+			"ImportPath": "github.com/satori/go.uuid",
+			"Rev": "242673bbc820e051ef00033e274d32e08ece9e15"
+		},
+		{
+			"ImportPath": "github.com/siddontang/go/filelock",
+			"Rev": "dfa1fad4a1037a0b591127a00a4f337762cb5646"
+		},
+		{
+			"ImportPath": "github.com/siddontang/go/hack",
+			"Rev": "dfa1fad4a1037a0b591127a00a4f337762cb5646"
+		},
+		{
+			"ImportPath": "github.com/siddontang/go/ioutil2",
+			"Rev": "dfa1fad4a1037a0b591127a00a4f337762cb5646"
+		},
+		{
+			"ImportPath": "github.com/siddontang/go/log",
+			"Rev": "dfa1fad4a1037a0b591127a00a4f337762cb5646"
+		},
+		{
+			"ImportPath": "github.com/siddontang/go/num",
+			"Rev": "dfa1fad4a1037a0b591127a00a4f337762cb5646"
+		},
+		{
+			"ImportPath": "github.com/siddontang/go/snappy",
+			"Rev": "dfa1fad4a1037a0b591127a00a4f337762cb5646"
+		},
+		{
+			"ImportPath": "github.com/siddontang/go/sync2",
+			"Rev": "dfa1fad4a1037a0b591127a00a4f337762cb5646"
+		},
+		{
+			"ImportPath": "github.com/siddontang/ledisdb/config",
+			"Comment": "v0.4-61-gb9d10ac",
+			"Rev": "b9d10ace23473afc6390b96f73a72ff16fc401b6"
+		},
+		{
+			"ImportPath": "github.com/siddontang/ledisdb/ledis",
+			"Comment": "v0.4-61-gb9d10ac",
+			"Rev": "b9d10ace23473afc6390b96f73a72ff16fc401b6"
+		},
+		{
+			"ImportPath": "github.com/siddontang/ledisdb/rpl",
+			"Comment": "v0.4-61-gb9d10ac",
+			"Rev": "b9d10ace23473afc6390b96f73a72ff16fc401b6"
+		},
+		{
+			"ImportPath": "github.com/siddontang/ledisdb/store",
+			"Comment": "v0.4-61-gb9d10ac",
+			"Rev": "b9d10ace23473afc6390b96f73a72ff16fc401b6"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb",
+			"Rev": "e3f32eb300aa1e514fe8ba58d008da90a062273d"
+		},
+		{
+			"ImportPath": "github.com/syndtr/gosnappy/snappy",
+			"Rev": "156a073208e131d7d2e212cb749feae7c339e846"
+		},
+		{
+			"ImportPath": "github.com/szferi/gomdb",
+			"Rev": "6bcb5a8059f9655a259774650dbe0cad422767a3"
+		}
+	]
+}
