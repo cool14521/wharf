@@ -30,7 +30,6 @@ go get -u github.com/garyburd/redigo/redis
 go get -u github.com/shurcooL/go/github_flavored_markdown
 go get -u github.com/satori/go.uuid
 go get -u github.com/nfnt/resize
-go get -u github.com/dockercn/wharf/cmd
 go get -u github.com/tools/godep
 go build
 ```
