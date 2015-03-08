@@ -127,10 +127,10 @@ func (this *TeamWebV1Controller) PostTeam() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := team.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+	if err := team.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
-	if err := user.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEB, team.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, team.UUID, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
@@ -278,7 +278,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := team.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEB, team.UUID, memo); err != nil {
+	if err := team.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, team.UUID, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
