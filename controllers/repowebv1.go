@@ -149,6 +149,8 @@ func (this *RepoWebAPIV1Controller) GetRepositories() {
 		repositories = append(repositories, *repo)
 	}
 
+	beego.Debug("[WEB API V1] ", user.Username, " Repositories: ", repositories)
+
 	user.RepositoryObjects = repositories
 	this.Data["json"] = &user
 

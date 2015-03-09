@@ -269,7 +269,7 @@ func AuthGetImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo [
 func AuthPutImageJSON(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
 	authBasic, _, _ := authBasic(Ctx)
 	if auth, code, message := authToken(Ctx); auth == false && !authBasic {
-		beego.Error("[REGISTRY API V1] 验证Token错误")
+		beego.Error("[REGISTRY API V1] Invalid Token Error")
 		return auth, code, message
 	}
 
@@ -336,6 +336,36 @@ func AuthGetImageLayer(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo 
 	if Ctx.Input.Session("access") != "read" {
 		beego.Error("[REGISTRY API V1] Without read image layer privilege in user session")
 		return false, http.StatusUnauthorized, []byte("Without read image layer privilege in user session")
+	}
+
+	return true, 0, nil
+}
+
+func AuthBlob(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+	if auth, code, message := authBasic(Ctx); auth == false {
+		return auth, code, message
+	}
+
+	if auth, _, code, message, _, write := authNamespace(Ctx); auth == false {
+		return auth, code, message
+	} else if write == false {
+		beego.Error("[REGISTRY API V2] Without write privilege for update the repository's json")
+		return auth, http.StatusForbidden, []byte("Forbidden Push Repository")
+	}
+
+	return true, 0, nil
+}
+
+func AuthManifests(Ctx *context.Context) (IsAuth bool, ErrCode int, ErrInfo []byte) {
+	if auth, code, message := authBasic(Ctx); auth == false {
+		return auth, code, message
+	}
+
+	if auth, _, code, message, _, write := authNamespace(Ctx); auth == false {
+		return auth, code, message
+	} else if write == false {
+		beego.Error("[REGISTRY API V2] Without write privilege for update the repository's json")
+		return auth, http.StatusForbidden, []byte("Forbidden Push Repository")
 	}
 
 	return true, 0, nil
