@@ -11,7 +11,7 @@
                 </lable>
             </div>
             <div class="form-content">
-                <select class="form-control"  ng-model="namespaceObject" ng-options="namespace.namespace for namespace in namespaces"></select>
+                <select class="form-control" ng-model="namespaceObject" ng-options="namespace.namespace for namespace in namespaces"></select>
 
                 <div class="slash">/</div>
 
@@ -39,7 +39,7 @@
         <div class="form-group">
             <div class="form-title">
                 <lable><strong>Repository Type:</strong>
-                </lable> 
+                </lable>
             </div>
             <div class="form-content repoCreateFormAuthority">
                 <div class="btn-group">
@@ -48,6 +48,15 @@
                     </label>
                 </div>
                 <p>Anyone can pull this repository and it will be listed and searchable for public use.</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-title">
+                <lable><strong>Description</strong>
+                </lable>
+            </div>
+            <div class="form-content repoCreateFormAuthority">
+               <div ui-codemirror ui-codemirror-opts="editorOptions" ng-model="repository.description"></div>
             </div>
         </div>
         <div class="form-group">
