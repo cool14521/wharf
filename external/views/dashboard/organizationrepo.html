@@ -7,7 +7,7 @@
     <div class="block-content">
         <div class="row">
             <div class="repositoriesArea">
-                <div ng-class="{repoPrivate: repo.privated}" class="col-md-3 repositoryBox" ng-repeat="repo in repoTop">
+                <a ng-href="{{'/d/'+repo.namespace+'/'+repo.repository}}" style="color:#394263;" ng-class="{repoPrivate: repo.privated}" class="col-md-3 repositoryBox" ng-repeat="repo in repoTop">
                     <p class="repositoryBoxTime">0 hours ago</p>
                     <span class="repositoryBoxNamespace"><strong><i class="fa fa-lock fa-2" ng-show="repo.privated"></i><i class="fa fa-unlock fw" ng-show="!repo.privated"></i>&nbsp;&nbsp;{{repo.repository}}</strong></span>
                     <p class="repositoryBoxDesc">{{repo.short}}</p>
@@ -15,7 +15,7 @@
                         <i class="fa fa-cloud-download fa-3 icon1">&nbsp;</i><span class="iconTitle first">{{repo.download}}</span>
                         <i class="fa fa-star fa-2 icon2">&nbsp;</i><span class="iconTitle">{{repo.totalStars}}</span>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </div>

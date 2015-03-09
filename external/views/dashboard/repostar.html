@@ -7,7 +7,7 @@
     <div class="block-content">
         <div class="row">
             <div class="PublicRepositoryArea">
-                <a href="javascript::void(0)" class="col-md-10 repositoryBlock" ng-class="{repoPrivate: repo.privated}" ng-repeat="repo in repoBottomShow">
+                <a ng-href="{{'/d/'+repo.namespace+'/'+repo.repository}}" class="col-md-10 repositoryBlock" ng-class="{repoPrivate: repo.privated}" ng-repeat="repo in repoBottomShow">
                     <div class="repo-list-item-img">
                         <img ng-src="{{user.gravatar}}" class="profile">
                     </div>
