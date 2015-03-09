@@ -130,6 +130,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 		this.ServeJson()
 		return
 	}
+
 	imageId := string(this.Ctx.Input.Param(":image_id"))
 
 	image := new(models.Image)

@@ -15,8 +15,7 @@ type Image struct {
 	ImageId    string   `json:"imageid"`    //
 	JSON       string   `json:"json"`       //
 	Ancestry   string   `json:"ancestry"`   //
-	Checksum   string   `json:"checksum"`   //
-	Digest     string   `json:"digest"`     //
+	Checksum   string   `json:"checksum"`   // tarsum+sha256
 	Payload    string   `json:"payload"`    //
 	URL        string   `json:"url"`        //
 	Backend    string   `json:"backend"`    //
@@ -40,7 +39,23 @@ func (i *Image) Has(image string) (bool, []byte, error) {
 	if len(UUID) <= 0 {
 		return false, nil, nil
 	}
+
 	err = Get(i, UUID)
+
+	return true, UUID, err
+}
+
+func (i *Image) HasTarsum(tarsum string) (bool, []byte, error) {
+	UUID, err := GetUUID("tarsum", tarsum)
+	if err != nil {
+		return false, nil, err
+	}
+	if len(UUID) <= 0 {
+		return false, nil, nil
+	}
+
+	err = Get(i, UUID)
+
 	return true, UUID, err
 }
 
