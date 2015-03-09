@@ -56,6 +56,8 @@ func (this *RepoAPIV1Controller) PutRepository() {
 
 	repo := new(models.Repository)
 
+	beego.Debug("[REGISTRY API V1] Repository JSON: ", string(this.Ctx.Input.CopyBody()))
+
 	if err := repo.Put(namespace, repository, string(this.Ctx.Input.CopyBody()), this.Ctx.Input.Header("User-Agent"), models.APIVERSION_V1); err != nil {
 		beego.Error("[REGISTRY API V1] Put repository error: %s", err.Error())
 
@@ -115,6 +117,8 @@ func (this *RepoAPIV1Controller) PutTag() {
 	repository := this.Ctx.Input.Param(":repo_name")
 
 	tag := this.Ctx.Input.Param(":tag")
+
+	beego.Debug("[REGISTRY API V1] Repository Tag:", string(this.Ctx.Input.CopyBody()))
 
 	r, _ := regexp.Compile(`"([[:alnum:]]+)"`)
 	imageIds := r.FindStringSubmatch(string(this.Ctx.Input.CopyBody()))
