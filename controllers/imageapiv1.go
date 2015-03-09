@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/astaxie/beego"
 
@@ -191,7 +192,13 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 
 	image := new(models.Image)
 
-	if err := image.PutChecksum(imageId, this.Ctx.Input.Header("X-Docker-Checksum"), true, this.Ctx.Input.Header("X-Docker-Checksum-Payload")); err != nil {
+	checksum := strings.Split(this.Ctx.Input.Header("X-Docker-Checksum"), ":")[1]
+	payload := strings.Split(this.Ctx.Input.Header("X-Docker-Checksum-Payload"), ":")[1]
+
+	beego.Debug("[REGISTRY API V1] Image Checksum : ", checksum)
+	beego.Debug("[REGISTRY API V1] Image Payload: ", payload)
+
+	if err := image.PutChecksum(imageId, checksum, true, payload); err != nil {
 		beego.Error("[REGISTRY API V1] Put Image Checksum & Payload Error: ", err.Error())
 		result := map[string]string{"Error": "Put Image Checksum & Payload Error"}
 		this.Data["json"] = result

@@ -20,6 +20,7 @@ const (
 	GLOBAL_ORGANIZATION_INDEX = "GLOBAL_ORGANIZATION_INDEX"
 	GLOBAL_TEAM_INDEX         = "GLOBAL_TEAM_INDEX"
 	GLOBAL_IMAGE_INDEX        = "GLOBAL_IMAGE_INDEX"
+	GLOBAL_TARSUM_INDEX       = "GLOBAL_TARSUM_INDEX"
 	GLOBAL_TAG_INDEX          = "GLOBAL_TAG_INDEX"
 	GLOBAL_COMPOSE_INDEX      = "GLOBAL_COMPOSE_INDEX"
 	GLOBAL_ADMIN_INDEX        = "GLOBAL_ADMIN_INDEX"
@@ -68,6 +69,8 @@ func GetUUID(ObjectType, Object string) (UUID []byte, err error) {
 		index = GLOBAL_TEAM_INDEX
 	case "image":
 		index = GLOBAL_IMAGE_INDEX
+	case "tarsum":
+		index = GLOBAL_TARSUM_INDEX
 	case "tag":
 		index = GLOBAL_TAG_INDEX
 	case "compose":
