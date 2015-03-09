@@ -171,7 +171,7 @@ func (i *Image) PutChecksum(imageId string, checksum string, checksumed bool, pa
 			return err
 		}
 
-		//Add checksum for V2 iamge index
+		//Add checksum for V2 image index
 		if _, err := LedisDB.HSet([]byte(GLOBAL_TARSUM_INDEX), []byte(checksum), []byte(i.UUID)); err != nil {
 			return err
 		}
