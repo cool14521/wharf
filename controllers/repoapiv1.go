@@ -56,7 +56,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 
 	repo := new(models.Repository)
 
-	if err := repo.Put(namespace, repository, string(this.Ctx.Input.CopyBody()), this.Ctx.Input.Header("User-Agent")); err != nil {
+	if err := repo.Put(namespace, repository, string(this.Ctx.Input.CopyBody()), this.Ctx.Input.Header("User-Agent"), models.APIVERSION_V1); err != nil {
 		beego.Error("[REGISTRY API V1] Put repository error: %s", err.Error())
 
 		result := map[string]string{"Error": err.Error()}
@@ -81,10 +81,10 @@ func (this *RepoAPIV1Controller) PutRepository() {
 		beego.Error("[REGISTRY API V1] Get user error: %s", err.Error())
 	}
 
-	if err := user.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.UUID, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
-	if err := repo.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+	if err := repo.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.UUID, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
 
@@ -132,7 +132,7 @@ func (this *RepoAPIV1Controller) PutTag() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := repo.Log(models.ACTION_PUT_TAG, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+	if err := repo.Log(models.ACTION_PUT_TAG, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.UUID, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
 
@@ -169,7 +169,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := repo.Log(models.ACTION_PUT_REPO_IMAGES, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+	if err := repo.Log(models.ACTION_PUT_REPO_IMAGES, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.UUID, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
 
@@ -225,7 +225,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := repo.Log(models.ACTION_GET_REPO, models.LEVELINFORMATIONAL, models.TYPE_API, repo.UUID, memo); err != nil {
+	if err := repo.Log(models.ACTION_GET_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.UUID, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
 

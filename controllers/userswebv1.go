@@ -130,7 +130,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 		}
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
 			beego.Error("[WEB API V1] Log Erro:", err.Error())
 		}
 
@@ -178,7 +178,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			return
 		} else {
 			user.UUID = string(utils.GeneralKey(user.Username))
-			user.Created = time.Now().Unix()
+			user.Created = time.Now().UnixNano() / int64(time.Millisecond)
 
 			if err := user.Save(); err != nil {
 				beego.Error("[WEB API V1] User save error:", err.Error())
@@ -191,7 +191,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			}
 
 			memo, _ := json.Marshal(this.Ctx.Input.Header)
-			if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+			if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
 				beego.Error("[WEB API V1] Log Erro:", err.Error())
 			}
 
@@ -398,7 +398,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	this.Ctx.Input.CruSession.Set("user", user)
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_UPDATE_PROFILE, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_UPDATE_PROFILE, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
@@ -453,7 +453,7 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_UPDATE_PASSWORD, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_UPDATE_PASSWORD, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 

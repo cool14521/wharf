@@ -2,9 +2,10 @@ package controllers
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego"
 	"net/http"
 	"time"
+
+	"github.com/astaxie/beego"
 
 	"github.com/dockercn/wharf/models"
 	"github.com/dockercn/wharf/utils"
@@ -61,7 +62,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 	org.Username = user.Username
 	org.Created = time.Now().UnixNano() / int64(time.Millisecond)
-	org.Updated = org.Created
+	org.Updated = time.Now().UnixNano() / int64(time.Millisecond)
 	if err := org.Save(); err != nil {
 		beego.Error("[WEB API V1] Organization save error:", err.Error())
 
@@ -74,7 +75,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 	}
 
 	user.Organizations = append(user.Organizations, org.UUID)
-	user.Updated = org.Created
+	user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
 	if err := user.Save(); err != nil {
 		beego.Error("[WEB API V1] User save error:", err.Error())
 
@@ -87,10 +88,10 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEB, org.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.UUID, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
-	if err := org.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+	if err := org.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
@@ -149,10 +150,10 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 		}
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEB, org.UUID, memo); err != nil {
+		if err := user.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.UUID, memo); err != nil {
 			beego.Error("[WEB API V1] Log Erro:", err.Error())
 		}
-		if err := org.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+		if err := org.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
 			beego.Error("[WEB API V1] Log Erro:", err.Error())
 		}
 

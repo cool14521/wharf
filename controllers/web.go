@@ -111,7 +111,7 @@ func (this *WebController) GetSignout() {
 		return
 	} else {
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SINGOUT, models.LEVELINFORMATIONAL, models.TYPE_WEB, user.UUID, memo); err != nil {
+		if err := user.Log(models.ACTION_SINGOUT, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
 			beego.Error("[WEB] Log Erro:", err.Error())
 		}
 

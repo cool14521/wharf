@@ -7,8 +7,15 @@ import (
 )
 
 const (
-	TYPE_WEB = iota
-	TYPE_API
+	APIVERSION_V1 = iota
+	APIVERSION_V2
+)
+
+const (
+	TYPE_WEBV1 = iota
+	TYPE_WEBV2
+	TYPE_APIV1
+	TYPE_APIV2
 )
 
 const (
@@ -120,7 +127,7 @@ func (l *Log) Save() error {
 }
 
 func (user *User) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -137,7 +144,7 @@ func (user *User) Log(action, level, t int64, actionUUID string, content []byte)
 }
 
 func (admin *Admin) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -154,7 +161,7 @@ func (admin *Admin) Log(action, level, t int64, actionUUID string, content []byt
 }
 
 func (org *Organization) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -171,7 +178,7 @@ func (org *Organization) Log(action, level, t int64, actionUUID string, content 
 }
 
 func (team *Team) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -188,7 +195,7 @@ func (team *Team) Log(action, level, t int64, actionUUID string, content []byte)
 }
 
 func (repo *Repository) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -205,7 +212,7 @@ func (repo *Repository) Log(action, level, t int64, actionUUID string, content [
 }
 
 func (compose *Compose) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -222,7 +229,7 @@ func (compose *Compose) Log(action, level, t int64, actionUUID string, content [
 }
 
 func (image *Image) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -239,7 +246,7 @@ func (image *Image) Log(action, level, t int64, actionUUID string, content []byt
 }
 
 func (star *Star) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -256,7 +263,7 @@ func (star *Star) Log(action, level, t int64, actionUUID string, content []byte)
 }
 
 func (comment *Comment) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
@@ -273,7 +280,7 @@ func (comment *Comment) Log(action, level, t int64, actionUUID string, content [
 }
 
 func (p *Privilege) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().Unix()}
+	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.UUID = string(utils.GeneralKey(actionUUID))
 
 	if err := log.Save(); err != nil {
