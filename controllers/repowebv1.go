@@ -16,6 +16,18 @@ type RepoWebAPIV1Controller struct {
 	beego.Controller
 }
 
+func (this *RepoWebAPIV1Controller) Prepare() {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist {
+		user.GetByUUID(user.UUID)
+		this.Ctx.Input.CruSession.Set("user", user)
+	}
+
+	beego.Debug("[Header] ")
+	beego.Debug(this.Ctx.Request.Header)
+
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+}
+
 func (this *RepoWebAPIV1Controller) URLMapping() {
 	this.Mapping("PostRepository", this.PostRepository)
 }
