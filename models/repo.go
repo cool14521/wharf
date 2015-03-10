@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -124,10 +125,6 @@ func (r *Repository) Put(namespace, repository, json, agent string, version int6
 		r.Created = time.Now().UnixNano() / int64(time.Millisecond)
 	}
 
-	if len(json) > 0 {
-		r.JSON = json
-	}
-
 	r.Namespace, r.Repository, r.Agent, r.Version = namespace, repository, agent, version
 
 	r.Updated = time.Now().UnixNano() / int64(time.Millisecond)
@@ -181,22 +178,88 @@ func (r *Repository) PutTag(imageId, namespace, repository, tag string) error {
 	return nil
 }
 
-func (r *Repository) PutManifests(manifests, namespace, repository, tag string) error {
+func (r *Repository) PutJSONFromManifests(image map[string]string, namespace, repository string) error {
 	if has, _, err := r.Has(namespace, repository); err != nil {
 		return err
 	} else if has == false {
-		r.Put(namespace, repository, "", "", APIVERSION_V2)
+		r.UUID = string(utils.GeneralKey(fmt.Sprintf("%s:%s", namespace, repository)))
+		r.Created = time.Now().UnixNano() / int64(time.Millisecond)
+		r.JSON = ""
+	}
+
+	r.Namespace, r.Repository, r.Version = namespace, repository, APIVERSION_V2
+
+	r.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+	r.Checksumed, r.Uploaded, r.Cleared, r.Encrypted = true, true, true, false
+	r.Size, r.Download = 0, 0
+
+	if len(r.JSON) == 0 {
+		if data, err := json.Marshal([]map[string]string{image}); err != nil {
+			r.JSON = string(data)
+		}
+	} else {
+		var ids []map[string]string
+
+		if err := json.Unmarshal([]byte(r.JSON), &ids); err != nil {
+			return err
+		}
+
+		has := false
+		for _, v := range ids {
+			if v["id"] == image["id"] {
+				has = true
+			}
+		}
+
+		if has == false {
+			ids = append(ids, image)
+		}
+
+		if data, err := json.Marshal(ids); err != nil {
+			r.JSON = string(data)
+		}
+	}
+
+	if err := r.Save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Repository) PutTagFromManifests(image, namespace, repository, tag, manifests string) error {
+	if has, _, err := r.Has(namespace, repository); err != nil {
+		return err
+	} else if has == false {
+		return err
 	}
 
 	t := new(Tag)
-	t.UUID = string(fmt.Sprintf("%s:%s:%s", namespace, repository, tag))
-	t.Name, t.Manifest = tag, manifests
+
+	if has, _, err := t.Has(namespace, repository, image, tag); err != nil {
+		return err
+	} else if has == true {
+		t.ImageId = image
+		t.Manifest = manifests
+	} else if has == false {
+		t.UUID = string(fmt.Sprintf("%s:%s:%s", namespace, repository, tag))
+		t.Name, t.ImageId, t.Namespace, t.Repository, t.Manifest = tag, image, namespace, repository, manifests
+	}
 
 	if err := t.Save(); err != nil {
 		return err
 	}
 
-	r.Tags = append(r.Tags, t.UUID)
+	has := false
+	for _, v := range r.Tags {
+		if v == tag {
+			has = true
+		}
+	}
+
+	if has == false {
+		r.Tags = append(r.Tags, t.UUID)
+	}
 
 	if err := r.Save(); err != nil {
 		return err
