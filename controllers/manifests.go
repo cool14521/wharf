@@ -63,6 +63,10 @@ func (this *ManifestsAPIV2Controller) PutManifests() {
 		return
 	}
 
+	if err := manifestsConvertV1(manifest); err != nil {
+
+	}
+
 	beego.Debug("[REGISTRY API V2] Manifests Body: ", string(manifest))
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)

@@ -1,5 +1,11 @@
 package controllers
 
+import (
+	"encoding/json"
+
+	"github.com/astaxie/beego"
+)
+
 const (
 	APIV2ErrorCodeUnknown = iota
 	APIV2ErrorCodeUnauthorized
@@ -116,4 +122,14 @@ var V2ErrorDescriptors = []V2ErrorDescriptor{
 		Description: `If a blob upload has been cancelled or was never
     started, this error code may be returned.`,
 	},
+}
+
+func manifestsConvertV1(data []byte) error {
+	var manifest map[string]interface{}
+
+	if err := json.Unmarshal(data, manifest); err != nil {
+		return err
+	}
+
+	return nil
 }
