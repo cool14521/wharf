@@ -177,7 +177,46 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
 
+	//添加仓库记录
+	//--判断是用户仓库还是组织仓库
+	//--保存仓库数据
+
+	org := new(models.Organization)
+	isOrg, _, err := org.Has(namespace)
+	if err != nil {
+		beego.Error("[REGISTRY API V1] Search Organization Error: ", err.Error())
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	user := new(models.User)
+	authUsername, _, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
+	isUser, _, err := user.Has(authUsername)
+	if err != nil {
+		beego.Error("[REGISTRY API V1] Search User Error: ", err.Error())
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	if !isUser && !isOrg {
+		beego.Error("[REGISTRY API V1] Search Namespace Error")
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		this.StopRun()
+	}
+
+	if isUser {
+		user.Repositories = append(user.Repositories, repo.UUID)
+		user.Save()
+	}
+	if isOrg {
+		org.Repositories = append(org.Repositories, repo.UUID)
+		org.Save()
+	}
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
+
 	this.Ctx.Output.Context.Output.Body([]byte(""))
 
 	this.ServeJson()
