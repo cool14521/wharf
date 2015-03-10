@@ -14,7 +14,7 @@ Our team is still working really hard for your happiness with the complete versi
 
 # How To Compile Wharf Application
 
-Clone code into directory `$GOPATH/src/githhub.com/dockercn` and then exec commands:
+Clone code into directory `$GOPATH/src/github.com/dockercn` and then exec commands:
 
 ```bash
 godep go build

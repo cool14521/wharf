@@ -35,6 +35,11 @@ func (this *UserWebAPIV1Controller) URLMapping() {
 }
 
 func (this *UserWebAPIV1Controller) Prepare() {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist {
+		user.GetByUUID(user.UUID)
+		this.Ctx.Input.CruSession.Set("user", user)
+	}
+
 	beego.Debug("[Header] ")
 	beego.Debug(this.Ctx.Request.Header)
 
