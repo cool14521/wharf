@@ -41,7 +41,6 @@ func (this *ManifestsAPIV2Controller) PutManifests() {
 
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
-	tag := this.Ctx.Input.Param(":tag")
 
 	repo := new(models.Repository)
 
@@ -54,20 +53,11 @@ func (this *ManifestsAPIV2Controller) PutManifests() {
 		return
 	}
 
-	if err := repo.PutManifests(string(manifest), namespace, repository, tag); err != nil {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeManifestInvalid]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
-		return
-	}
-
 	if err := manifestsConvertV1(manifest); err != nil {
-
+		beego.Error("[REGISTRY API V2] Decode Manifest Error: ", err.Error())
 	}
 
-	beego.Debug("[REGISTRY API V2] Manifests Body: ", string(manifest))
+	//beego.Debug("[REGISTRY API V2] Manifests Body: ", string(manifest))
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
