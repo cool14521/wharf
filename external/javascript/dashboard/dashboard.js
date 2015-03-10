@@ -8,8 +8,14 @@
 'use strict';
 
 //Auth Page Module
-angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'ui.codemirror', 'ui.bootstrap'])
+angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'ui.codemirror', 'ui.bootstrap', 'ui.codemirror'])
     .controller('AddRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
+        $scope.editorOptions = {
+            lineWrapping: true,
+            lineNumbers: true,
+            theme:"foo bar",
+            indentWithTabs:true,
+        };
         $scope.privated = {};
         $scope.namespaces = {};
         $scope.repository = {};
@@ -100,7 +106,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
         $scope.repoBottom = [];
         $scope.repoBottomShow = [];
         $scope.user = {};
-        
+
         $scope.bigTotalItems = 0;
         $scope.maxSize = 10;
         $scope.perPage = 5;
@@ -124,7 +130,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
                     $scope.repoTop.push(repositories[i]);
                 }
                 $scope.bigTotalItems = $scope.repoBottom.length;
-            	if($scope.repoBottom.length>5){
+                if ($scope.repoBottom.length > 5) {
                     $scope.pagingShow = true;
                 }
                 $scope.repoBottomShow = $scope.repoBottom.slice(0, $scope.perPage);

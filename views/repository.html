@@ -1,44 +1,109 @@
 <!DOCTYPE html>
 <!--[if IE 8]> <html class="no-js lt-ie9"> <![endif]-->
 <!--[if IE 9]> <html class="no-js lt-ie10"> <![endif]-->
-<!--[if gt IE 8]><!--><html class="no-js"><!--<![endif]-->
-  <head>
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
     <meta charset="utf-8">
 
-    <title>ContainerOps Platform - <<<.namespace>>>/<<<.repository>>></title>
+    <title>ContainerOps Platform -
+        <<<.namespace>>>/
+            <<<.repository>>></title>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8">
-    
+
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0">
 
     <link rel="stylesheet" type="text/css" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="/static/bower_components/font-awesome/css/font-awesome.min.css">    
+    <link rel="stylesheet" type="text/css" href="/static/bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/bucket.css">
     <link rel="stylesheet" type="text/css" href="/static/css/header.css">
     <link rel="stylesheet" type="text/css" href="/static/css/repository/repository.css">
-  </head>
-  <body ng-app="repository">
+</head>
+
+<body ng-app="repository">
     <div id="main-container">
-      <<<template "header.html" .>>>
+        <<<template "header.html" .>>>
 
-      <div class="container">
- 
-      </div>
+            <div class="container">
+                <div class="row" style="margin-top:10px;">
+                    <span class="repo-privated" ng-show="!<<<.privated>>>"><i class="fa fa-unlock fw"></i>&nbsp;&nbsp;Public</span>
+                    <span class="repo-privated" ng-show="<<<.privated>>>"><i class="fa fa-lock fw"></i>&nbsp;&nbsp;Privated</span>
+                </div>
+                <div class="row">
+                    <div class="col-md-5 repo-title">
+                        <strong><<<.repository>>></strong>
+                    </div>
+                    <div class="col-md-6 repo-pull">
+                        <input class="repo-pull-input col-md-4" type="text" value="docker pull containerops.me/<<<.namespace>>>/<<<.repository>>>" readOnly/>
+                        <div class="repo-pull-prefix col-md-4">Pull this repository</div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:20px;">
+                    <div class="repo-desc">
+                        <<<.short>>>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="repo-calc">
+                        <div class="repo-calc-group">
+                            <i class="fa fa-star-o repo-calc-group-icon"></i>
+                            <span class="repo-calc-group-calc"><<<.starts>>></span>
+                        </div>
+                        <div class="repo-calc-group" style="margin-left:15px;">
+                            <i class="fa fa-comment-o repo-calc-group-icon"></i>
+                            <span class="repo-calc-group-calc"><<<.comments>>></span>
+                        </div>
+                        <div class="repo-calc-group" style="margin-left:15px;">
+                            <i class="fa fa-cloud-download repo-calc-group-icon"></i>
+                            <span class="repo-calc-group-calc"><<<.download>>></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:20px;">
+                    <div class="col-md-9">
+                        <div class="block">
+                            <div class="block-title">
+                                <h2><strong class="block-title-setting">
+                  					Infomation
+                				</strong></h2>
+                            </div>
+                            <div class="block-content">
+									<<<str2html .description>>>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="block" style="margin-right:15px;padding-bottom:20px;">
+                            <div class="block-title">
+                                <h2><strong class="block-title-setting">
+                  					Propertoies
+                				</strong></h2>
+                            </div>
+                            <div class="block-content">
+                                <i class="fa fa-clock-o repo-created-icon"></i><div class="repo-created">{{<<<.created>>>|date:'yyyy-MM-dd HH:mm:ss'}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-      <<<template "footer.html" .>>>
+            <<<template "footer.html" .>>>
 
-      <script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
-      <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
-      <script type="text/javascript" src="/static/bower_components/angular-route/angular-route.min.js"></script>
-      <script type="text/javascript" src="/static/bower_components/angular-messages/angular-messages.min.js"></script>
-      <script type="text/javascript" src="/static/bower_components/angular-cookies/angular-cookies.min.js"></script>
-      <script type="text/javascript" src="/static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-      <script type="text/javascript" src="/static/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
-      <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+                <script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
+                <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+                <script type="text/javascript" src="/static/bower_components/angular-route/angular-route.min.js"></script>
+                <script type="text/javascript" src="/static/bower_components/angular-messages/angular-messages.min.js"></script>
+                <script type="text/javascript" src="/static/bower_components/angular-cookies/angular-cookies.min.js"></script>
+                <script type="text/javascript" src="/static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+                <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
-      <script type="text/javascript" src="/static/javascript/utils.js"></script>
-      <script type="text/javascript" src="/static/javascript/repository/repository.js"></script>
+                <script type="text/javascript" src="/static/javascript/utils.js"></script>
+                <script type="text/javascript" src="/static/javascript/repository/repository.js"></script>
 
     </div>
-  </body>
+</body>
+
 </html>
