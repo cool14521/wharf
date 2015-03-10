@@ -172,8 +172,15 @@ func (r *Repository) PutTag(imageId, namespace, repository, tag string) error {
 		return err
 	}
 
-	r.Tags = append(r.Tags, t.UUID)
-
+	hasTags := false
+	for _, value := range r.Tags {
+		if value == t.UUID {
+			hasTags = true
+		}
+	}
+	if !hasTags {
+		r.Tags = append(r.Tags, t.UUID)
+	}
 	if err := r.Save(); err != nil {
 		return err
 	}
