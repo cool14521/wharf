@@ -120,3 +120,47 @@ func (this *BlobAPIV2Controller) PutBlobs() {
 	this.Ctx.Output.Context.Output.Body([]byte(""))
 	return
 }
+
+func (this *BlobAPIV2Controller) GetBlobs() {
+	image := new(models.Image)
+	digest := strings.Split(this.Ctx.Input.Param(":digest"), ":")[1]
+
+	beego.Debug("[REGISTRY API V2] Tarsum.v1+sha256: ", digest)
+
+	if has, _, _ := image.HasTarsum(digest); has == false {
+		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
+		this.ServeJson()
+		return
+	}
+
+	layerfile := image.Path
+
+	if _, err := os.Stat(layerfile); err != nil {
+		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeBlobUnknown]}}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
+	file, err := ioutil.ReadFile(layerfile)
+	if err != nil {
+		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeBlobUnknown]}}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/octet-stream")
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Transfer-Encoding", "binary")
+	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Length", string(int64(len(file))))
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.Ctx.Output.Context.Output.Body(file)
+	return
+}

@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/dockercn/wharf/utils"
@@ -169,13 +170,13 @@ func (r *Repository) PutTag(imageId, namespace, repository, tag string) error {
 		return err
 	}
 
-	hasTags := false
+	has := false
 	for _, value := range r.Tags {
 		if value == t.UUID {
-			hasTags = true
+			has = true
 		}
 	}
-	if !hasTags {
+	if !has {
 		r.Tags = append(r.Tags, t.UUID)
 	}
 	if err := r.Save(); err != nil {
@@ -202,8 +203,11 @@ func (r *Repository) PutJSONFromManifests(image map[string]string, namespace, re
 
 	if len(r.JSON) == 0 {
 		if data, err := json.Marshal([]map[string]string{image}); err != nil {
+			return err
+		} else {
 			r.JSON = string(data)
 		}
+
 	} else {
 		var ids []map[string]string
 
@@ -223,6 +227,8 @@ func (r *Repository) PutJSONFromManifests(image map[string]string, namespace, re
 		}
 
 		if data, err := json.Marshal(ids); err != nil {
+			return err
+		} else {
 			r.JSON = string(data)
 		}
 	}
@@ -231,6 +237,8 @@ func (r *Repository) PutJSONFromManifests(image map[string]string, namespace, re
 		return err
 	}
 
+	log.Println("[REGISTRY API V2] Convert Manifests To JSON: ", r.JSON)
+
 	return nil
 }
 
@@ -238,20 +246,12 @@ func (r *Repository) PutTagFromManifests(image, namespace, repository, tag, mani
 	if has, _, err := r.Has(namespace, repository); err != nil {
 		return err
 	} else if has == false {
-		return err
+		return fmt.Errorf("Repository not found")
 	}
 
 	t := new(Tag)
-
-	if has, _, err := t.Has(namespace, repository, image, tag); err != nil {
-		return err
-	} else if has == true {
-		t.ImageId = image
-		t.Manifest = manifests
-	} else if has == false {
-		t.UUID = string(fmt.Sprintf("%s:%s:%s", namespace, repository, tag))
-		t.Name, t.ImageId, t.Namespace, t.Repository, t.Manifest = tag, image, namespace, repository, manifests
-	}
+	t.UUID = string(fmt.Sprintf("%s:%s:%s", namespace, repository, tag))
+	t.Name, t.ImageId, t.Namespace, t.Repository, t.Manifest = tag, image, namespace, repository, manifests
 
 	if err := t.Save(); err != nil {
 		return err
@@ -259,7 +259,7 @@ func (r *Repository) PutTagFromManifests(image, namespace, repository, tag, mani
 
 	has := false
 	for _, v := range r.Tags {
-		if v == tag {
+		if v == t.UUID {
 			has = true
 		}
 	}
@@ -271,6 +271,9 @@ func (r *Repository) PutTagFromManifests(image, namespace, repository, tag, mani
 	if err := r.Save(); err != nil {
 		return err
 	}
+
+	log.Println("[REGISTRY API V2] Tag: ", t)
+	log.Println("[REGISTRY API V2] Repository Tags: ", r.Tags)
 
 	return nil
 }
@@ -311,8 +314,8 @@ func (p *Privilege) Save() error {
 	return nil
 }
 
-func (t *Tag) Has(namespace, repository, image, tag string) (bool, []byte, error) {
-	UUID, err := GetUUID("tag", fmt.Sprintf("%s:%s:%s:%s", namespace, repository, image, tag))
+func (t *Tag) Has(namespace, repository, tag string) (bool, []byte, error) {
+	UUID, err := GetUUID("tag", fmt.Sprintf("%s:%s:%s", namespace, repository, tag))
 	if err != nil {
 		return false, nil, err
 	}

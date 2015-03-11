@@ -135,14 +135,14 @@ func manifestsConvertV1(data []byte) error {
 	}
 
 	tag := manifest["tag"]
-	namespace, repository := strings.Split(manifest["name"].(string), "/")[0], strings.Split(manifest["name"].(string), "/")[0]
+	namespace, repository := strings.Split(manifest["name"].(string), "/")[0], strings.Split(manifest["name"].(string), "/")[1]
 
-	for k := len(manifest["history"].([]interface{})) - 1; k > 0; k-- {
+	for k := len(manifest["history"].([]interface{})) - 1; k >= 0; k-- {
 		v := manifest["history"].([]interface{})[k]
-		data := v.(map[string]interface{})["v1Compatibility"].(string)
+		compatibility := v.(map[string]interface{})["v1Compatibility"].(string)
 
 		var image map[string]interface{}
-		if err := json.Unmarshal([]byte(data), &image); err != nil {
+		if err := json.Unmarshal([]byte(compatibility), &image); err != nil {
 			return err
 		}
 
@@ -171,14 +171,14 @@ func manifestsConvertV1(data []byte) error {
 		tarsum := manifest["fsLayers"].([]interface{})[k].(map[string]interface{})["blobSum"].(string)
 		sha256 := strings.Split(tarsum, ":")[1]
 
-		beego.Debug("[Registry API V2] JSON", v.(map[string]interface{})["v1Compatibility"].(string))
+		beego.Debug("[Registry API V2] Image %s sha256: %s", image["id"].(string), v.(map[string]interface{})["v1Compatibility"].(string))
 
 		//Put Image Json
 		if err := img.PutJSON(image["id"].(string), v.(map[string]interface{})["v1Compatibility"].(string), models.APIVERSION_V2); err != nil {
 			return err
 		}
 
-		// //Put Image Layer
+		//Put Image Layer
 		basePath := beego.AppConfig.String("docker::BasePath")
 		layerfile := fmt.Sprintf("%v/uuid/%v/layer", basePath, sha256)
 
@@ -191,12 +191,10 @@ func manifestsConvertV1(data []byte) error {
 			return err
 		}
 
-		// //Put Ancestry
+		//Put Ancestry
 		if err := img.PutAncestry(image["id"].(string)); err != nil {
 			return err
 		}
-
-		beego.Trace("[Registry API V2] Image Tarsum: ", image)
 	}
 
 	return nil

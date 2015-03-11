@@ -85,10 +85,15 @@ func init() {
 	//Docker Registry API V2
 	apiv2 := beego.NewNamespace("/v2",
 		beego.NSRouter("/", &controllers.PingAPIV2Controller{}, "get:GetPing"),
+		//Push
 		beego.NSRouter("/:namespace/:repo_name/blobs/:digest", &controllers.BlobAPIV2Controller{}, "head:HeadDigest"),
 		beego.NSRouter("/:namespace/:repo_name/blobs/uploads", &controllers.BlobAPIV2Controller{}, "post:PostBlobs"),
 		beego.NSRouter("/:namespace/:repo_name/blobs/uploads/:uuid", &controllers.BlobAPIV2Controller{}, "put:PutBlobs"),
 		beego.NSRouter("/:namespace/:repo_name/manifests/:tag", &controllers.ManifestsAPIV2Controller{}, "put:PutManifests"),
+		//Pull
+		beego.NSRouter("/:namespace/:repo_name/tags/list", &controllers.ManifestsAPIV2Controller{}, "get:GetTags"),
+		beego.NSRouter("/:namespace/:repo_name/manifests/:tag", &controllers.ManifestsAPIV2Controller{}, "get:GetManifests"),
+		beego.NSRouter("/:namespace/:repo_name/blobs/:digest", &controllers.BlobAPIV2Controller{}, "get:GetBlobs"),
 	)
 
 	//Dockerfile Build API V1

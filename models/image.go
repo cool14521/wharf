@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -137,13 +138,16 @@ func (i *Image) PutJSON(imageId, json string, version int64) error {
 		i.Created = time.Now().UnixNano() / int64(time.Millisecond)
 		i.Version = version
 
+		log.Println("[REGISTRY API V1&V2]", i.ImageId, "json:", json)
+
 		if err = i.Save(); err != nil {
 			return err
 		}
-
 	} else {
 		i.ImageId, i.JSON = imageId, json
 		i.Uploaded, i.Checksumed, i.Encrypted, i.Size, i.Updated, i.Version = false, false, false, 0, time.Now().UnixNano()/int64(time.Millisecond), version
+
+		log.Println("[REGISTRY API V1&V2]", i.ImageId, "json:", json)
 
 		if err := i.Save(); err != nil {
 			return err
@@ -164,6 +168,10 @@ func (i *Image) PutLayer(imageId string, path string, uploaded bool, size int64)
 		if err := i.Save(); err != nil {
 			return err
 		}
+
+		log.Println("[REGISTRY API V1&V2]", i.ImageId, "path:", path)
+		log.Println("[REGISTRY API V1&V2]", i.ImageId, "size:", size)
+
 	}
 
 	return nil
@@ -190,6 +198,8 @@ func (i *Image) PutChecksum(imageId string, checksum string, checksumed bool, pa
 		if _, err := LedisDB.HSet([]byte(GLOBAL_TARSUM_INDEX), []byte(checksum), []byte(i.UUID)); err != nil {
 			return err
 		}
+
+		log.Println("[REGISTRY API V1&V2]", i.ImageId, "checksum:", i.Checksum)
 
 	}
 
@@ -235,6 +245,8 @@ func (i *Image) PutAncestry(imageId string) error {
 	if err := i.Save(); err != nil {
 		return err
 	}
+
+	log.Println("[REGISTRY API V1&V2]", i.ImageId, "ancestry:", i.Ancestry)
 
 	return nil
 }
