@@ -46,7 +46,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	username, passwd, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
@@ -66,7 +66,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
@@ -99,7 +99,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
 
-	this.StopRun()
+	return
 
 }
 
@@ -110,7 +110,7 @@ func (this *RepoAPIV1Controller) PutTag() {
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	namespace := this.Ctx.Input.Param(":namespace")
@@ -132,7 +132,7 @@ func (this *RepoAPIV1Controller) PutTag() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -142,7 +142,7 @@ func (this *RepoAPIV1Controller) PutTag() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
-	this.StopRun()
+	return
 }
 
 func (this *RepoAPIV1Controller) PutRepositoryImages() {
@@ -153,7 +153,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	namespace := this.Ctx.Input.Param(":namespace")
@@ -169,7 +169,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -177,17 +177,13 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
 
-	//添加仓库记录
-	//--判断是用户仓库还是组织仓库
-	//--保存仓库数据
-
 	org := new(models.Organization)
 	isOrg, _, err := org.Has(namespace)
 	if err != nil {
 		beego.Error("[REGISTRY API V1] Search Organization Error: ", err.Error())
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	user := new(models.User)
@@ -197,14 +193,14 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 		beego.Error("[REGISTRY API V1] Search User Error: ", err.Error())
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	if !isUser && !isOrg {
 		beego.Error("[REGISTRY API V1] Search Namespace Error")
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	if isUser {
@@ -220,7 +216,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 	this.Ctx.Output.Context.Output.Body([]byte(""))
 
 	this.ServeJson()
-	this.StopRun()
+	return
 }
 
 func (this *RepoAPIV1Controller) GetRepositoryImages() {
@@ -231,7 +227,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	username, passwd, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
@@ -249,7 +245,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else if has == false {
 		beego.Error("[REGISTRY API V1] Read repository no found", namespace, repository)
 
@@ -258,7 +254,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	repo.Download += 1
@@ -286,7 +282,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(repo.JSON))
-	this.StopRun()
+	return
 }
 
 func (this *RepoAPIV1Controller) GetRepositoryTags() {
@@ -297,7 +293,7 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 
 		this.Ctx.Output.Context.Output.SetStatus(code)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	namespace := this.Ctx.Input.Param(":namespace")
@@ -313,7 +309,7 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	} else if has == false {
 		beego.Error("[REGISTRY API V1] Read repository no found", namespace, repository)
 
@@ -322,7 +318,7 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		this.StopRun()
+		return
 	}
 
 	tag := map[string]string{}
@@ -338,7 +334,7 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
-			this.StopRun()
+			return
 		}
 
 		tag[t.Name] = t.ImageId
@@ -348,5 +344,5 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
-	this.StopRun()
+	return
 }
