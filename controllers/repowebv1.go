@@ -33,7 +33,6 @@ func (this *RepoWebAPIV1Controller) URLMapping() {
 }
 
 func (this *RepoWebAPIV1Controller) PostRepository() {
-
 	var user models.User
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if exist != true {

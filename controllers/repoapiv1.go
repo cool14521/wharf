@@ -26,10 +26,6 @@ func (this *RepoAPIV1Controller) URLMapping() {
 }
 
 func (this *RepoAPIV1Controller) Prepare() {
-	beego.Debug("[Headers]")
-	beego.Debug(this.Ctx.Input.Request.Header)
-	beego.Debug(this.Ctx.Request.URL)
-
 	this.EnableXSRF = false
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
