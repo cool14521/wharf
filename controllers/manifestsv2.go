@@ -19,10 +19,6 @@ func (this *ManifestsAPIV2Controller) URLMapping() {
 }
 
 func (this *ManifestsAPIV2Controller) Prepare() {
-	beego.Debug("[Headers]")
-	beego.Debug(this.Ctx.Input.Request.Header)
-	beego.Debug(this.Ctx.Request.URL)
-
 	this.EnableXSRF = false
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
@@ -30,7 +26,7 @@ func (this *ManifestsAPIV2Controller) Prepare() {
 
 func (this *ManifestsAPIV2Controller) PutManifests() {
 	if auth, _, _ := modules.AuthManifests(this.Ctx); auth == false {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
@@ -46,7 +42,7 @@ func (this *ManifestsAPIV2Controller) PutManifests() {
 	repo := new(models.Repository)
 
 	if err := repo.Put(namespace, repository, "", this.Ctx.Input.Header("User-Agent"), models.APIVERSION_V2); err != nil {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeManifestInvalid]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeManifestInvalid]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -70,7 +66,7 @@ func (this *ManifestsAPIV2Controller) GetTags() {
 	repo := new(models.Repository)
 
 	if has, _, err := repo.Has(namespace, repository); err != nil || has == false {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeNameInvalid]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeNameInvalid]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -86,7 +82,7 @@ func (this *ManifestsAPIV2Controller) GetTags() {
 	for _, value := range repo.Tags {
 		t := new(models.Tag)
 		if err := t.GetByUUID(value); err != nil {
-			result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeTagInvalid]}}
+			result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeTagInvalid]}}
 			this.Data["json"] = &result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -98,12 +94,7 @@ func (this *ManifestsAPIV2Controller) GetTags() {
 	}
 
 	data["tags"] = tags
-
 	this.Data["json"] = data
-
-	//result, _ := json.Marshal(data)
-
-	//beego.Trace("[Docker Registry API V2] Tags:", string(result))
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
@@ -117,7 +108,7 @@ func (this *ManifestsAPIV2Controller) GetManifests() {
 
 	t := new(models.Tag)
 	if err := t.GetByUUID(fmt.Sprintf("%s:%s:%s", namespace, repository, tag)); err != nil {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeTagInvalid]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeTagInvalid]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)

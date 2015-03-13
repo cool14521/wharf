@@ -15,7 +15,6 @@ func (this *PingAPIV1Controller) URLMapping() {
 }
 
 func (this *PingAPIV1Controller) Prepare() {
-
 	beego.Debug("[Headers]")
 	beego.Debug(this.Ctx.Input.Request.Header)
 

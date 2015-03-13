@@ -29,10 +29,6 @@ func (this *ImageAPIV1Controller) URLMapping() {
 }
 
 func (this *ImageAPIV1Controller) Prepare() {
-	beego.Debug("[Header]")
-	beego.Debug(this.Ctx.Request.Header)
-	beego.Debug(this.Ctx.Request.URL)
-
 	this.EnableXSRF = false
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")

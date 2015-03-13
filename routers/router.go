@@ -4,6 +4,7 @@ import (
 	"github.com/astaxie/beego"
 
 	"github.com/dockercn/wharf/controllers"
+	"github.com/dockercn/wharf/filters"
 )
 
 func init() {
@@ -101,6 +102,10 @@ func init() {
 		beego.NSRouter("/build", &controllers.BuilderAPIV1Controller{}, "post:PostBuild"),
 		beego.NSRouter("/status", &controllers.BuilderAPIV1Controller{}, "get:GetStatus"),
 	)
+
+	// beego.InsertFilter("/v1/*", beego.BeforeExec, filters.FilterAuth)
+	beego.InsertFilter("/v2/*", beego.BeforeRouter, filters.FilterDebug)
+	beego.InsertFilter("/v2/*", beego.BeforeRouter, filters.FilterAuth)
 
 	beego.AddNamespace(web)
 	beego.AddNamespace(apiv1)

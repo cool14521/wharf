@@ -8,6 +8,7 @@ import (
 	"github.com/astaxie/beego"
 
 	"github.com/dockercn/wharf/models"
+	"github.com/dockercn/wharf/modules"
 	"github.com/dockercn/wharf/utils"
 )
 
@@ -20,7 +21,6 @@ func (this *PingAPIV2Controller) URLMapping() {
 }
 
 func (this *PingAPIV2Controller) Prepare() {
-
 	beego.Debug("[Headers]")
 	beego.Debug(this.Ctx.Input.Request.Header)
 
@@ -33,7 +33,7 @@ func (this *PingAPIV2Controller) Prepare() {
 
 func (this *PingAPIV2Controller) GetPing() {
 	if len(this.Ctx.Input.Header("Authorization")) == 0 {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
@@ -45,7 +45,7 @@ func (this *PingAPIV2Controller) GetPing() {
 	if username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization")); err != nil {
 		beego.Error("[REGISTRY API V2] Decode Basic Auth Error:", err.Error())
 
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
@@ -57,7 +57,7 @@ func (this *PingAPIV2Controller) GetPing() {
 		if err := user.Get(username, passwd); err != nil {
 			beego.Error("[REGISTRY API V2] Search user error: ", err.Error())
 
-			result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
+			result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
 			this.Data["json"] = &result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)

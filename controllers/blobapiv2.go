@@ -22,10 +22,6 @@ func (this *BlobAPIV2Controller) URLMapping() {
 }
 
 func (this *BlobAPIV2Controller) Prepare() {
-	beego.Debug("[Headers]")
-	beego.Debug(this.Ctx.Input.Request.Header)
-	beego.Debug(this.Ctx.Request.URL)
-
 	this.EnableXSRF = false
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
@@ -33,22 +29,13 @@ func (this *BlobAPIV2Controller) Prepare() {
 
 //Has image return 200; other return 404
 func (this *BlobAPIV2Controller) HeadDigest() {
-	if auth, _, _ := modules.AuthBlob(this.Ctx); auth == false {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.ServeJson()
-		return
-	}
-
 	image := new(models.Image)
 	digest := strings.Split(this.Ctx.Input.Param(":digest"), ":")[1]
 
 	beego.Debug("[REGISTRY API V2] Tarsum.v1+sha256: ", digest)
 
 	if has, _, _ := image.HasTarsum(digest); has == false {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
@@ -62,15 +49,6 @@ func (this *BlobAPIV2Controller) HeadDigest() {
 }
 
 func (this *BlobAPIV2Controller) PostBlobs() {
-	if auth, _, _ := modules.AuthBlob(this.Ctx); auth == false {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.ServeJson()
-		return
-	}
-
 	uuid := utils.GeneralKey(fmt.Sprintf("%s/%s", this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repo_name")))
 	random := fmt.Sprintf("https://%s/v2/%s/%s/blobs/uploads/%s", beego.AppConfig.String("docker::Endpoints"), this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repo_name"), uuid)
 
@@ -82,15 +60,6 @@ func (this *BlobAPIV2Controller) PostBlobs() {
 }
 
 func (this *BlobAPIV2Controller) PutBlobs() {
-	if auth, _, _ := modules.AuthBlob(this.Ctx); auth == false {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.ServeJson()
-		return
-	}
-
 	var digest string
 
 	this.Ctx.Input.Bind(&digest, "digest")
@@ -128,7 +97,7 @@ func (this *BlobAPIV2Controller) GetBlobs() {
 	beego.Debug("[REGISTRY API V2] Tarsum.v1+sha256: ", digest)
 
 	if has, _, _ := image.HasTarsum(digest); has == false {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeUnauthorized]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
@@ -139,7 +108,7 @@ func (this *BlobAPIV2Controller) GetBlobs() {
 	layerfile := image.Path
 
 	if _, err := os.Stat(layerfile); err != nil {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeBlobUnknown]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeBlobUnknown]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -149,7 +118,7 @@ func (this *BlobAPIV2Controller) GetBlobs() {
 
 	file, err := ioutil.ReadFile(layerfile)
 	if err != nil {
-		result := map[string][]V2ErrorDescriptor{"errors": []V2ErrorDescriptor{V2ErrorDescriptors[APIV2ErrorCodeBlobUnknown]}}
+		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeBlobUnknown]}}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
