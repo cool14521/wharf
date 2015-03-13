@@ -103,7 +103,9 @@ func init() {
 		beego.NSRouter("/status", &controllers.BuilderAPIV1Controller{}, "get:GetStatus"),
 	)
 
-	// beego.InsertFilter("/v1/*", beego.BeforeExec, filters.FilterAuth)
+	beego.InsertFilter("/v1/*", beego.BeforeRouter, filters.FilterDebug)
+	beego.InsertFilter("/v1/*", beego.BeforeRouter, filters.FilterAuth)
+
 	beego.InsertFilter("/v2/*", beego.BeforeRouter, filters.FilterDebug)
 	beego.InsertFilter("/v2/*", beego.BeforeRouter, filters.FilterAuth)
 

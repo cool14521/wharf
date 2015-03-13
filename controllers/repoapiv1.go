@@ -9,7 +9,6 @@ import (
 	"github.com/astaxie/beego"
 
 	"github.com/dockercn/wharf/models"
-	"github.com/dockercn/wharf/modules"
 	"github.com/dockercn/wharf/utils"
 )
 
@@ -36,26 +35,17 @@ func (this *RepoAPIV1Controller) Prepare() {
 }
 
 func (this *RepoAPIV1Controller) PutRepository() {
-	if auth, code, message := modules.AuthPutRepository(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
-	username, passwd, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
+	username, _, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
 
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
 	repo := new(models.Repository)
 
-	beego.Debug("[REGISTRY API V1] Repository JSON: ", string(this.Ctx.Input.CopyBody()))
+	beego.Debug("[REGISTRY API V1] Repository JSON:", string(this.Ctx.Input.CopyBody()))
 
 	if err := repo.Put(namespace, repository, string(this.Ctx.Input.CopyBody()), this.Ctx.Input.Header("User-Agent"), models.APIVERSION_V1); err != nil {
-		beego.Error("[REGISTRY API V1] Put repository error: %s", err.Error())
+		beego.Error("[REGISTRY API V1] Put repository error:", err.Error())
 
 		result := map[string]string{"Error": err.Error()}
 		this.Data["json"] = result
@@ -66,7 +56,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 	}
 
 	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
-		token := string(utils.GeneralKey(username + passwd))
+		token := string(utils.GeneralKey(username))
 		this.SetSession("token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
@@ -76,7 +66,14 @@ func (this *RepoAPIV1Controller) PutRepository() {
 
 	user := new(models.User)
 	if _, _, err := user.Has(username); err != nil {
-		beego.Error("[REGISTRY API V1] Get user error: %s", err.Error())
+		beego.Error("[REGISTRY API V1] Get user error:", err.Error())
+
+		result := map[string]string{"Error": err.Error()}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
+		this.ServeJson()
+		return
 	}
 
 	if err := user.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.UUID, memo); err != nil {
@@ -94,21 +91,10 @@ func (this *RepoAPIV1Controller) PutRepository() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
-
 	return
-
 }
 
 func (this *RepoAPIV1Controller) PutTag() {
-	if auth, code, message := modules.AuthPutRepositoryTag(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
@@ -121,7 +107,7 @@ func (this *RepoAPIV1Controller) PutTag() {
 
 	repo := new(models.Repository)
 	if err := repo.PutTag(imageIds[1], namespace, repository, tag); err != nil {
-		beego.Error("[REGISTRY API V1] Put repository tag error: %s", err.Error())
+		beego.Error("[REGISTRY API V1] Put repository tag error:", err.Error())
 
 		result := map[string]string{"Error": err.Error()}
 		this.Data["json"] = result
@@ -142,16 +128,6 @@ func (this *RepoAPIV1Controller) PutTag() {
 }
 
 func (this *RepoAPIV1Controller) PutRepositoryImages() {
-
-	if auth, code, message := modules.AuthPutRepositoryImage(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
@@ -177,6 +153,10 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 	isOrg, _, err := org.Has(namespace)
 	if err != nil {
 		beego.Error("[REGISTRY API V1] Search Organization Error: ", err.Error())
+
+		result := map[string]string{"message": "Search Organization Error"}
+		this.Data["json"] = result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		return
@@ -187,6 +167,10 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 	isUser, _, err := user.Has(authUsername)
 	if err != nil {
 		beego.Error("[REGISTRY API V1] Search User Error: ", err.Error())
+
+		result := map[string]string{"Error": err.Error()}
+		this.Data["json"] = result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		return
@@ -194,6 +178,10 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 
 	if !isUser && !isOrg {
 		beego.Error("[REGISTRY API V1] Search Namespace Error")
+
+		result := map[string]string{"message": "Search Namespace Error"}
+		this.Data["json"] = result
+
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		return
@@ -207,8 +195,8 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 		org.Repositories = append(org.Repositories, repo.UUID)
 		org.Save()
 	}
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
 
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusNoContent)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
 
 	this.ServeJson()
@@ -216,16 +204,6 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 }
 
 func (this *RepoAPIV1Controller) GetRepositoryImages() {
-
-	if auth, code, message := modules.AuthGetRepositoryImages(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	username, passwd, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
 
 	namespace := string(this.Ctx.Input.Param(":namespace"))
@@ -282,16 +260,6 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 }
 
 func (this *RepoAPIV1Controller) GetRepositoryTags() {
-
-	if auth, code, message := modules.AuthGetRepositoryTags(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repo_name")
 
@@ -320,7 +288,6 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 	tag := map[string]string{}
 
 	for _, value := range repo.Tags {
-
 		t := new(models.Tag)
 		if err := t.GetByUUID(value); err != nil {
 			beego.Error(fmt.Sprintf("[REGISTRY API V1]  %s/%s Tags is not exist", namespace, repository))

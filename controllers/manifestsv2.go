@@ -25,15 +25,6 @@ func (this *ManifestsAPIV2Controller) Prepare() {
 }
 
 func (this *ManifestsAPIV2Controller) PutManifests() {
-	if auth, _, _ := modules.AuthManifests(this.Ctx); auth == false {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.ServeJson()
-		return
-	}
-
 	manifest, _ := ioutil.ReadAll(this.Ctx.Request.Body)
 
 	namespace := this.Ctx.Input.Param(":namespace")

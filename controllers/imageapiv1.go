@@ -11,7 +11,6 @@ import (
 	"github.com/astaxie/beego"
 
 	"github.com/dockercn/wharf/models"
-	"github.com/dockercn/wharf/modules"
 	"github.com/dockercn/wharf/utils"
 )
 
@@ -36,19 +35,9 @@ func (this *ImageAPIV1Controller) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Version", beego.AppConfig.String("docker::Version"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Registry-Config", beego.AppConfig.String("docker::Config"))
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Encrypt", beego.AppConfig.String("docker::Encrypt"))
-
 }
 
 func (this *ImageAPIV1Controller) GetImageJSON() {
-	if auth, code, message := modules.AuthGetImageJSON(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	imageId := string(this.Ctx.Input.Param(":image_id"))
 	image := new(models.Image)
 
@@ -84,14 +73,6 @@ func (this *ImageAPIV1Controller) GetImageJSON() {
 }
 
 func (this *ImageAPIV1Controller) PutImageJSON() {
-	if auth, code, message := modules.AuthPutImageJSON(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	imageId := this.Ctx.Input.Param(":image_id")
 
 	image := new(models.Image)
@@ -119,14 +100,6 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 }
 
 func (this *ImageAPIV1Controller) PutImageLayer() {
-	if auth, code, message := modules.AuthPutImageLayer(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	imageId := string(this.Ctx.Input.Param(":image_id"))
 
 	image := new(models.Image)
@@ -176,15 +149,6 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 }
 
 func (this *ImageAPIV1Controller) PutChecksum() {
-	if auth, code, message := modules.AuthPutChecksum(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	imageId := string(this.Ctx.Input.Param(":image_id"))
 
 	image := new(models.Image)
@@ -226,15 +190,6 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 }
 
 func (this *ImageAPIV1Controller) GetImageAncestry() {
-	if auth, code, message := modules.AuthGetImageAncestry(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	imageId := string(this.Ctx.Input.Param(":image_id"))
 
 	image := new(models.Image)
@@ -263,15 +218,6 @@ func (this *ImageAPIV1Controller) GetImageAncestry() {
 }
 
 func (this *ImageAPIV1Controller) GetImageLayer() {
-	if auth, code, message := modules.AuthGetImageLayer(this.Ctx); auth == false {
-		result := map[string]string{"message": string(message)}
-		this.Data["json"] = result
-
-		this.Ctx.Output.Context.Output.SetStatus(code)
-		this.ServeJson()
-		return
-	}
-
 	imageId := string(this.Ctx.Input.Param(":image_id"))
 
 	image := new(models.Image)
