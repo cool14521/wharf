@@ -1,16 +1,16 @@
 package filters
 
 import (
-	"encoding/json"
-	"net/http"
+	// "encoding/json"
+	// "net/http"
 	"strings"
 
-	"github.com/astaxie/beego"
+	// "github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 
 	"github.com/dockercn/wharf/models"
-	"github.com/dockercn/wharf/modules"
-	"github.com/dockercn/wharf/utils"
+	// "github.com/dockercn/wharf/modules"
+	// "github.com/dockercn/wharf/utils"
 )
 
 const (
@@ -19,75 +19,75 @@ const (
 )
 
 func FilterAuth(ctx *context.Context) {
-	var namespace, repository string
-	var permission int
+	// 	var namespace, repository string
+	// 	var permission int
 
-	auth := true
-	user := new(models.User)
+	// 	auth := true
+	// 	user := new(models.User)
 
-	if strings.Index(ctx.Request.URL.String(), "_ping") > 0 {
-		goto AUTH
-	}
+	// 	if strings.Index(ctx.Request.URL.String(), "_ping") > 0 {
+	// 		goto AUTH
+	// 	}
 
-	if strings.Index(ctx.Request.URL.String(), "v1") > 0 {
-		namespace = strings.Split(string(ctx.Input.Params[":splat"]), "/")[1]
-		repository = strings.Split(string(ctx.Input.Params[":splat"]), "/")[2]
-	}
+	// 	if strings.Index(ctx.Request.URL.String(), "v1") > 0 {
+	// 		namespace = strings.Split(string(ctx.Input.Params[":splat"]), "/")[1]
+	// 		repository = strings.Split(string(ctx.Input.Params[":splat"]), "/")[2]
+	// 	}
 
-	if strings.Index(ctx.Request.URL.String(), "v2") > 0 {
-		namespace = strings.Split(string(ctx.Input.Params[":splat"]), "/")[0]
-		repository = strings.Split(string(ctx.Input.Params[":splat"]), "/")[1]
-	}
+	// 	if strings.Index(ctx.Request.URL.String(), "v2") > 0 {
+	// 		namespace = strings.Split(string(ctx.Input.Params[":splat"]), "/")[0]
+	// 		repository = strings.Split(string(ctx.Input.Params[":splat"]), "/")[1]
+	// 	}
 
-	//Get Permission
-	permission = getPermission(ctx.Input.Method())
+	// 	//Get Permission
+	// 	permission = getPermission(ctx.Input.Method())
 
-	//Check Authorization In Header
-	if len(ctx.Input.Header("Authorization")) == 0 || strings.Index(ctx.Input.Header("Authorization"), "Basic") == -1 {
-		beego.Trace("[Docker Registry API] Header Authorization Error!")
-		auth = false
-		goto AUTH
-	}
+	// 	//Check Authorization In Header
+	// 	if len(ctx.Input.Header("Authorization")) == 0 || strings.Index(ctx.Input.Header("Authorization"), "Basic") == -1 {
+	// 		beego.Trace("[Docker Registry API] Header Authorization Error!")
+	// 		auth = false
+	// 		goto AUTH
+	// 	}
 
-	//Check Username, Password And Get User
-	if username, passwd, err := utils.DecodeBasicAuth(ctx.Input.Header("Authorization")); err != nil {
-		beego.Trace("[Docker Registry API] DecodeBasicAuth Error!")
-		auth = false
-		goto AUTH
-	} else {
-		if err := user.Get(username, passwd); err != nil {
-			beego.Trace("[Docker Registry API] Username And Password Check Error:", err.Error())
-			auth = false
-			goto AUTH
-		}
-	}
+	// 	//Check Username, Password And Get User
+	// 	if username, passwd, err := utils.DecodeBasicAuth(ctx.Input.Header("Authorization")); err != nil {
+	// 		beego.Trace("[Docker Registry API] DecodeBasicAuth Error!")
+	// 		auth = false
+	// 		goto AUTH
+	// 	} else {
+	// 		if err := user.Get(username, passwd); err != nil {
+	// 			beego.Trace("[Docker Registry API] Username And Password Check Error:", err.Error())
+	// 			auth = false
+	// 			goto AUTH
+	// 		}
+	// 	}
 
-	//Docker Registry V1 Image Don't Check User/Org Permission
-	if isImageResource(ctx.Request.URL.String()) == true {
-		beego.Trace("[Docker Registry API] Docker Registry V1 Image Don't Check User/Org Permission!")
-		goto AUTH
-	}
+	// 	//Docker Registry V1 Image Don't Check User/Org Permission
+	// 	if isImageResource(ctx.Request.URL.String()) == true {
+	// 		beego.Trace("[Docker Registry API] Docker Registry V1 Image Don't Check User/Org Permission!")
+	// 		goto AUTH
+	// 	}
 
-	beego.Trace("[Docker Registry API] User:", user)
+	// 	beego.Trace("[Docker Registry API] User:", user)
 
-	//Check Org Permission
-	if user.Username != namespace {
-		beego.Trace("[Docker Registry API] Check Org Privilege")
-		auth = checkOrgRepositoryPermission(user, namespace, repository, permission)
-	}
+	// 	//Check Org Permission
+	// 	if user.Username != namespace {
+	// 		beego.Trace("[Docker Registry API] Check Org Privilege")
+	// 		auth = checkOrgRepositoryPermission(user, namespace, repository, permission)
+	// 	}
 
-AUTH:
-	beego.Debug("[Docker Registry API] Authorization Result:", auth)
+	// AUTH:
+	// 	beego.Debug("[Docker Registry API] Authorization Result:", auth)
 
-	if auth == false {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
+	// 	if auth == false {
+	// 		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
 
-		data, _ := json.Marshal(result)
+	// 		data, _ := json.Marshal(result)
 
-		ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
-		ctx.Output.Context.Output.Body(data)
-		return
-	}
+	// 		ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
+	// 		ctx.Output.Context.Output.Body(data)
+	// 		return
+	// 	}
 }
 
 func getPermission(method string) int {
