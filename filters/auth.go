@@ -1,8 +1,10 @@
 package filters
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/astaxie/beego"
@@ -25,38 +27,27 @@ func FilterAuth(ctx *context.Context) {
 	auth := true
 	user := new(models.User)
 
-	if strings.Index(ctx.Request.URL.String(), "_ping") > 0 {
-		goto AUTH
-	}
-
-	if strings.Index(ctx.Request.URL.String(), "v1") > 0 {
-		namespace = strings.Split(string(ctx.Input.Params[":splat"]), "/")[1]
-		repository = strings.Split(string(ctx.Input.Params[":splat"]), "/")[2]
-	}
-
-	if strings.Index(ctx.Request.URL.String(), "v2") > 0 {
-		namespace = strings.Split(string(ctx.Input.Params[":splat"]), "/")[0]
-		repository = strings.Split(string(ctx.Input.Params[":splat"]), "/")[1]
-	}
+	namespace = strings.Split(string(ctx.Input.Params[":splat"]), "/")[0]
+	repository = strings.Split(string(ctx.Input.Params[":splat"]), "/")[1]
 
 	//Get Permission
 	permission = getPermission(ctx.Input.Method())
 
 	//Check Authorization In Header
 	if len(ctx.Input.Header("Authorization")) == 0 || strings.Index(ctx.Input.Header("Authorization"), "Basic") == -1 {
-		beego.Trace("[Docker Registry API] Header Authorization Error!")
+		beego.Error("[Docker Registry API] Header Authorization Error!")
 		auth = false
 		goto AUTH
 	}
 
 	//Check Username, Password And Get User
 	if username, passwd, err := utils.DecodeBasicAuth(ctx.Input.Header("Authorization")); err != nil {
-		beego.Trace("[Docker Registry API] DecodeBasicAuth Error!")
+		beego.Error("[Docker Registry API] DecodeBasicAuth Error!")
 		auth = false
 		goto AUTH
 	} else {
 		if err := user.Get(username, passwd); err != nil {
-			beego.Trace("[Docker Registry API] Username And Password Check Error:", err.Error())
+			beego.Error("[Docker Registry API] Username And Password Check Error:", err.Error())
 			auth = false
 			goto AUTH
 		}
@@ -64,16 +55,24 @@ func FilterAuth(ctx *context.Context) {
 
 	//Docker Registry V1 Image Don't Check User/Org Permission
 	if isImageResource(ctx.Request.URL.String()) == true {
-		beego.Trace("[Docker Registry API] Docker Registry V1 Image Don't Check User/Org Permission!")
+		beego.Error("[Docker Registry API] Docker Registry V1 Image Don't Check User/Org Permission!")
 		goto AUTH
 	}
 
-	beego.Trace("[Docker Registry API] User:", user)
-
-	//Check Org Permission
+	//Username != namespace
 	if user.Username != namespace {
-		beego.Trace("[Docker Registry API] Check Org Privilege")
-		auth = checkOrgRepositoryPermission(user, namespace, repository, permission)
+		u := new(models.User)
+		if has, _, err := u.Has(namespace); err != nil {
+			auth = false
+			goto AUTH
+		} else if has == false {
+			//Org Repository Check
+			beego.Trace("[Docker Registry API] Namepsace different user.Username, will check org/team privileges.")
+			auth = checkOrgRepositoryPermission(user, namespace, repository, permission)
+		} else if has == true {
+			//Different User and Public/Private Repository
+			auth = checkRepositoriesPrivate(namespace, repository)
+		}
 	}
 
 AUTH:
@@ -106,12 +105,23 @@ func getPermission(method string) int {
 }
 
 func isImageResource(url string) bool {
-	if strings.Index(url, "images") == -1 {
-		return false
-	}
+	r := bytes.NewReader([]byte(url))
+	result, _ := regexp.MatchReader("/v1/images/*", r)
 
-	if strings.Index(url, "images") > 0 {
-		return true
+	return result
+}
+
+func checkRepositoriesPrivate(namespace, repository string) bool {
+	repo := new(models.Repository)
+
+	if has, _, err := repo.Has(namespace, repository); err != nil || has == false {
+		return false
+	} else if has == true {
+		if repo.Privated == true {
+			return false
+		} else {
+			return true
+		}
 	}
 
 	return false
@@ -143,8 +153,12 @@ func checkOrgRepositoryPermission(user *models.User, namespace, repository strin
 		}
 	}
 
+	if repo.Privated == false && permission == PERMISSION_READ {
+		return true
+	}
+
 	//Loop Team
-	for _, k := range user.Teams {
+	for _, k := range user.JoinTeams {
 		team := new(models.Team)
 
 		if err := team.Get(k); err != nil {
@@ -160,7 +174,7 @@ func checkOrgRepositoryPermission(user *models.User, namespace, repository strin
 
 			//Got User Team Privilege
 			if p.Repository == repo.UUID {
-				if p.Privilege == true && permission == PERMISSION_WRITE {
+				if p.Privilege == true {
 					return true
 				} else if p.Privilege == false && permission == PERMISSION_READ {
 					return true
