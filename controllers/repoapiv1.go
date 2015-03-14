@@ -42,8 +42,6 @@ func (this *RepoAPIV1Controller) PutRepository() {
 
 	repo := new(models.Repository)
 
-	beego.Debug("[REGISTRY API V1] Repository JSON:", string(this.Ctx.Input.CopyBody()))
-
 	if err := repo.Put(namespace, repository, string(this.Ctx.Input.CopyBody()), this.Ctx.Input.Header("User-Agent"), models.APIVERSION_V1); err != nil {
 		beego.Error("[REGISTRY API V1] Put repository error:", err.Error())
 
@@ -82,11 +80,6 @@ func (this *RepoAPIV1Controller) PutRepository() {
 	if err := repo.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.UUID, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
-
-	this.SetSession("username", username)
-	this.SetSession("namespace", namespace)
-	this.SetSession("repository", repository)
-	this.SetSession("access", "write")
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
@@ -204,8 +197,6 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 }
 
 func (this *RepoAPIV1Controller) GetRepositoryImages() {
-	username, passwd, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
-
 	namespace := string(this.Ctx.Input.Param(":namespace"))
 	repository := string(this.Ctx.Input.Param(":repo_name"))
 
@@ -241,18 +232,6 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 	if err := repo.Log(models.ACTION_GET_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.UUID, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 	}
-
-	if this.Ctx.Input.Header("X-Docker-Token") == "true" {
-		token := string(utils.GeneralKey(username + passwd))
-		this.Ctx.Input.CruSession.Set("token", token)
-
-		this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Token", token)
-		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
-	}
-
-	this.Ctx.Input.CruSession.Set("namespace", namespace)
-	this.Ctx.Input.CruSession.Set("repository", repository)
-	this.Ctx.Input.CruSession.Set("access", "read")
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(repo.JSON))
