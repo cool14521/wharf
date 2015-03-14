@@ -303,7 +303,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
             });
     })
     .directive('namespaceValidator', [function() {
-        var USERNAME_REGEXP = /^([a-z0-9_]{6,30})$/;
+        var USERNAME_REGEXP = /^([a-z0-9_]{3,30})$/;
 
         return {
             require: 'ngModel',

@@ -103,8 +103,12 @@ func init() {
 		beego.NSRouter("/status", &controllers.BuilderAPIV1Controller{}, "get:GetStatus"),
 	)
 
-	beego.InsertFilter("/v1/*", beego.BeforeRouter, filters.FilterDebug)
-	beego.InsertFilter("/v1/*", beego.BeforeRouter, filters.FilterAuth)
+	//Auth Fiters
+	beego.InsertFilter("/v1/repositories/*", beego.BeforeRouter, filters.FilterDebug)
+	beego.InsertFilter("/v1/repositories/*", beego.BeforeRouter, filters.FilterAuth)
+
+	beego.InsertFilter("/v1/images/*", beego.BeforeRouter, filters.FilterDebug)
+	beego.InsertFilter("/v1/images/*", beego.BeforeRouter, filters.FilterAuth)
 
 	beego.InsertFilter("/v2/*", beego.BeforeRouter, filters.FilterDebug)
 	beego.InsertFilter("/v2/*", beego.BeforeRouter, filters.FilterAuth)

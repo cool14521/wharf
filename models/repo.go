@@ -126,7 +126,7 @@ func (r *Repository) Put(namespace, repository, json, agent string, version int6
 		r.Created = time.Now().UnixNano() / int64(time.Millisecond)
 	}
 
-	r.Namespace, r.Repository, r.Agent, r.Version = namespace, repository, agent, version
+	r.Namespace, r.Repository, r.JSON, r.Agent, r.Version = namespace, repository, json, agent, version
 
 	r.Updated = time.Now().UnixNano() / int64(time.Millisecond)
 	r.Checksumed, r.Uploaded, r.Cleared, r.Encrypted = false, false, false, false
