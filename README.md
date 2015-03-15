@@ -36,10 +36,9 @@ go build
 
 ## TODO In The Feature
 
-1. Docker Registry V2 support.
-2. Docker Hub repository sync automatically.
-3. Rocket **CAS** support.
-4. More relative pages.
+1. Docker Hub repository sync automatically.
+2. Rocket **CAS** support.
+3. More relative pages.
 
 # Wharf Runtime Configuration
 
@@ -63,7 +62,7 @@ Version = 0.9.0
 Config = prod
 Standalone = true
 Encrypt = false
-API = v1
+API = v2
 
 [ledisdb]
 DataDir = /tmp/ledisdb
@@ -88,8 +87,8 @@ Domain = containerops.me
 * `Endpoints` is very important parameter, set the same value as your domain or IP. For example, you run `wharf` with domain `xxx.org`, then `Endpoints` should be `xxx.org`.
 * `DataDir` is where `ledis` data is located.
 * The `wharf` session provider default is `ledis`, the `Provider` and `SavePath` is session data storage path.
-* The bucket.conf should be in folder conf with app.conf. If you wanna change the bucket.conf name, you should be modify the include bucket.conf in theapp.conf last line.
-* **Important** `API = v1` means we fully support `Docker Registry API V1' and will support `Docker Registry API V2` in the next version.
+* The bucket.conf should be in folder conf with app.conf. If you wanna change the bucket.conf name, you should be modify the include bucket.conf in the app.conf last line.
+* **Important** `API = v1` means we fully support `Docker Registry API V1' and `API = v2` means support `Docker Registry API V2' and `Docker Registry API V1' at the same time. You could `push` images with `v2` then `pull` with `v1`, but couldn't `push` with `v1` then `pull` with `v2`. 
 
 # Nginx Configuration
 
