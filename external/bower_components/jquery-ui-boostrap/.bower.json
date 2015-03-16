@@ -1,11 +1,12 @@
 {
   "name": "jquery-ui-boostrap",
   "homepage": "https://github.com/addyosmani/jquery-ui-bootstrap",
-  "_release": "57bfc05198",
+  "version": "1.0.0",
+  "_release": "1.0.0",
   "_resolution": {
-    "type": "branch",
-    "branch": "master",
-    "commit": "57bfc05198c34d2096b8436cd45ed05017120aca"
+    "type": "version",
+    "tag": "v1.0.0",
+    "commit": "d98941f144655a729ae1e9546268d70f304951df"
   },
   "_source": "git://github.com/addyosmani/jquery-ui-bootstrap.git",
   "_target": "*",
