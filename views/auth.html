@@ -13,23 +13,23 @@
 
     <link rel="stylesheet" type="text/css" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/bower_components/font-awesome/css/font-awesome.min.css">    
-    <link rel="stylesheet" type="text/css" href="/static/bower_components/angular-growl-v2/build/angular-growl.min.css">    
+    <link rel="stylesheet" type="text/css" href="/static/bower_components/angular-growl-v2/build/angular-growl.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/bower_components/flat-ui/dist/css/flat-ui.min.css">    
     <link rel="stylesheet" type="text/css" href="/static/css/auth/auth.css">
-    <link rel="stylesheet" type="text/css" href="/static/css/bucket.css"> 
   </head>
   <body ng-app="auth">
-    <img src="/static/images/auth/bg.jpg" alt="Auth Full Background" class="full-bg animation-pulseSlow">
+    <img src="/static/images/auth/bg.jpg" alt="" class="full-bg">
 
     <!-- Auth Container  -->
     <div id="login-container" class="animation-fadeIn">
 
       <!-- Auth Title -->
       <div class="login-title text-center">
-        <!-- <img src="" alt="" class="title-logo"> -->
+        <img src="/static/images/logo.png" alt="Wharf Is Open Source ContainerOps Platform" style="height:50px;width:310px;">
       </div>
       <!-- END Auth Title -->
 
-      <div class="block push-bit" ng-view></div>
+      <div class="block" ng-view></div>
       <div growl></div>
       
     </div>
