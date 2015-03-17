@@ -27,9 +27,6 @@ func (this *TeamWebV1Controller) Prepare() {
 		this.Ctx.Input.CruSession.Set("user", user)
 	}
 
-	beego.Debug("[Header] ")
-	beego.Debug(this.Ctx.Request.Header)
-
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 }
 

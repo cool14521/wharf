@@ -104,13 +104,13 @@ func init() {
 	)
 
 	//Auth Fiters
-	beego.InsertFilter("/v1/repositories/*", beego.BeforeRouter, filters.FilterDebug)
-	beego.InsertFilter("/v1/repositories/*", beego.BeforeRouter, filters.FilterAuth)
-
-	beego.InsertFilter("/v1/images/*", beego.BeforeRouter, filters.FilterDebug)
-	beego.InsertFilter("/v1/images/*", beego.BeforeRouter, filters.FilterAuth)
-
+	beego.InsertFilter("/w1/*", beego.BeforeRouter, filters.FilterDebug)
+	beego.InsertFilter("/v1/*", beego.BeforeRouter, filters.FilterDebug)
 	beego.InsertFilter("/v2/*", beego.BeforeRouter, filters.FilterDebug)
+	beego.InsertFilter("/b1/*", beego.BeforeRouter, filters.FilterDebug)
+
+	beego.InsertFilter("/v1/repositories/*", beego.BeforeRouter, filters.FilterAuth)
+	beego.InsertFilter("/v1/images/*", beego.BeforeRouter, filters.FilterAuth)
 	beego.InsertFilter("/v2/*", beego.BeforeRouter, filters.FilterAuth)
 
 	beego.AddNamespace(web)

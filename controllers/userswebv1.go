@@ -35,20 +35,18 @@ func (this *UserWebAPIV1Controller) URLMapping() {
 }
 
 func (this *UserWebAPIV1Controller) Prepare() {
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
 		user.GetByUUID(user.UUID)
 		this.Ctx.Input.CruSession.Set("user", user)
 	}
-
-	beego.Debug("[Header] ")
-	beego.Debug(this.Ctx.Request.Header)
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 }
 
 func (this *UserWebAPIV1Controller) GetProfile() {
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-		beego.Error("[WEB API V1] Load session failure")
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
+		beego.Error("[WEB API V1] Load user session failure!")
+
 		result := map[string]string{"message": "Session load failure", "url": "/auth"}
 		this.Data["json"] = &result
 
@@ -121,7 +119,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 		beego.Debug("[WEB API V1] User signin:", string(this.Ctx.Input.CopyBody()))
 
 		if err := user.Get(user.Username, user.Password); err != nil {
-			beego.Error("[WEB API V1] User singin error: ", err.Error())
+			beego.Error("[WEB API V1] User singin error:", err.Error())
 			result := map[string]string{"message": err.Error()}
 			this.Data["json"] = result
 
@@ -131,7 +129,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 		}
 
 		if user.Gravatar == "" {
-			user.Gravatar = "/static/images/default_user.jpg"
+			user.Gravatar = "/static/images/default-user-icon-profile.png"
 		}
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -156,6 +154,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
 		beego.Error("[WEB API V1] Unmarshal user signup data error:", err.Error())
+
 		result := map[string]string{"message": err.Error()}
 		this.Data["json"] = result
 
@@ -164,6 +163,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 		return
 	} else {
 		beego.Debug("[WEB API V1] User signup:", string(this.Ctx.Input.CopyBody()))
+
 		if exist, _, err := user.Has(user.Username); err != nil {
 			beego.Error("[WEB API V1] User singup error: ", err.Error())
 			result := map[string]string{"message": err.Error()}

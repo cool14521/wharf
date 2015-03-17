@@ -16,6 +16,9 @@ type ManifestsAPIV2Controller struct {
 }
 
 func (this *ManifestsAPIV2Controller) URLMapping() {
+	this.Mapping("PutManifests", this.PutManifests)
+	this.Mapping("GetTags", this.GetTags)
+	this.Mapping("GetManifests", this.GetManifests)
 }
 
 func (this *ManifestsAPIV2Controller) Prepare() {

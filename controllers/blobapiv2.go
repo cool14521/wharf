@@ -19,6 +19,10 @@ type BlobAPIV2Controller struct {
 }
 
 func (this *BlobAPIV2Controller) URLMapping() {
+	this.Mapping("HeadDigest", this.HeadDigest)
+	this.Mapping("PostBlobs", this.PostBlobs)
+	this.Mapping("PutBlobs", this.PutBlobs)
+	this.Mapping("GetBlobs", this.GetBlobs)
 }
 
 func (this *BlobAPIV2Controller) Prepare() {

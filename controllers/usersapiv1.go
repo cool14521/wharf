@@ -20,9 +20,6 @@ func (this *UserAPIV1Controller) URLMapping() {
 }
 
 func (this *UserAPIV1Controller) Prepare() {
-	beego.Debug("[Headers]")
-	beego.Debug(this.Ctx.Input.Request.Header)
-
 	this.EnableXSRF = false
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")

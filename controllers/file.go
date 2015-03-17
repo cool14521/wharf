@@ -17,8 +17,6 @@ func (this *FileController) URLMapping() {
 }
 
 func (this *FileController) Prepare() {
-	beego.Debug("[Header] ")
-	beego.Debug(this.Ctx.Request.Header)
 }
 
 func (this *FileController) GetGPG() {

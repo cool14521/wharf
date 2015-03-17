@@ -30,30 +30,29 @@ type User struct {
 }
 
 func (user *User) Has(username string) (bool, []byte, error) {
-	UUID, err := GetUUID("user", username)
+	uuid, err := GetUUID("user", username)
 
 	if err != nil {
 		return false, nil, err
 	}
 
-	if len(UUID) <= 0 {
+	if len(uuid) <= 0 {
 		return false, nil, nil
 	}
 
-	err = Get(user, UUID)
+	err = Get(user, uuid)
 
-	return true, UUID, err
+	return true, uuid, err
 }
 
-func (user *User) GetByUUID(UUID string) error {
-	if err := Get(user, []byte(UUID)); err != nil {
+func (user *User) GetByUUID(uuid string) error {
+	if err := Get(user, []byte(uuid)); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (user *User) Save() error {
-	//https://github.com/docker/docker/blob/28f09f06326848f4117baf633ec9fc542108f051/registry/registry.go#L27
 	validNamespace := regexp.MustCompile(`^([a-z0-9_]{4,30})$`)
 	if !validNamespace.MatchString(user.Username) {
 		return fmt.Errorf("Username must be 4 - 30, include a-z, 0-9 and '_'")

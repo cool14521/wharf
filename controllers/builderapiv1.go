@@ -9,8 +9,6 @@ type BuilderAPIV1Controller struct {
 }
 
 func (this *BuilderAPIV1Controller) Prepare() {
-	beego.Debug("[Headers]")
-	beego.Debug(this.Ctx.Input.Request.Header)
 }
 
 func (this *BuilderAPIV1Controller) URLMapping() {
