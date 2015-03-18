@@ -1,28 +1,25 @@
 <div class="block right-div">
-    <div class="block-title">
-        <h2><strong class="block-title-setting">
-Organization
-</strong></h2>
+  <div class="block-title">
+    <h6><strong class="block-title-setting">Organization</strong></h6>
+  </div>
+
+  <form name="orgForm" class="org-form" ng-submit="submit()">
+    <div class="form-group">
+      <div class=""><lable>Organization name</lable></div>
+      <div class="">
+        <input class="form-control input-sm" type="text" ng-model="organization.organization" disabled/>
+      </div>
     </div>
-    <form name="profileForm" class="" ng-submit="submit()">
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Organization name</lable>
-            </div>
-            <div class="form-content input-long">
-                <input type="text" size="30" ng-model="organization.organization" readOnly/>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Organization description</lable>
-            </div>
-            <div class="form-content input-long">
-                <input type="text" size="30" ng-model="organization.description"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <button type="submit" class="button primary" ng-disabled="submitting">Modify organization</button>
-        </div>
-    </form>
+
+    <div class="form-group">
+      <div class=""><lable>Organization description</lable></div>
+      <div class="">
+        <input class="form-control input-sm" type="text" ng-model="organization.description"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <button class="btn btn-sm btn-primary">Modify Description</button>
+    </div>
+  </form>
 </div>

@@ -22,11 +22,11 @@
   <link rel="stylesheet" type="text/css" href="/static/css/setting/setting.css">
 </head>
 
-<body>
+<body ng-app="setting">
   <div id="main-container">
     <<<template "header.html" .>>>
 
-    <div class="container" ng-app="setting">
+    <div class="container">
       <!-- Left Bar -->
       <div class="row">
         <div class="col-md-3">
@@ -51,12 +51,12 @@
             <div ng-controller="OrganizationListCtrl">
               <div class="block left-nav" ng-repeat="x in organizaitons">
                 <div class="block-title">
-                  <h5><strong>{{ x.organization }} Settings</strong></h5>
+                  <h6><strong>{{ x.organization }} Settings</strong></h6>
                 </div>
                 <div class="list-group">
                   <span class="list-group-item"><a ng-href="#org/{{x.organization}}"><i class="fa fa-sitemap fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Organization</a></span>
-                  <span class="list-group-item"><a ng-href="#{{x.UUID}}/team/{{x.organization}}"><i class="fa fa-users fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;Team</a></span>
-                  <span class="list-group-item"><a ng-href="#{{x.UUID}}/permission"><i class="fa fa-inbox fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;Competence</a></span>
+                  <span class="list-group-item"><a ng-href="#{{x.organization}}/teams"><i class="fa fa-users fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;Teams</a></span>
+                  <span class="list-group-item"><a ng-href="#{{x.organization}}/permissions"><i class="fa fa-inbox fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;Permissions</a></span>
                 </div>
               </div>
             </div>
@@ -77,12 +77,13 @@
   <script type="text/javascript" src="/static/bower_components/angular-route/angular-route.min.js"></script>
   <script type="text/javascript" src="/static/bower_components/angular-messages/angular-messages.min.js"></script>
   <script type="text/javascript" src="/static/bower_components/angular-cookies/angular-cookies.min.js"></script>
-  <script type="text/javascript" src="/static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
   <script type="text/javascript" src="/static/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
+  <script type="text/javascript" src="/static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
   <script type="text/javascript" src="/static/bower_components/angular-growl-v2/build/angular-growl.min.js"></script>
   <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="/static/bower_components/ng-file-upload/angular-file-upload.js"></script>
   <script type="text/javascript" src="/static/bower_components/ng-file-upload/angular-file-upload-shim.min.js"></script>
+  <script type="text/javascript" src="/static/bower_components/flat-ui/dist/js/flat-ui.min.js"></script>
   <script type="text/javascript" src="/static/javascript/utils.js"></script>
   <script type="text/javascript" src="/static/javascript/setting/setting.js"></script>
 </body>

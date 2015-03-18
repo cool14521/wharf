@@ -173,7 +173,6 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 
 func (this *OrganizationWebV1Controller) GetOrganizations() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-
 		beego.Error("[WEB API V1] Load session failure")
 
 		result := map[string]string{"message": "Session load failure", "url": "/auth"}
@@ -182,9 +181,7 @@ func (this *OrganizationWebV1Controller) GetOrganizations() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		return
-
 	} else {
-
 		organizations := make([]models.Organization, len(user.Organizations))
 
 		for i, UUID := range user.Organizations {

@@ -1,83 +1,63 @@
 <div class="block right-div">
-    <div class="block-title">
-        <h2><strong class="block-title-setting">
-Create new team
-</strong></h2>
-    </div>
-    <form name="teamForm" class="" ng-submit="submit()">
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Organization name</lable>
-            </div>
-             <div class="form-content input-long">
-                <input type="text" size="30" ng-model="team.organization" readOnly/>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Team name</lable>
-            </div>
-            <div class="form-content input-long">
-                <input type="text" size="30" ng-model="team.team" name="team" required namespace-validator/>
-                <div class="error-message" ng-messages="teamForm.team.$error" ng-if="teamForm.team.$dirty">
-                    <div ng-message="required">Please enter your team.</div>
-                    <div ng-message="usernames">New unique Team name; 3 - 30 characters. Only lowercase letters, digits and _ - . characters are allowed</div>
-                </div>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Team description</lable>
-            </div>
-            <div class="form-content input-long">
-                <input type="text" size="30" ng-model="team.description" />
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Team member</lable>
-            </div>
-             <div class="form-add-member">
-                 <i class="fa fa-user-plus fa-fw" data-toggle="modal" data-target="#myModal"></i>
-            </div>
-            <input type="hidden" ng-model="team.users">
-            <div class="form-content input-long"> 
-                <div class="org-group-gravatar" ng-repeat="add in users">
-                    <table>
-                        <tr>
-                            <td><div class="addUserUsername">{{add.username}}</div></td>
-                            <td><button type="button" class="removeUserButton" ng-click="removeUser(add.username)">Remove</button></td>
-                        </tr>
-                    </table> 
-                </div>
-            </div>
-        </div>
-        <br>
-        <div class="form-group">
-            <button type="submit" class="button primary" ng-disabled="submitting">Add team</button>
-        </div>
-    </form>
-</div>
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="myModalLabel">Add a member to team</h4>
-            </div>
-            <form>
-                <div class="modal-body">
+  <div class="block-title">
+    <h6><strong class="block-title-setting">Create New Team</strong></h6>
+  </div>
 
-                    <div class="input-group">
-                        <input autocomplete="off" class="ui-autocomplete-input" id="tags" value="" type="text">
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button ng-click="addUserFunc()" class="btn btn-primary">Add</button>
-                </div>
-            </form>
-        </div>
+  <form name="teamForm" class="team-form" ng-submit="submit()">
+    <div class="form-group">
+      <div class=""><lable>Organization Name</lable></div>
+      <div class="">
+        <input class="form-control input-sm" type="text" ng-model="team.organization" disabled/>
+      </div>
     </div>
+
+    <div class="form-group">
+      <div class=""><lable>Team Name</lable></div>
+      <div class="">
+        <input class="form-control input-sm" type="text" ng-model="team.team" name="team" namespace-validator/>
+        <div class="error-message" ng-messages="teamForm.team.$error" ng-if="teamForm.team.$dirty">
+          <div ng-message="usernames">New unique Team name; 3 - 30 characters. Only lowercase letters, digits and _ - . characters are allowed</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class=""><lable>Team Description</lable></div>
+      <div class=""><input class="form-control input-sm" type="text" ng-model="team.description"/></div>
+    </div>
+
+    <div class="form-group">
+      <div class=""><lable>Team Members</lable></div>
+
+      <div class="tagsinput-primary">
+        <input class="tagsinput" data-role="tagsinput" value="School, Teacher, Colleague"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <button class="btn btn-sm btn-primary">Add team</button>
+    </div>
+  </form>
+
 </div>
+
+
+<!-- <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h6 class="modal-title">Add a member to team</h6></div>
+
+      <form name="userForm">
+        <div class="modal-body">
+          <div class="form-group"><input name="user" class="form-control input-sm" autocomplete="off" data-typeahead-editable="false" data-ng-model="selected" placeholder="Input Username" type="text" data-typeahead="user as user.username for user in cache | filter:{username:$viewValue} | limitTo:10"/></div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-sm btn-default" data-dismiss="modal">Cancel</button>
+          <button class="btn btn-sm btn-primary" ng-click="addUser()">Add</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div> -->

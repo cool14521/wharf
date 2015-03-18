@@ -31,7 +31,8 @@ img.full-bg {
   position: absolute;
   width: 300px;
   top: 20%;
-  left: 40%;
+  left: 35%;
+  right: 35%;
   width: 500px;
   vertical-align: center;
   z-index: 1000;

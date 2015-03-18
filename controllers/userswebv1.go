@@ -52,13 +52,14 @@ func (this *UserWebAPIV1Controller) GetProfile() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-		return
 
+		return
 	} else {
 		this.Data["json"] = user
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
+
 		return
 	}
 }
@@ -407,8 +408,9 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
-	result := map[string]string{"message": "Success!"}
+	result := map[string]string{"message": "Update Profile Successfully!"}
 	this.Data["json"] = &result
+
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
 	return

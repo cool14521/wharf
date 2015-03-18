@@ -1,83 +1,83 @@
 <div class="block right-div">
-    <div class="block-title">
-        <h2><strong class="block-title-setting">
-Edit team
-</strong></h2>
+<div class="block-title">
+  <h2><strong class="block-title-setting">
+      Edit team
+    </strong></h2>
+</div>
+<form name="teamForm" class="" ng-submit="submit()">
+  <div class="form-group">
+    <div class="form-title">
+      <lable>Organization name</lable>
     </div>
-    <form name="teamForm" class="" ng-submit="submit()">
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Organization name</lable>
-            </div>
-            <div class="form-content input-long">
-                <input type="text" size="30" ng-model="team.organization" readOnly/>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Team name</lable>
-            </div>
-            <div class="form-content input-long">
-                <input type="text" size="30" ng-model="team.team" name="team" readOnly/>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Team description</lable>
-            </div>
-            <div class="form-content input-long">
-                <input type="text" size="30" ng-model="team.description" />
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="form-title">
-                <lable>Team member</lable>
-            </div>
-            <div class="form-add-member">
-                <i class="fa fa-user-plus fa-fw" data-toggle="modal" data-target="#myModal"></i>
-            </div>
-            <input type="hidden" ng-model="team.users">
-            <div class="org-group-gravatar" ng-repeat="member in team.userobjects">
-                <div class="form-content input-long">
-                    <table>
-                        <tr>
-                            <td>
-                                <div class="addUserUsername">{{member.username}}</div>
-                            </td>
-                            <td>
-                                <button type="button" class="removeUserButton" ng-click="removeUser(member.username)">Remove</button>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <br>
-        <div class="form-group">
-            <button type="submit" class="button primary" ng-disabled="submitting">Update team</button>
-        </div>
-    </form>
+    <div class="form-content input-long">
+      <input type="text" size="30" ng-model="team.organization" readOnly/>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="form-title">
+      <lable>Team name</lable>
+    </div>
+    <div class="form-content input-long">
+      <input type="text" size="30" ng-model="team.team" name="team" readOnly/>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="form-title">
+      <lable>Team description</lable>
+    </div>
+    <div class="form-content input-long">
+      <input type="text" size="30" ng-model="team.description" />
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="form-title">
+      <lable>Team member</lable>
+    </div>
+    <div class="form-add-member">
+      <i class="fa fa-user-plus fa-fw" data-toggle="modal" data-target="#myModal"></i>
+    </div>
+    <input type="hidden" ng-model="team.users">
+    <div class="org-group-gravatar" ng-repeat="member in team.userobjects">
+      <div class="form-content input-long">
+        <table>
+          <tr>
+            <td>
+              <div class="addUserUsername">{{member.username}}</div>
+            </td>
+            <td>
+              <button type="button" class="removeUserButton" ng-click="removeUser(member.username)">Remove</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="form-group">
+    <button type="submit" class="button primary" ng-disabled="submitting">Update team</button>
+  </div>
+</form>
 </div>
 <!-- Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="myModalLabel">Add a member to team</h4>
-            </div>
-            <form>
-                <div class="modal-body">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Add a member to team</h4>
+      </div>
+      <form>
+        <div class="modal-body">
 
-                    <div class="input-group">
-                        <input autocomplete="off" class="ui-autocomplete-input" id="tags" value="" type="text">
-                    </div>
+          <div class="input-group">
+            <input autocomplete="off" class="ui-autocomplete-input" id="tags" value="" type="text">
+          </div>
 
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button ng-click="addUserFunc()" class="btn btn-primary">Add</button>
-                </div>
-            </form>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button ng-click="addUserFunc()" class="btn btn-primary">Add</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>

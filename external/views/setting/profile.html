@@ -16,7 +16,10 @@
               <img class="avatar" ng-src="{{user.gravatar}}" style="height:100px;width:100px;">
             </div>
             <div class="col-md-5">
-              <div class="upload-button ng-isolate-scope ng-pristine ng-valid" ng-file-select ng-file-change="upload($files)" ng-multiple="multiple" accept="image/*">Upload new picture</div>
+              <button class="btn btn-primary ng-isolate-scope ng-pristine ng-valid" ng-file-select ng-file-change="upload($files)" ng-multiple="multiple" accept="image/*"><i class="fa fa-cloud-upload"></i> upload new picture</button>    
+              <div class="progress">
+                <div class="progress-bar" style="width: {{progress}}%;"></div>
+              <div>
               <div id="editArea"></div>
             </div>
           </div>
@@ -24,16 +27,16 @@
       </div>
     </div>
     
-    <form name="profileForm" class="" ng-submit="submit()">
+    <form name="profileForm" class="profile-form" ng-submit="submit()">
       <div class="form-group">
-        <div class="form-title"><lable>Name</lable></div>
-        <div class="form-content input-long"><input type="text" size="30" ng-model="user.username" readOnly/></div>
+        <div class=""><lable>Username</lable></div>
+        <div class=""><input class="form-control input-sm" type="text" size="30" ng-model="user.username" disabled/></div>
       </div>
 
       <div class="form-group">
-        <div class="form-title"><lable>Email (will be public)</lable></div>
-        <div class="form-content input-long">
-          <input type="text" size="30" name="email" ng-model="user.email" required email-validator/>
+        <div class=""><lable>Email</lable></div>
+        <div class="">
+          <input class="form-control input-sm" type="text" size="30" name="email" ng-model="user.email" required email-validator/>
           <div class="error-message" ng-messages="profileForm.email.$error" ng-if="profileForm.email.$dirty">
             <div ng-message="required">Please enter your email.</div>
             <div ng-message="emails">Please enter a valid email address.</div>
@@ -43,13 +46,13 @@
 
       <div class="form-group">
         <div class="form-title"><lable>Fullname</lable></div>
-        <div class="form-content input-long"><input type="text" size="30" ng-model="user.fullname" /></div>
+        <div class="form-content input-long"><input class="form-control input-sm" type="text" size="30" ng-model="user.fullname" /></div>
       </div>
 
       <div class="form-group">
         <div class="form-title"><lable>Mobile</lable></div>
         <div class="form-content input-long">
-          <input type="text" size="30" name="mobile" ng-model="user.mobile" mobile-validator/>
+          <input class="form-control input-sm" type="text" size="30" name="mobile" ng-model="user.mobile" mobile-validator/>
           <div class="error-message" ng-messages="profileForm.mobile.$error" ng-if="profileForm.mobile.$dirty">
             <div ng-message="mobiles">Please enter a valid mobile.</div>
           </div>
@@ -59,21 +62,21 @@
       <div class="form-group">
         <div class="form-title"><lable>Company</lable></div>
         <div class="form-content input-long">
-          <input type="text" size="30" ng-model="user.company" />
+          <input class="form-control input-sm" type="text" size="30" ng-model="user.company" />
         </div>
       </div>
 
       <div class="form-group">
         <div class="form-title"><lable>URL</lable></div>
         <div class="form-content input-long">
-          <input type="text" size="30" name="url" ng-model="user.url" url-validator/>
+          <input class="form-control input-sm" type="text" size="30" name="url" ng-model="user.url" url-validator/>
           <div class="error-message" ng-messages="profileForm.url.$error" ng-if="profileForm.url.$dirty">
             <div ng-message="urls">Please enter a valid url.</div></div>
           </div>
       </div>
 
       <div class="form-group">
-          <button type="submit" class="button primary" ng-disabled="submmitting">Update profile</button>
+          <button type="submit" class="btn btn-primary">Update Profile</button>
       </div>
 
     </form>
