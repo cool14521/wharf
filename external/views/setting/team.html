@@ -1,25 +1,23 @@
 <div class="block right-div">
-    <div class="block-title">
-        <h2><strong class="block-title-setting">
-Team
-</strong></h2>
-    </div>
-    <div>
-        <button type="button" class="btn btn-info" ng-click="createTeam()">Create new team</button>
-        <div class="org-group" ng-repeat="team in teams">
-            <div class="org-group-gravatar">
-            	<img ng-src="{{user.gravatar}}" ng-repeat="user in team.userobjects" class="profile team-profile">
-            </div>
-            <div class="org-group-name">{{team.organization}}</div>
-            <div class="team-group-name">{{team.team}}</div>
-            <div class="org-group-desc">{{team.description}}</div>
-            <div class="org-group-teams">
-                <div class="org-group-teams-team" ng-repeat="repository in team.repositoryobjects">{{repository.repository}}</div>
-            </div>
-            <div class="org-group-btn">
-                <button class="org-group-btn-delete btn btn-danger">Delete</button>
-                <button class="org-group-btn-edit btn btn-default" ng-click="editTeam(team.UUID)">Edit</button>
-            </div>
+  <div class="block-title">
+    <h6><strong class="block-title-setting">Teams</strong></h6>
+  </div>
+  <div>
+    <button type="button" class="btn btn-sm btn-primary" ng-click="createTeam()">Create new team</button>
+      <!-- <div class="org-group" ng-repeat="team in teams">
+        <div class="org-group-gravatar">
+          <img ng-src="{{user.gravatar}}" ng-repeat="user in team.userobjects" class="profile team-profile">
         </div>
-    </div>
+        <div class="org-group-name">{{team.organization}}</div>
+        <div class="team-group-name">{{team.team}}</div>
+        <div class="org-group-desc">{{team.description}}</div>
+        <div class="org-group-teams">
+          <div class="org-group-teams-team" ng-repeat="repository in team.repositoryobjects">{{repository.repository}}</div>
+        </div>
+        <div class="org-group-btn">
+          <button class="org-group-btn-delete btn btn-danger">Delete</button>
+          <button class="org-group-btn-edit btn btn-default" ng-click="editTeam(team.UUID)">Edit</button>
+        </div>
+      </div> -->
+  </div>
 </div>

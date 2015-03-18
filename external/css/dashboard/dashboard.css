@@ -1,59 +1,70 @@
+/* Page Struct */
 .left-nav {
-    margin-top: 20px;
+  margin-top: 20px;
 }
+
+.right-div {
+  margin-top: 20px;
+  padding-bottom: 30px;
+}
+
+.block {
+  margin: 0 0 15px;
+  padding: 20px 15px 1px;
+  background-color: #ffffff;
+  border: 1px solid #dbe1e8;
+}
+
+.block-title {
+  margin-left: -14px;
+  margin-right: -15px;
+  margin-top: -35px;
+  font-size: 16px;
+  line-height: 1.4;
+  background-color: #f9fafc;
+  border-bottom: 1px solid #eaedf1;
+}
+
+.block-title h6 {
+  padding-top: 15px;
+  padding-left: 15px;
+}
+
+/* Left List Item */
+
 .list-group {
-    margin-left: -20px;
-    margin-right: -20px;
+  margin-left: -10px;
+  margin-right: -10px;
 }
+
 .list-group .list-group-item {
-    border: none;
-    cursor: pointer;
+  border: none;
+  cursor: pointer;
 }
+
 .list-group .list-group-item a {
-    border: none;
-    cursor: pointer;
-    color: #4183c4;
-    text-decoration: none;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  color: #4183c4;
+  text-decoration: none;
 }
+
 .list-group .list-group-item a:hover {
-    color: #1bbae1;
-    text-decoration: none;
+  color: #1bbae1;
+  text-decoration: none;
 }
-.form-content {
-    margin-top: 5px;
+
+/* AngularJS Error */
+.ng-active {
+  color: red;
 }
-.input-long>input {
-    width: 66.7%;
+
+.ng-scope {
+  font-size: 14px;
 }
-.form-content>input {
-    min-height: 34px;
-    padding: 7px 8px;
-    font-size: 13px;
-    color: #333;
-    vertical-align: middle;
-    background-color: #f9fafc;
-    background-repeat: no-repeat;
-    background-position: right center;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    outline: none;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
-}
-.form-group>button {
-    color: #fff;
-    background-color: #60b044;
-    position: relative;
-    font-size: 13px;
-    font-weight: bold;
-    padding: 7px 12px;
-    white-space: nowrap;
-}
-.form-group>.form-title>lable {
-    font-weight: bold;
-    font-size: 13px;
-}
-.paginationArea {
-    align-content: center;
-    text-align: center;
-    margin-top: 50px;
+
+/* Org Form */
+.org-form {
+  width: 500px;
 }
