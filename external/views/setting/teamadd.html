@@ -3,7 +3,7 @@
     <h6><strong class="block-title-setting">Create New Team</strong></h6>
   </div>
 
-  <form name="teamForm" class="team-form" ng-submit="submit()">
+  <form name="teamForm" class="team-form" novalidate ng-submit="submit()">
     <div class="form-group">
       <div class=""><lable>Organization Name</lable></div>
       <div class="">
@@ -27,37 +27,8 @@
     </div>
 
     <div class="form-group">
-      <div class=""><lable>Team Members</lable></div>
-
-      <div class="tagsinput-primary">
-        <input class="tagsinput" data-role="tagsinput" value="School, Teacher, Colleague"/>
-      </div>
-    </div>
-
-    <div class="form-group">
       <button class="btn btn-sm btn-primary">Add team</button>
     </div>
   </form>
 
 </div>
-
-
-<!-- <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header"><h6 class="modal-title">Add a member to team</h6></div>
-
-      <form name="userForm">
-        <div class="modal-body">
-          <div class="form-group"><input name="user" class="form-control input-sm" autocomplete="off" data-typeahead-editable="false" data-ng-model="selected" placeholder="Input Username" type="text" data-typeahead="user as user.username for user in cache | filter:{username:$viewValue} | limitTo:10"/></div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn btn-sm btn-default" data-dismiss="modal">Cancel</button>
-          <button class="btn btn-sm btn-primary" ng-click="addUser()">Add</button>
-        </div>
-      </form>
-
-    </div>
-  </div>
-</div> -->
