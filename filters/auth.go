@@ -138,7 +138,7 @@ func checkOrgRepositoryPermission(user *models.User, namespace, repository strin
 
 	//Check Owner, don't care Join team
 	for _, k := range user.Organizations {
-		if org.UUID == k {
+		if org.Id == k {
 			owner = true
 		}
 	}
@@ -173,7 +173,7 @@ func checkOrgRepositoryPermission(user *models.User, namespace, repository strin
 			}
 
 			//Got User Team Privilege
-			if p.Repository == repo.UUID {
+			if p.Repository == repo.Id {
 				if p.Privilege == true {
 					return true
 				} else if p.Privilege == false && permission == PERMISSION_READ {

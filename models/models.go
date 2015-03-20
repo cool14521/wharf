@@ -53,7 +53,7 @@ func InitDb() {
 	LedisDB, _ = nowLedis.Select(db)
 }
 
-func GetUUID(ObjectType, Object string) (UUID []byte, err error) {
+func GetId(ObjectType, Object string) (Id []byte, err error) {
 
 	index := ""
 
@@ -83,10 +83,10 @@ func GetUUID(ObjectType, Object string) (UUID []byte, err error) {
 
 	}
 
-	if UUID, err = LedisDB.HGet([]byte(index), []byte(Object)); err != nil {
+	if Id, err = LedisDB.HGet([]byte(index), []byte(Object)); err != nil {
 		return nil, err
 	} else {
-		return UUID, nil
+		return Id, nil
 	}
 
 }
@@ -119,11 +119,11 @@ func Save(obj interface{}, key []byte) (err error) {
 				strJson := "["
 
 				for i := 0; i < value.Len(); i++ {
-					nowUUID := value.Index(i).String()
+					id := value.Index(i).String()
 					if i != 0 {
-						strJson += fmt.Sprintf(`,"%s"`, nowUUID)
+						strJson += fmt.Sprintf(`,"%s"`, id)
 					} else {
-						strJson += fmt.Sprintf(`"%s"`, nowUUID)
+						strJson += fmt.Sprintf(`"%s"`, id)
 					}
 				}
 
@@ -141,7 +141,7 @@ func Save(obj interface{}, key []byte) (err error) {
 	return nil
 }
 
-func Get(obj interface{}, UUID []byte) (err error) {
+func Get(obj interface{}, Id []byte) (err error) {
 
 	nowTypeElem := reflect.ValueOf(obj).Elem()
 	types := nowTypeElem.Type()
@@ -154,21 +154,21 @@ func Get(obj interface{}, UUID []byte) (err error) {
 		switch nowField.Kind() {
 
 		case reflect.String:
-			nowValue, err := LedisDB.HGet(UUID, []byte(nowFieldName))
+			nowValue, err := LedisDB.HGet(Id, []byte(nowFieldName))
 			nowField.SetString(string(nowValue))
 			if err != nil {
 				return err
 			}
 
 		case reflect.Bool:
-			nowValue, err := LedisDB.HGet(UUID, []byte(nowFieldName))
+			nowValue, err := LedisDB.HGet(Id, []byte(nowFieldName))
 			nowField.SetBool(utils.BytesToBool(nowValue))
 			if err != nil {
 				return err
 			}
 
 		case reflect.Int64:
-			nowValue, err := LedisDB.HGet(UUID, []byte(nowFieldName))
+			nowValue, err := LedisDB.HGet(Id, []byte(nowFieldName))
 			nowField.SetInt(utils.BytesToInt64(nowValue))
 			if err != nil {
 				return err
@@ -176,7 +176,7 @@ func Get(obj interface{}, UUID []byte) (err error) {
 
 		case reflect.Slice:
 			if "[]string" == nowField.Type().String() {
-				nowValue, err := LedisDB.HGet(UUID, []byte(nowFieldName))
+				nowValue, err := LedisDB.HGet(Id, []byte(nowFieldName))
 
 				var stringSlice []string
 				err = json.Unmarshal(nowValue, &stringSlice)

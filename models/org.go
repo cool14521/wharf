@@ -5,8 +5,8 @@ import (
 )
 
 type Organization struct {
-	UUID         string   `json:"UUID"`         //
-	Organization string   `json:"organization"` //
+	Id           string   `json:"id"`           //
+	Name         string   `json:"organization"` //
 	Username     string   `json:"username"`     //
 	Description  string   `json:"description"`  //
 	Repositories []string `json:"repositories"` //
@@ -17,8 +17,8 @@ type Organization struct {
 }
 
 type Team struct {
-	UUID              string       `json:"UUID"`           //
-	Team              string       `json:"team"`           //
+	Id                string       `json:"id"`             //
+	Name              string       `json:"team"`           //
 	Organization      string       `json:"organization"`   //
 	Username          string       `json:"username"`       //
 	Description       string       `json:"description"`    //
@@ -30,34 +30,34 @@ type Team struct {
 	UserObjects       []User       `json:"userobjects"`
 }
 
-func (organization *Organization) Has(organizationName string) (bool, []byte, error) {
-	UUID, err := GetUUID("organization", organizationName)
+func (organization *Organization) Has(name string) (bool, []byte, error) {
+	id, err := GetId("organization", name)
 	if err != nil {
 		return false, nil, err
 	}
-	if len(UUID) <= 0 {
+	if len(id) <= 0 {
 		return false, nil, nil
 	}
 
-	err = Get(organization, UUID)
+	err = Get(organization, id)
 
-	return true, UUID, err
+	return true, id, err
 }
 
 func (organization *Organization) Save() error {
-	if err := Save(organization, []byte(organization.UUID)); err != nil {
+	if err := Save(organization, []byte(organization.Id)); err != nil {
 		return err
 	}
 
-	if _, err := LedisDB.HSet([]byte(GLOBAL_ORGANIZATION_INDEX), []byte(organization.Organization), []byte(organization.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(GLOBAL_ORGANIZATION_INDEX), []byte(organization.Name), []byte(organization.Id)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (organization *Organization) Get(UUID string) error {
-	if err := Get(organization, []byte(UUID)); err != nil {
+func (organization *Organization) Get(id string) error {
+	if err := Get(organization, []byte(id)); err != nil {
 		return err
 	}
 
@@ -65,46 +65,46 @@ func (organization *Organization) Get(UUID string) error {
 }
 
 func (organization *Organization) Remove() error {
-	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_ORGANIZATION_INDEX)), []byte(organization.Organization), []byte(organization.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_ORGANIZATION_INDEX)), []byte(organization.Name), []byte(organization.Id)); err != nil {
 		return err
 	}
 
-	if _, err := LedisDB.HDel([]byte(GLOBAL_ORGANIZATION_INDEX), []byte(organization.UUID)); err != nil {
+	if _, err := LedisDB.HDel([]byte(GLOBAL_ORGANIZATION_INDEX), []byte(organization.Id)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (team *Team) Has(teamName string) (bool, []byte, error) {
-	UUID, err := GetUUID("team", teamName)
+func (team *Team) Has(name string) (bool, []byte, error) {
+	id, err := GetId("team", name)
 	if err != nil {
 		return false, nil, err
 	}
 
-	if len(UUID) <= 0 {
+	if len(id) <= 0 {
 		return false, nil, nil
 	}
 
-	err = Get(team, UUID)
+	err = Get(team, id)
 
-	return true, UUID, err
+	return true, id, err
 }
 
 func (team *Team) Save() error {
-	if err := Save(team, []byte(team.UUID)); err != nil {
+	if err := Save(team, []byte(team.Id)); err != nil {
 		return err
 	}
 
-	if _, err := LedisDB.HSet([]byte(GLOBAL_TEAM_INDEX), []byte(team.Team), []byte(team.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(GLOBAL_TEAM_INDEX), []byte(team.Name), []byte(team.Id)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (team *Team) Get(UUID string) error {
-	if err := Get(team, []byte(UUID)); err != nil {
+func (team *Team) Get(Id string) error {
+	if err := Get(team, []byte(Id)); err != nil {
 		return err
 	}
 
@@ -112,11 +112,11 @@ func (team *Team) Get(UUID string) error {
 }
 
 func (team *Team) Remove() error {
-	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_TEAM_INDEX)), []byte(team.Team), []byte(team.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_TEAM_INDEX)), []byte(team.Name), []byte(team.Id)); err != nil {
 		return err
 	}
 
-	if _, err := LedisDB.HDel([]byte(GLOBAL_TEAM_INDEX), []byte(team.UUID)); err != nil {
+	if _, err := LedisDB.HDel([]byte(GLOBAL_TEAM_INDEX), []byte(team.Id)); err != nil {
 		return err
 	}
 

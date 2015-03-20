@@ -90,7 +90,7 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := image.Log(models.ACTION_PUT_IMAGES_JSON, models.LEVELINFORMATIONAL, models.TYPE_APIV1, image.UUID, memo); err != nil {
+	if err := image.Log(models.ACTION_PUT_IMAGES_JSON, models.LEVELINFORMATIONAL, models.TYPE_APIV1, image.Id, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Error:", err.Error())
 	}
 
@@ -139,7 +139,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := image.Log(models.ACTION_PUT_IMAGES_LAYER, models.LEVELINFORMATIONAL, models.TYPE_APIV1, image.UUID, memo); err != nil {
+	if err := image.Log(models.ACTION_PUT_IMAGES_LAYER, models.LEVELINFORMATIONAL, models.TYPE_APIV1, image.Id, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Error:", err.Error())
 	}
 
@@ -180,7 +180,7 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := image.Log(models.ACTION_PUT_IMAGES_CHECKSUM, models.LEVELINFORMATIONAL, models.TYPE_APIV1, image.UUID, memo); err != nil {
+	if err := image.Log(models.ACTION_PUT_IMAGES_CHECKSUM, models.LEVELINFORMATIONAL, models.TYPE_APIV1, image.Id, memo); err != nil {
 		beego.Error("[REGISTRY API V1] Log Error:", err.Error())
 	}
 
