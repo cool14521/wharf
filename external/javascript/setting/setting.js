@@ -119,28 +119,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
       });
   }
 }])
-.controller('SettingOrganizationAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
-  $scope.submitting = false;
-  $scope.submit = function() {
-    if ($scope.org.$valid) {
-      $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-      $http.post('/w1/organization', $scope.organization)
-        .success(function(data, status, headers, config) {
-          $scope.submitting = true;
-          $window.location.href = '/setting';
-          growl.info(data.message);
-        })
-      .error(function(data, status, headers, config) {
-        $scope.submitting = false;
-        growl.error(data.message);
-      });
-    }
-  }
-
-  $scope.createOrg = function() {
-    $window.location.href = '/setting#/org/add';
-  }
-}])
 .controller('SettingTeamCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
   //get teams data
   $scope.repositoryAdd = {};
@@ -248,73 +226,27 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
   }
 }])
 .controller('SettingTeamAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-  $scope.users = [];
-  $scope.team = new Object();
+  $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+
+  $scope.team = {};
   $scope.team.organization = $routeParams.org;
-  $scope.team.users = [];
 
-  $(".tagsinput").tagsinput();
-
-  $http.get('/w1/users')
-    .success(function(data, status, headers, config) {
-      $scope.cache = data;
-    })
-    .error(function(data, status, headers, config) {
-      growl.error(data.message);
-    });
-
-  // $scope.submit = function() {
-  //   if ($scope.teamForm.$valid) {
-  //     if ($scope.team.users.length == 0) {
-  //       growl.error("Team must have members!");
-  //       return
-  //     }
-  //     $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-  //     $http.post('/w1/team', $scope.team)
-  //       .success(function(data, status, headers, config) {
-  //         $scope.submitting = true;
-  //         growl.info(data.message);
-  //       })
-  //     .error(function(data, status, headers, config) {
-  //       $scope.submitting = false;
-  //       growl.error(data.message);
-  //     });
-  //   }
-  // }
-
-
-  // $scope.addUser = function() {
-  //   // $scope.findUser = {}
-  //   // $scope.findUser.username = document.getElementById("tags").value;
-
-  //   // //adjust user already add
-  //   // for (var i = 0; i < $scope.users.length; i++) {
-  //   //   if ($scope.users[i].username == document.getElementById("tags").value) {
-  //   //     growl.error("user already exist!");
-  //   //     $('#myModal').modal('toggle');
-  //   //     return;
-  //   //   }
-  //   // }
-
-  //   // $scope.users.push($scope.findUser);
-  //   // $scope.team.users.push($scope.findUser.username);
-  //   $('#userModal').modal('toggle');
-  // }
-
-  // $scope.removeUser = function(username) {
-  //   var newUsers = [];
-  //   var newUsernames = [];
-  //   for (var i = 0; i < $scope.users.length; i++) {
-  //     if ($scope.users[i].username == username) {
-  //       continue;
-  //     }
-  //     newUsers.push($scope.users[i]);
-  //     newUsernames.push($scope.users[i].username);
-  //   }
-  //   $scope.users = newUsers;
-  //   $scope.team.users = newUsernames;
-  // }
-
+  $scope.submit = function() {
+    if ($scope.teamForm.$valid){
+      $http.post('/w1/team', $scope.team)
+        .success(function(data, status, headers, config) {
+          $scope.submitting = true;
+          growl.info(data.message);
+          $timeout(function() {
+            $window.location.href = "/setting#/" + $routeParams.org + "/teams";
+          }, 3000);
+        })
+        .error(function(data, status, headers, config) {
+          $scope.submitting = false;
+          growl.error(data.message);
+        });
+    }
+  }
 }])
 .controller('OrganizationListCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
   //init organization  info
@@ -324,8 +256,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
     })
   .error(function(data, status, headers, config) {
     $timeout(function() {
-      //$window.location.href = '/auth';
-
     }, 3000);
   });
 }])
@@ -409,14 +339,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
   .when('/notification', {
     templateUrl: '/static/views/setting/notification.html',
     controller: 'SettingNotificationCtrl'
-  })
-  .when('/repo/add', {
-    templateUrl: '/static/views/dashboard/repositoryadd.html',
-    controller: 'AddRepositoryCtrl'
-  })
-  .when('/org/add', {
-    templateUrl: '/static/views/setting/organizationadd.html',
-    controller: 'SettingOrganizationAddCtrl'
   })
   .when('/org/:org', {
     templateUrl: '/static/views/setting/organization.html',

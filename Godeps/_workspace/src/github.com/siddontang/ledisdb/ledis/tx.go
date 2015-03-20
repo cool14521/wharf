@@ -1,111 +1,114 @@
 package ledis
 
-import (
-	"errors"
-	"fmt"
-	"github.com/siddontang/ledisdb/store"
-)
+// import (
+// 	"errors"
+// 	"fmt"
+// 	"github.com/siddontang/go/log"
+// 	"github.com/siddontang/ledisdb/store"
+// )
 
-var (
-	ErrNestTx = errors.New("nest transaction not supported")
-	ErrTxDone = errors.New("Transaction has already been committed or rolled back")
-)
+// var (
+// 	ErrNestTx = errors.New("nest transaction not supported")
+// 	ErrTxDone = errors.New("Transaction has already been committed or rolled back")
+// )
 
-type Tx struct {
-	*DB
+// type Tx struct {
+// 	*DB
 
-	tx *store.Tx
+// 	tx *store.Tx
 
-	data *store.BatchData
-}
+// 	data *store.BatchData
+// }
 
-func (db *DB) IsTransaction() bool {
-	return db.status == DBInTransaction
-}
+// func (db *DB) IsTransaction() bool {
+// 	return db.status == DBInTransaction
+// }
 
-// Begin a transaction, it will block all other write operations before calling Commit or Rollback.
-// You must be very careful to prevent long-time transaction.
-func (db *DB) Begin() (*Tx, error) {
-	if db.IsTransaction() {
-		return nil, ErrNestTx
-	}
+// // Begin a transaction, it will block all other write operations before calling Commit or Rollback.
+// // You must be very careful to prevent long-time transaction.
+// func (db *DB) Begin() (*Tx, error) {
+// 	log.Warn("Transaction support will be removed later, use your own risk!!!")
 
-	tx := new(Tx)
+// 	if db.IsTransaction() {
+// 		return nil, ErrNestTx
+// 	}
 
-	tx.data = &store.BatchData{}
+// 	tx := new(Tx)
 
-	tx.DB = new(DB)
-	tx.DB.l = db.l
+// 	tx.data = &store.BatchData{}
 
-	tx.l.wLock.Lock()
+// 	tx.DB = new(DB)
+// 	tx.DB.l = db.l
 
-	tx.DB.sdb = db.sdb
+// 	tx.l.wLock.Lock()
 
-	var err error
-	tx.tx, err = db.sdb.Begin()
-	if err != nil {
-		tx.l.wLock.Unlock()
-		return nil, err
-	}
+// 	tx.DB.sdb = db.sdb
 
-	tx.DB.bucket = tx.tx
+// 	var err error
+// 	tx.tx, err = db.sdb.Begin()
+// 	if err != nil {
+// 		tx.l.wLock.Unlock()
+// 		return nil, err
+// 	}
 
-	tx.DB.status = DBInTransaction
+// 	tx.DB.bucket = tx.tx
 
-	tx.DB.index = db.index
+// 	tx.DB.status = DBInTransaction
 
-	tx.DB.kvBatch = tx.newBatch()
-	tx.DB.listBatch = tx.newBatch()
-	tx.DB.hashBatch = tx.newBatch()
-	tx.DB.zsetBatch = tx.newBatch()
-	tx.DB.setBatch = tx.newBatch()
+// 	tx.DB.index = db.index
 
-	tx.DB.lbkeys = db.lbkeys
+// 	tx.DB.kvBatch = tx.newBatch()
+// 	tx.DB.listBatch = tx.newBatch()
+// 	tx.DB.hashBatch = tx.newBatch()
+// 	tx.DB.zsetBatch = tx.newBatch()
+// 	tx.DB.setBatch = tx.newBatch()
 
-	return tx, nil
-}
+// 	tx.DB.lbkeys = db.lbkeys
 
-func (tx *Tx) Commit() error {
-	if tx.tx == nil {
-		return ErrTxDone
-	}
+// 	return tx, nil
+// }
 
-	err := tx.l.handleCommit(tx.data, tx.tx)
-	tx.data.Reset()
+// func (tx *Tx) Commit() error {
+// 	if tx.tx == nil {
+// 		return ErrTxDone
+// 	}
 
-	tx.tx = nil
+// 	err := tx.l.handleCommit(tx.data, tx.tx)
+// 	tx.data.Reset()
 
-	tx.l.wLock.Unlock()
+// 	tx.tx = nil
 
-	tx.DB.bucket = nil
+// 	tx.l.wLock.Unlock()
 
-	return err
-}
+// 	tx.DB.bucket = nil
 
-func (tx *Tx) Rollback() error {
-	if tx.tx == nil {
-		return ErrTxDone
-	}
+// 	return err
+// }
 
-	err := tx.tx.Rollback()
-	tx.data.Reset()
-	tx.tx = nil
+// func (tx *Tx) Rollback() error {
+// 	if tx.tx == nil {
+// 		return ErrTxDone
+// 	}
 
-	tx.l.wLock.Unlock()
-	tx.DB.bucket = nil
+// 	err := tx.tx.Rollback()
+// 	tx.data.Reset()
+// 	tx.tx = nil
 
-	return err
-}
+// 	tx.l.wLock.Unlock()
+// 	tx.DB.bucket = nil
 
-func (tx *Tx) newBatch() *batch {
-	return tx.l.newBatch(tx.tx.NewWriteBatch(), &txBatchLocker{}, tx)
-}
+// 	return err
+// }
 
-func (tx *Tx) Select(index int) error {
-	if index < 0 || index >= int(tx.l.cfg.Databases) {
-		return fmt.Errorf("invalid db index %d", index)
-	}
+// func (tx *Tx) newBatch() *batch {
+// 	return tx.l.newBatch(tx.tx.NewWriteBatch(), &txBatchLocker{}, tx)
+// }
 
-	tx.DB.index = uint8(index)
-	return nil
-}
+// func (tx *Tx) Select(index int) error {
+// 	if index < 0 || index >= int(tx.l.cfg.Databases) {
+// 		return fmt.Errorf("invalid db index %d", index)
+// 	}
+
+// 	tx.DB.index = uint8(index)
+// 	return nil
+// }

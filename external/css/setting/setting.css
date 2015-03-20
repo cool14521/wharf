@@ -86,3 +86,7 @@
 .progress {
   margin-top: 20px;
 }
+
+.tt-hint {
+  display: none;
+}

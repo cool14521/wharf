@@ -65,7 +65,7 @@ func (this *PingAPIV2Controller) GetPing() {
 		beego.Info("[REGISTRY API V2]", username, "authorization successfully")
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_APIV2, user.UUID, memo); err != nil {
+		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_APIV2, user.Id, memo); err != nil {
 			beego.Error("[REGISTRY API V2] Log Erro:", err.Error())
 		}
 

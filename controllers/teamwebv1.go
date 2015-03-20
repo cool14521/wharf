@@ -23,7 +23,7 @@ func (this *TeamWebV1Controller) URLMapping() {
 
 func (this *TeamWebV1Controller) Prepare() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist {
-		user.GetByUUID(user.UUID)
+		user.GetById(user.Id)
 		this.Ctx.Input.CruSession.Set("user", user)
 	}
 
@@ -31,10 +31,9 @@ func (this *TeamWebV1Controller) Prepare() {
 }
 
 func (this *TeamWebV1Controller) PostTeam() {
-
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if exist != true {
 
+	if exist != true {
 		beego.Error("[WEB API V1] Load session failure")
 
 		result := map[string]string{"message": "Session load failure", "url": "/auth"}
@@ -43,7 +42,6 @@ func (this *TeamWebV1Controller) PostTeam() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		return
-
 	}
 
 	var team models.Team
@@ -57,52 +55,35 @@ func (this *TeamWebV1Controller) PostTeam() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		return
-
 	}
 
 	beego.Info("[Web API V1] Add team successfully: ", string(this.Ctx.Input.CopyBody()))
 
-	team.UUID = string(utils.GeneralKey(team.Team))
-	team.Username = user.Username
-
 	org := new(models.Organization)
 
-	if exist, _, _ := org.Has(team.Organization); exist {
-		org.Teams = append(org.Teams, team.UUID)
-	}
-
-	if err := org.Save(); err != nil {
-		beego.Error("[WEB API V1] team save error:", err.Error())
-
-		result := map[string]string{"message": "team save error."}
+	if exist, _, err := org.Has(team.Organization); err != nil {
+		beego.Error("[WEB API V1] Organization singup error: ", err.Error())
+		result := map[string]string{"message": err.Error()}
 		this.Data["json"] = result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		return
+	} else if exist == false {
+		beego.Error("[WEB API V1] Organization don't exist:", user.Username)
+
+		result := map[string]string{"message": "Organization don't exist."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	} else if exist == true {
 	}
 
-	usersUUID := make([]string, 0)
-	for _, username := range team.Users {
-		user := new(models.User)
-		if _, UUID, err := user.Has(username); len(string(UUID)) > 0 && err == nil {
-			usersUUID = append(usersUUID, string(UUID))
-
-			user.JoinOrganizations = append(user.JoinOrganizations, org.UUID)
-			user.JoinTeams = append(user.JoinTeams, team.UUID)
-			if len(user.Gravatar) == 0 {
-				user.Gravatar = "/static/images/default_user.jpg"
-			}
-			if err := user.Save(); err != nil {
-				beego.Error("[WEB API V1] user save error:", err.Error())
-			}
-		} else {
-			beego.Error("[WEB API]User found err,err:=", err.Error())
-			continue
-		}
-	}
-
-	team.Users = usersUUID
+	team.Id = string(utils.GeneralKey(team.Name))
+	team.Username = user.Username
+	team.Users = append(team.Users, user.Id)
 
 	if err := team.Save(); err != nil {
 		beego.Error("[WEB API V1] Team save error:", err.Error())
@@ -115,7 +96,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 		return
 	}
 
-	user.Teams = append(user.Teams, team.UUID)
+	user.Teams = append(user.Teams, team.Id)
 
 	if err := user.Save(); err != nil {
 		beego.Error("[WEB API V1] User save error:", err.Error())
@@ -128,14 +109,28 @@ func (this *TeamWebV1Controller) PostTeam() {
 		return
 	}
 
+	org.Teams = append(org.Teams, team.Name)
+
+	if err := org.Save(); err != nil {
+		beego.Error("[WEB API V1] team save error:", err.Error())
+
+		result := map[string]string{"message": "team save error."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := team.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
+	if err := team.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
-	if err := user.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, team.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, team.Id, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
+	//Reload User Data In Session
 	user.Get(user.Username, user.Password)
 	this.Ctx.Input.CruSession.Set("user", user)
 
@@ -183,15 +178,15 @@ func (this *TeamWebV1Controller) GetTeams() {
 			continue
 		}
 
-		if team.Organization != org.Organization {
+		if team.Organization != org.Name {
 			continue
 		}
 
 		userObjects := make([]models.User, 0)
-		for _, userUUID := range team.Users {
+		for _, id := range team.Users {
 			user := new(models.User)
-			if err := user.GetByUUID(userUUID); err != nil {
-				beego.Error("[WEB API] user load failure,uuid=", userUUID, err.Error())
+			if err := user.GetById(id); err != nil {
+				beego.Error("[WEB API] user load failure,uuid=", id, err.Error())
 				continue
 			}
 			userObjects = append(userObjects, *user)
@@ -240,7 +235,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 	repoUUID := repo["repoUUID"].(string)
 
 	privilegeObj := new(models.Privilege)
-	privilegeObj.UUID = string(utils.GeneralKey(uuid.NewV4().String()))
+	privilegeObj.Id = string(utils.GeneralKey(uuid.NewV4().String()))
 	privilegeObj.Privilege = privilege
 	privilegeObj.Team = teamUUID
 	privilegeObj.Repository = repoUUID
@@ -267,7 +262,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 		return
 	}
 	team.Repositories = append(team.Repositories, repoUUID)
-	team.TeamPrivileges = append(team.TeamPrivileges, privilegeObj.UUID)
+	team.TeamPrivileges = append(team.TeamPrivileges, privilegeObj.Id)
 
 	if err := team.Save(); err != nil {
 		beego.Error("[WEB API V1] Team save error:", err.Error())
@@ -280,7 +275,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := team.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, team.UUID, memo); err != nil {
+	if err := team.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, team.Id, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
@@ -306,10 +301,10 @@ func (this *TeamWebV1Controller) GetTeam() {
 	}
 
 	userObjects := make([]models.User, 0)
-	for _, userUUID := range team.Users {
+	for _, id := range team.Users {
 		user := new(models.User)
-		if err := user.GetByUUID(userUUID); err != nil {
-			beego.Error("[WEB API] user load failure,uuid=", userUUID, err.Error())
+		if err := user.GetById(id); err != nil {
+			beego.Error("[WEB API] user load failure,uuid=", id, err.Error())
 			continue
 		}
 		userObjects = append(userObjects, *user)
@@ -378,12 +373,12 @@ func (this *TeamWebV1Controller) PutTeam() {
 		this.ServeJson()
 		return
 	} else {
-		for _, userUUID := range teamOld.Users {
+		for _, id := range teamOld.Users {
 			user := new(models.User)
-			if err := user.GetByUUID(userUUID); err == nil {
+			if err := user.GetById(id); err == nil {
 				joinOrganizations := make([]string, 0)
 				for _, joinOrganization := range user.JoinOrganizations {
-					if joinOrganization == org.UUID {
+					if joinOrganization == org.Id {
 						continue
 					}
 					joinOrganizations = append(joinOrganizations, joinOrganization)
@@ -391,7 +386,7 @@ func (this *TeamWebV1Controller) PutTeam() {
 
 				joinTeams := make([]string, 0)
 				for _, joinTeam := range user.JoinTeams {
-					if joinTeam == teamOld.UUID {
+					if joinTeam == teamOld.Id {
 						continue
 					}
 					joinTeams = append(joinTeams, joinTeam)
@@ -415,8 +410,8 @@ func (this *TeamWebV1Controller) PutTeam() {
 		if _, UUID, err := user.Has(username); len(string(UUID)) > 0 && err == nil {
 			usersUUID = append(usersUUID, string(UUID))
 
-			user.JoinOrganizations = append(user.JoinOrganizations, org.UUID)
-			user.JoinTeams = append(user.JoinTeams, team.UUID)
+			user.JoinOrganizations = append(user.JoinOrganizations, org.Id)
+			user.JoinTeams = append(user.JoinTeams, team.Id)
 			if len(user.Gravatar) == 0 {
 				user.Gravatar = "/static/images/default_user.jpg"
 			}
@@ -429,7 +424,7 @@ func (this *TeamWebV1Controller) PutTeam() {
 		}
 	}
 
-	team.UUID = teamOld.UUID
+	team.Id = teamOld.Id
 	team.Username = teamOld.Username
 	team.Users = usersUUID
 	team.TeamPrivileges = teamOld.TeamPrivileges

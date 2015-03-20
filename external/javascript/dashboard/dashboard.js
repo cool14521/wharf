@@ -232,16 +232,18 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
   $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
 
   $scope.submit = function() {
-    $http.post('/w1/organization', $scope.organization)
-      .success(function(data, status, headers, config) {
-        growl.info(data.message);
-        $timeout(function() {
-          $window.location.href = '/setting#/' + $scope.organization.organization + '/team/add';
-        }, 3000);
-      })
-      .error(function(data, status, headers, config) {
-        growl.error(data.message);
-      });
+    if($scope.orgForm.$valid){
+      $http.post('/w1/organization', $scope.organization)
+        .success(function(data, status, headers, config) {
+          growl.info(data.message);
+          $timeout(function() {
+            $window.location.href = '/setting#/' + $scope.organization.organization + '/team/add';
+          }, 3000);
+        })
+        .error(function(data, status, headers, config) {
+          growl.error(data.message);
+        });
+    }
   }
 }])
 .controller('OrganizationListCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {

@@ -6,7 +6,7 @@ import (
 )
 
 type User struct {
-	UUID              string       `json:"UUID"`              //
+	Id                string       `json:"id"`                //
 	Username          string       `json:"username"`          //
 	Password          string       `json:"password"`          //
 	Email             string       `json:"email"`             //
@@ -30,23 +30,23 @@ type User struct {
 }
 
 func (user *User) Has(username string) (bool, []byte, error) {
-	uuid, err := GetUUID("user", username)
+	id, err := GetId("user", username)
 
 	if err != nil {
 		return false, nil, err
 	}
 
-	if len(uuid) <= 0 {
+	if len(id) <= 0 {
 		return false, nil, nil
 	}
 
-	err = Get(user, uuid)
+	err = Get(user, id)
 
-	return true, uuid, err
+	return true, id, err
 }
 
-func (user *User) GetByUUID(uuid string) error {
-	if err := Get(user, []byte(uuid)); err != nil {
+func (user *User) GetById(id string) error {
+	if err := Get(user, []byte(id)); err != nil {
 		return err
 	}
 	return nil
@@ -67,11 +67,11 @@ func (user *User) Save() error {
 		return fmt.Errorf("Email illegal")
 	}
 
-	if err := Save(user, []byte(user.UUID)); err != nil {
+	if err := Save(user, []byte(user.Id)); err != nil {
 		return err
 	}
 
-	if _, err := LedisDB.HSet([]byte(GLOBAL_USER_INDEX), []byte(user.Username), []byte(user.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(GLOBAL_USER_INDEX), []byte(user.Username), []byte(user.Id)); err != nil {
 		return err
 	}
 
@@ -79,7 +79,7 @@ func (user *User) Save() error {
 }
 
 func (user *User) Remove() error {
-	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_USER_INDEX)), []byte(user.Username), []byte(user.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_USER_INDEX)), []byte(user.Username), []byte(user.Id)); err != nil {
 		return err
 	}
 
@@ -91,12 +91,12 @@ func (user *User) Remove() error {
 }
 
 func (user *User) Get(username, password string) error {
-	if exist, UUID, err := user.Has(username); err != nil {
+	if exist, id, err := user.Has(username); err != nil {
 		return err
 	} else if exist == false && err == nil {
 		return fmt.Errorf("User is not exist: %s", username)
 	} else if exist == true && err == nil {
-		if err := Get(user, UUID); err != nil {
+		if err := Get(user, id); err != nil {
 			return err
 		} else {
 			if user.Password != password {
@@ -117,11 +117,11 @@ func (user *User) Orgs(username string) (map[string]string, error) {
 	} else if exist == false && err == nil {
 		return nil, fmt.Errorf("User is not exist: %s", username)
 	} else if exist == true && err == nil {
-		for _, uuid := range user.Organizations {
+		for _, id := range user.Organizations {
 			var org Organization
 
-			if err := org.Get(uuid); err == nil {
-				result[org.Organization] = org.UUID
+			if err := org.Get(id); err == nil {
+				result[org.Name] = org.Id
 			}
 		}
 	}

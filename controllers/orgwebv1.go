@@ -24,7 +24,7 @@ func (this *OrganizationWebV1Controller) URLMapping() {
 
 func (this *OrganizationWebV1Controller) Prepare() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist {
-		user.GetByUUID(user.UUID)
+		user.GetById(user.Id)
 		this.Ctx.Input.CruSession.Set("user", user)
 	}
 
@@ -61,9 +61,47 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 		return
 	}
 
+	if exist, _, err := user.Has(org.Name); err != nil {
+		beego.Error("[WEB API V1] Organization singup error: ", err.Error())
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	} else if exist == true {
+		beego.Error("[WEB API V1] Organization already exist:", user.Username)
+
+		result := map[string]string{"message": "Namespace is occupation already by another user."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
+	if exist, _, err := org.Has(org.Name); err != nil {
+		beego.Error("[WEB API V1] Organization singup error: ", err.Error())
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	} else if exist == true {
+		beego.Error("[WEB API V1] Organization already exist:", user.Username)
+
+		result := map[string]string{"message": "Namespace is occupation already by another organization."}
+		this.Data["json"] = result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
 	beego.Debug("[WEB API V1] organization create: %s", string(this.Ctx.Input.CopyBody()))
 
-	org.UUID = string(utils.GeneralKey(org.Organization))
+	org.Id = string(utils.GeneralKey(org.Name))
 
 	org.Username = user.Username
 	org.Created = time.Now().UnixNano() / int64(time.Millisecond)
@@ -79,7 +117,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 		return
 	}
 
-	user.Organizations = append(user.Organizations, org.UUID)
+	user.Organizations = append(user.Organizations, org.Id)
 	user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
 	if err := user.Save(); err != nil {
 		beego.Error("[WEB API V1] User save error:", err.Error())
@@ -93,10 +131,10 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.Id, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
-	if err := org.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
+	if err := org.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
@@ -155,10 +193,10 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 		}
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.UUID, memo); err != nil {
+		if err := user.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.Id, memo); err != nil {
 			beego.Error("[WEB API V1] Log Erro:", err.Error())
 		}
-		if err := org.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
+		if err := org.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
 			beego.Error("[WEB API V1] Log Erro:", err.Error())
 		}
 
@@ -184,8 +222,8 @@ func (this *OrganizationWebV1Controller) GetOrganizations() {
 	} else {
 		organizations := make([]models.Organization, len(user.Organizations))
 
-		for i, UUID := range user.Organizations {
-			if err := organizations[i].Get(UUID); err != nil {
+		for i, Id := range user.Organizations {
+			if err := organizations[i].Get(Id); err != nil {
 				beego.Error("[WEB API V1] Get organizations error:", err.Error())
 
 				result := map[string]string{"message": "Get organizations error."}
@@ -266,9 +304,9 @@ func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
 
 	repositories := make([]models.Repository, 0)
 
-	for _, repositoryUUID := range org.Repositories {
+	for _, repositoryId := range org.Repositories {
 		repository := new(models.Repository)
-		if err := repository.Get(repositoryUUID); err != nil {
+		if err := repository.Get(repositoryId); err != nil {
 			continue
 		}
 		repositories = append(repositories, *repository)

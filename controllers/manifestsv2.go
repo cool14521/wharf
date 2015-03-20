@@ -75,7 +75,7 @@ func (this *ManifestsAPIV2Controller) GetTags() {
 
 	for _, value := range repo.Tags {
 		t := new(models.Tag)
-		if err := t.GetByUUID(value); err != nil {
+		if err := t.GetById(value); err != nil {
 			result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeTagInvalid]}}
 			this.Data["json"] = &result
 
@@ -101,7 +101,7 @@ func (this *ManifestsAPIV2Controller) GetManifests() {
 	tag := this.Ctx.Input.Param(":tag")
 
 	t := new(models.Tag)
-	if err := t.GetByUUID(fmt.Sprintf("%s:%s:%s", namespace, repository, tag)); err != nil {
+	if err := t.GetById(fmt.Sprintf("%s:%s:%s", namespace, repository, tag)); err != nil {
 		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeTagInvalid]}}
 		this.Data["json"] = &result
 

@@ -12,7 +12,7 @@ import (
 )
 
 type Image struct {
-	UUID       string   `json:"UUID"`       //
+	Id         string   `json:"id"`         //
 	ImageId    string   `json:"imageid"`    //
 	JSON       string   `json:"json"`       //
 	Ancestry   string   `json:"ancestry"`   //
@@ -33,47 +33,47 @@ type Image struct {
 }
 
 func (i *Image) Has(image string) (bool, []byte, error) {
-	UUID, err := GetUUID("image", image)
+	id, err := GetId("image", image)
 	if err != nil {
 		return false, nil, err
 	}
-	if len(UUID) <= 0 {
+	if len(id) <= 0 {
 		return false, nil, nil
 	}
 
-	err = Get(i, UUID)
+	err = Get(i, id)
 
-	return true, UUID, err
+	return true, id, err
 }
 
 func (i *Image) HasTarsum(tarsum string) (bool, []byte, error) {
-	UUID, err := GetUUID("tarsum", tarsum)
+	id, err := GetId("tarsum", tarsum)
 	if err != nil {
 		return false, nil, err
 	}
-	if len(UUID) <= 0 {
+	if len(id) <= 0 {
 		return false, nil, nil
 	}
 
-	err = Get(i, UUID)
+	err = Get(i, id)
 
-	return true, UUID, err
+	return true, id, err
 }
 
 func (i *Image) Save() error {
-	if err := Save(i, []byte(i.UUID)); err != nil {
+	if err := Save(i, []byte(i.Id)); err != nil {
 		return err
 	}
 
-	if _, err := LedisDB.HSet([]byte(GLOBAL_IMAGE_INDEX), []byte(i.ImageId), []byte(i.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(GLOBAL_IMAGE_INDEX), []byte(i.ImageId), []byte(i.Id)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (i *Image) Get(UUID string) error {
-	if err := Get(i, []byte(UUID)); err != nil {
+func (i *Image) Get(id string) error {
+	if err := Get(i, []byte(id)); err != nil {
 		return err
 	}
 
@@ -81,11 +81,11 @@ func (i *Image) Get(UUID string) error {
 }
 
 func (i *Image) Remove() (err error) {
-	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_IMAGE_INDEX)), []byte(i.ImageId), []byte(i.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(fmt.Sprintf("%s_remove", GLOBAL_IMAGE_INDEX)), []byte(i.ImageId), []byte(i.Id)); err != nil {
 		return err
 	}
 
-	if _, err := LedisDB.HDel([]byte(GLOBAL_IMAGE_INDEX), []byte(i.UUID)); err != nil {
+	if _, err := LedisDB.HDel([]byte(GLOBAL_IMAGE_INDEX), []byte(i.Id)); err != nil {
 		return err
 	}
 
@@ -133,7 +133,7 @@ func (i *Image) PutJSON(imageId, json string, version int64) error {
 		return err
 	} else if has == false {
 		i.ImageId = imageId
-		i.UUID = string(utils.GeneralKey(uuid.NewV4().String()))
+		i.Id = string(utils.GeneralKey(uuid.NewV4().String()))
 		i.JSON = json
 		i.Created = time.Now().UnixNano() / int64(time.Millisecond)
 		i.Version = version
@@ -195,7 +195,7 @@ func (i *Image) PutChecksum(imageId string, checksum string, checksumed bool, pa
 		}
 
 		//Add checksum for V2 image index
-		if _, err := LedisDB.HSet([]byte(GLOBAL_TARSUM_INDEX), []byte(checksum), []byte(i.UUID)); err != nil {
+		if _, err := LedisDB.HSet([]byte(GLOBAL_TARSUM_INDEX), []byte(checksum), []byte(i.Id)); err != nil {
 			return err
 		}
 

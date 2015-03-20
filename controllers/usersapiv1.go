@@ -67,7 +67,7 @@ func (this *UserAPIV1Controller) GetUsers() {
 		beego.Info("[REGISTRY API V1]", username, "authorization successfully")
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_APIV1, user.UUID, memo); err != nil {
+		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_APIV1, user.Id, memo); err != nil {
 			beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 		}
 

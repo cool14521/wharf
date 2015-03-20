@@ -18,7 +18,7 @@ type RepoWebAPIV1Controller struct {
 
 func (this *RepoWebAPIV1Controller) Prepare() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist {
-		user.GetByUUID(user.UUID)
+		user.GetById(user.Id)
 		this.Ctx.Input.CruSession.Set("user", user)
 	}
 
@@ -72,7 +72,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 			this.ServeJson()
 			return
 		} else {
-			repo.UUID = string(utils.GeneralKey(fmt.Sprint(repo.Namespace, repo.Repository)))
+			repo.Id = string(utils.GeneralKey(fmt.Sprint(repo.Namespace, repo.Repository)))
 			repo.Created = time.Now().UnixNano() / int64(time.Millisecond)
 			repo.Updated = repo.Created
 
@@ -89,7 +89,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 			if repo.NamespaceType {
 				org := new(models.Organization)
 				if exist, _, _ := org.Has(repo.Namespace); exist {
-					org.Repositories = append(org.Repositories, repo.UUID)
+					org.Repositories = append(org.Repositories, repo.Id)
 					if err := org.Save(); err != nil {
 						beego.Error("[WEB API V1] Repository save error:", err.Error())
 						result := map[string]string{"message": "Repository save error."}
@@ -101,7 +101,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 					}
 				}
 			} else {
-				user.Repositories = append(user.Repositories, repo.UUID)
+				user.Repositories = append(user.Repositories, repo.Id)
 				if err := user.Save(); err != nil {
 					beego.Error("[WEB API V1] Repository save error:", err.Error())
 					result := map[string]string{"message": "Repository save error."}
@@ -115,10 +115,10 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 			}
 
 			memo, _ := json.Marshal(this.Ctx.Input.Header)
-			if err := repo.Log(models.ACTION_ADD_REPO, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, repo.UUID, memo); err != nil {
+			if err := repo.Log(models.ACTION_ADD_REPO, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, repo.Id, memo); err != nil {
 				beego.Error("[WEB API V1] Log Erro:", err.Error())
 			}
-			if err := user.Log(models.ACTION_ADD_REPO, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
+			if err := user.Log(models.ACTION_ADD_REPO, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
 				beego.Error("[WEB API V1] Log Erro:", err.Error())
 			}
 

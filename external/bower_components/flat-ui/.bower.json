@@ -1,14 +1,13 @@
 {
   "name": "flat-ui",
-  "version": "2.2.2",
   "main": [
     "less/flat-ui.less",
     "dist/css/flat-ui.css",
     "dist/js/flat-ui.js",
-    "dist/fonts/flat-ui-icons-regular.eot",
-    "dist/fonts/flat-ui-icons-regular.svg",
-    "dist/fonts/flat-ui-icons-regular.ttf",
-    "dist/fonts/flat-ui-icons-regular.woff"
+    "dist/fonts/glyphicons/flat-ui-icons-regular.eot",
+    "dist/fonts/glyphicons/flat-ui-icons-regular.svg",
+    "dist/fonts/glyphicons/flat-ui-icons-regular.ttf",
+    "dist/fonts/glyphicons/flat-ui-icons-regular.woff"
   ],
   "ignore": [
     ".*"
@@ -34,13 +33,12 @@
     "jquery": "~1.11.1"
   },
   "homepage": "https://github.com/designmodo/Flat-UI",
-  "_release": "2.2.2",
+  "_release": "69bc0a26ce",
   "_resolution": {
-    "type": "version",
-    "tag": "2.2.2",
-    "commit": "2ab437f064bab6937c57a2756b78df07259f9094"
+    "type": "commit",
+    "commit": "69bc0a26ce2b05ea7899c8f5b28cc0ebda361df9"
   },
-  "_source": "git://github.com/designmodo/Flat-UI.git",
-  "_target": "*",
-  "_originalSource": "flat-ui"
+  "_source": "https://github.com/designmodo/Flat-UI.git",
+  "_target": "69bc0a26ce2b05ea7899c8f5b28cc0ebda361df9",
+  "_originalSource": "https://github.com/designmodo/Flat-UI.git"
 }

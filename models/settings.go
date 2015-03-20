@@ -58,17 +58,17 @@ const (
 )
 
 type Log struct {
-	UUID       string `json:"UUID"`       //
-	Action     int64  `json:"action"`     //
-	ActionUUID string `json:"actionuuid"` //
-	Level      int64  `json:"level"`      //
-	Type       int64  `json:"type"`       //
-	Content    string `json:"content"`    //
-	Created    int64  `json:"created"`    //
+	Id       string `json:"id"`       //
+	Action   int64  `json:"action"`   //
+	ActionId string `json:"actionid"` //
+	Level    int64  `json:"level"`    //
+	Type     int64  `json:"type"`     //
+	Content  string `json:"content"`  //
+	Created  int64  `json:"created"`  //
 }
 
 type EmailMessage struct {
-	UUID     string   `json:"UUID"`     //
+	Id       string   `json:"id"`       //
 	User     string   `json:"user"`     //
 	Server   string   `json:"server"`   //
 	Template string   `json:"template"` //
@@ -82,7 +82,7 @@ type EmailMessage struct {
 }
 
 type EmailServer struct {
-	UUID     string   `json:"UUID"`    //
+	Id       string   `json:"id"`      //
 	Name     string   `json:"name"`    //
 	Host     string   `json:"host"`    //
 	Port     int64    `json:"port"`    //
@@ -95,7 +95,7 @@ type EmailServer struct {
 }
 
 type EmailTemplate struct {
-	UUID    string   `json:"UUID"`    //
+	Id      string   `json:"id"`      //
 	Server  int64    `json:"server"`  //
 	Name    string   `json:"name"`    //
 	Content string   `json:"content"` //
@@ -104,37 +104,37 @@ type EmailTemplate struct {
 	Memo    []string `json:"memo"`    //
 }
 
-func (l *Log) Has(uuid string) (bool, []byte, error) {
-	if len(uuid) <= 0 {
+func (l *Log) Has(id string) (bool, []byte, error) {
+	if len(id) <= 0 {
 		return false, nil, nil
 	}
 
-	err := Get(l, []byte(uuid))
+	err := Get(l, []byte(id))
 
-	return true, []byte(uuid), err
+	return true, []byte(id), err
 }
 
 func (l *Log) Save() error {
-	if err := Save(l, []byte(l.UUID)); err != nil {
+	if err := Save(l, []byte(l.Id)); err != nil {
 		return err
 	}
 
-	if _, err := LedisDB.HSet([]byte(GLOBAL_LOG_INDEX), []byte(l.UUID), []byte(l.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(GLOBAL_LOG_INDEX), []byte(l.Id), []byte(l.Id)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (user *User) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (user *User) Log(action, level, t int64, actionID string, content []byte) error {
+	log := Log{Action: action, ActionId: actionID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionID))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	user.Memo = append(user.Memo, log.UUID)
+	user.Memo = append(user.Memo, log.Id)
 
 	if err := user.Save(); err != nil {
 		return err
@@ -143,15 +143,15 @@ func (user *User) Log(action, level, t int64, actionUUID string, content []byte)
 	return nil
 }
 
-func (admin *Admin) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (admin *Admin) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	admin.Memo = append(admin.Memo, log.UUID)
+	admin.Memo = append(admin.Memo, log.Id)
 
 	if err := admin.Save(); err != nil {
 		return err
@@ -160,15 +160,15 @@ func (admin *Admin) Log(action, level, t int64, actionUUID string, content []byt
 	return nil
 }
 
-func (org *Organization) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (org *Organization) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	org.Memo = append(org.Memo, log.UUID)
+	org.Memo = append(org.Memo, log.Id)
 
 	if err := org.Save(); err != nil {
 		return err
@@ -177,15 +177,15 @@ func (org *Organization) Log(action, level, t int64, actionUUID string, content 
 	return nil
 }
 
-func (team *Team) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (team *Team) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	team.Memo = append(team.Memo, log.UUID)
+	team.Memo = append(team.Memo, log.Id)
 
 	if err := team.Save(); err != nil {
 		return err
@@ -194,15 +194,15 @@ func (team *Team) Log(action, level, t int64, actionUUID string, content []byte)
 	return nil
 }
 
-func (repo *Repository) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (repo *Repository) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	repo.Memo = append(repo.Memo, log.UUID)
+	repo.Memo = append(repo.Memo, log.Id)
 
 	if err := repo.Save(); err != nil {
 		return err
@@ -211,15 +211,15 @@ func (repo *Repository) Log(action, level, t int64, actionUUID string, content [
 	return nil
 }
 
-func (compose *Compose) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (compose *Compose) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	compose.Memo = append(compose.Memo, log.UUID)
+	compose.Memo = append(compose.Memo, log.Id)
 
 	if err := compose.Save(); err != nil {
 		return err
@@ -228,15 +228,15 @@ func (compose *Compose) Log(action, level, t int64, actionUUID string, content [
 	return nil
 }
 
-func (image *Image) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (image *Image) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	image.Memo = append(image.Memo, log.UUID)
+	image.Memo = append(image.Memo, log.Id)
 
 	if err := image.Save(); err != nil {
 		return err
@@ -245,15 +245,15 @@ func (image *Image) Log(action, level, t int64, actionUUID string, content []byt
 	return nil
 }
 
-func (star *Star) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (star *Star) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	star.Memo = append(star.Memo, log.UUID)
+	star.Memo = append(star.Memo, log.Id)
 
 	if err := star.Save(); err != nil {
 		return err
@@ -262,15 +262,15 @@ func (star *Star) Log(action, level, t int64, actionUUID string, content []byte)
 	return nil
 }
 
-func (comment *Comment) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (comment *Comment) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	comment.Memo = append(comment.Memo, log.UUID)
+	comment.Memo = append(comment.Memo, log.Id)
 
 	if err := comment.Save(); err != nil {
 		return err
@@ -279,15 +279,15 @@ func (comment *Comment) Log(action, level, t int64, actionUUID string, content [
 	return nil
 }
 
-func (p *Privilege) Log(action, level, t int64, actionUUID string, content []byte) error {
-	log := Log{Action: action, ActionUUID: actionUUID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
-	log.UUID = string(utils.GeneralKey(actionUUID))
+func (p *Privilege) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
 
 	if err := log.Save(); err != nil {
 		return err
 	}
 
-	p.Memo = append(p.Memo, log.UUID)
+	p.Memo = append(p.Memo, log.Id)
 
 	if err := p.Save(); err != nil {
 		return err

@@ -5,7 +5,7 @@ import (
 )
 
 type Compose struct {
-	UUID          string   `json:"UUID"`          //
+	Id            string   `json:"id"`            //
 	Compose       string   `json:"compose"`       //
 	Namespace     string   `json:"namespace"`     //
 	NamespaceType bool     `json:"namespacetype"` //
@@ -26,27 +26,27 @@ type Compose struct {
 
 func (c *Compose) Has(namespace, compose string) (bool, []byte, error) {
 
-	UUID, err := GetUUID("compose", fmt.Sprintf("%s:%s", namespace, compose))
+	id, err := GetId("compose", fmt.Sprintf("%s:%s", namespace, compose))
 
 	if err != nil {
 		return false, nil, err
 	}
 
-	if len(UUID) <= 0 {
+	if len(id) <= 0 {
 		return false, nil, nil
 	}
 
-	err = Get(c, UUID)
+	err = Get(c, id)
 
-	return true, UUID, err
+	return true, id, err
 }
 
 func (c *Compose) Save() error {
-	if err := Save(c, []byte(c.UUID)); err != nil {
+	if err := Save(c, []byte(c.Id)); err != nil {
 		return err
 	}
 
-	if _, err := LedisDB.HSet([]byte(GLOBAL_COMPOSE_INDEX), []byte(fmt.Sprintf("%s:%s", c.Namespace, c.Compose)), []byte(c.UUID)); err != nil {
+	if _, err := LedisDB.HSet([]byte(GLOBAL_COMPOSE_INDEX), []byte(fmt.Sprintf("%s:%s", c.Namespace, c.Compose)), []byte(c.Id)); err != nil {
 		return err
 	}
 

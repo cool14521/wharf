@@ -36,7 +36,7 @@ func (this *UserWebAPIV1Controller) URLMapping() {
 
 func (this *UserWebAPIV1Controller) Prepare() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
-		user.GetByUUID(user.UUID)
+		user.GetById(user.Id)
 		this.Ctx.Input.CruSession.Set("user", user)
 	}
 
@@ -134,7 +134,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 		}
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
+		if err := user.Log(models.ACTION_SIGNIN, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
 			beego.Error("[WEB API V1] Log Erro:", err.Error())
 		}
 
@@ -152,6 +152,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 func (this *UserWebAPIV1Controller) Signup() {
 	var user models.User
+	var org models.Organization
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
 		beego.Error("[WEB API V1] Unmarshal user signup data error:", err.Error())
@@ -164,6 +165,25 @@ func (this *UserWebAPIV1Controller) Signup() {
 		return
 	} else {
 		beego.Debug("[WEB API V1] User signup:", string(this.Ctx.Input.CopyBody()))
+
+		if exist, _, err := org.Has(user.Username); err != nil {
+			beego.Error("[WEB API V1] User singup error: ", err.Error())
+			result := map[string]string{"message": err.Error()}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+			return
+		} else if exist == true {
+			beego.Error("[WEB API V1] Organization already exist:", user.Username)
+
+			result := map[string]string{"message": "Namespace is occupation already by organization."}
+			this.Data["json"] = result
+
+			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+			this.ServeJson()
+			return
+		}
 
 		if exist, _, err := user.Has(user.Username); err != nil {
 			beego.Error("[WEB API V1] User singup error: ", err.Error())
@@ -183,7 +203,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			this.ServeJson()
 			return
 		} else {
-			user.UUID = string(utils.GeneralKey(user.Username))
+			user.Id = string(utils.GeneralKey(user.Username))
 			user.Created = time.Now().UnixNano() / int64(time.Millisecond)
 
 			if err := user.Save(); err != nil {
@@ -197,7 +217,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			}
 
 			memo, _ := json.Marshal(this.Ctx.Input.Header)
-			if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
+			if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
 				beego.Error("[WEB API V1] Log Erro:", err.Error())
 			}
 
@@ -404,7 +424,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	this.Ctx.Input.CruSession.Set("user", user)
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_UPDATE_PROFILE, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_UPDATE_PROFILE, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
@@ -460,7 +480,7 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_UPDATE_PASSWORD, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.UUID, memo); err != nil {
+	if err := user.Log(models.ACTION_UPDATE_PASSWORD, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
