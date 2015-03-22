@@ -19,6 +19,7 @@ type Compose struct {
 	Download      int64    `json:"download"`      //
 	Icon          string   `json:"icon"`          //
 	Privated      bool     `json:"privated"`      //
+	Permissions   []string `json:"permissions"`   //
 	Created       int64    `json:"created"`       //
 	Updated       int64    `json:"updated"`       //
 	Memo          []string `json:"memo"`          //

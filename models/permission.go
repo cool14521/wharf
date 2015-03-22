@@ -5,11 +5,13 @@ import (
 )
 
 type Permission struct {
-	Id     string   `json:"id"`     //
-	Write  bool     `json:"write"`  //
-	Team   string   `json:"team"`   //
-	Object string   `json:"object"` //
-	Memo   []string `json:"memo"`   //
+	Id           string   `json:"id"`           //
+	Write        bool     `json:"write"`        //
+	User         string   `json:"user"`         //
+	Organization string   `json:"organization"` //
+	Team         string   `json:"team"`         //
+	Object       string   `json:"object"`       //
+	Memo         []string `json:"memo"`         //
 }
 
 func (p *Permission) Get(id string) error {
