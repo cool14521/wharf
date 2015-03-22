@@ -159,7 +159,7 @@ func (this *RepoWebAPIV1Controller) GetRepositories() {
 
 	beego.Debug("[WEB API V1] ", user.Username, " Repositories: ", repositories)
 
-	user.RepositoryObjects = repositories
+	//Repositories object to User
 	this.Data["json"] = &user
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)

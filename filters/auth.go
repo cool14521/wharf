@@ -161,7 +161,7 @@ func checkOrgRepositoryPermission(user *models.User, namespace, repository strin
 	for _, k := range user.JoinTeams {
 		team := new(models.Team)
 
-		if err := team.Get(k); err != nil {
+		if err := team.GetById(k); err != nil {
 			return false
 		}
 
