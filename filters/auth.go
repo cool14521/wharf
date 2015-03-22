@@ -166,17 +166,17 @@ func checkOrgRepositoryPermission(user *models.User, namespace, repository strin
 		}
 
 		//Loop Team Privileges
-		for _, v := range team.TeamPrivileges {
-			p := new(models.Privilege)
+		for _, v := range team.Permissions {
+			p := new(models.Permission)
 			if err := p.Get(v); err != nil {
 				return false
 			}
 
 			//Got User Team Privilege
-			if p.Repository == repo.Id {
-				if p.Privilege == true {
+			if p.Object == repo.Id {
+				if p.Write == true {
 					return true
-				} else if p.Privilege == false && permission == PERMISSION_READ {
+				} else if p.Write == false && permission == PERMISSION_READ {
 					return true
 				} else {
 					return false

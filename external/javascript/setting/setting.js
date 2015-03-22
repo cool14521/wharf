@@ -17,7 +17,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 .controller('SettingProfileCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', function($scope, $cookies, $http, growl, $location, $timeout, $upload) {
   $scope.progress = 0;
 
-  //init user info
   $http.get('/w1/profile')
     .success(function(data, status, headers, config) {
       $scope.user = data;
@@ -98,6 +97,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 
   $scope.submit = function(){}
 }])
+//Organization Edit
 .controller('SettingOrganizationCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
   $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
 
@@ -119,111 +119,103 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
       });
   }
 }])
+//Team List
 .controller('SettingTeamCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-  //get teams data
-  $scope.repositoryAdd = {};
-  $scope.repo = {};
+  $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+
   $http.get('/w1/' + $routeParams.org + '/teams')
     .success(function(data, status, headers, config) {
+      data.forEach(
+        function getTeam(value) {
+          value.profiles = [];
+          value.users.forEach(
+            function getUser(username){
+              $http.get('/w1/profile/' + username)
+                .success(function(profile, status, headers, config) {
+                  value.profiles.push({url: '/u/' + profile.username, gravatar: profile.gravatar});
+                })
+                .error(function(profile, status, headers, config) {
+                  growl.error(profile.message);
+                });
+            }
+          );
+        }
+      );
+
       $scope.teams = data;
     })
-  .error(function(data, status, headers, config) {
-    $timeout(function() {
-      alert(data.message);
-    }, 3000);
-  });
+    .error(function(data, status, headers, config) {
+      growl.error(data.message);
+    });
 
-  $scope.createTeam = function() {
+  $scope.create = function() {
     $window.location.href = '/setting#/' + $routeParams.org + '/team/add';
   }
 
-  $scope.editTeam = function(teamUUID) {
-    $window.location.href = '/setting#/team/' + teamUUID + '/edit';
+  $scope.edit = function(name) {
+    $window.location.href = '/setting#/team/' + name + '/edit';
   }
 }])
+//Team Edit And Add & Remove Users
 .controller('SettingTeamEditCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-  var availableTags = [];
+  $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
+  $scope.users = [];
+  $scope.team = {};
+  $scope.team.organization = $routeParams.org;
+
   //get team data
-  $http.get('/w1/team/' + $routeParams.teamUUID)
+  $http.get('/w1/' + $routeParams.org + '/team/' + $routeParams.team)
     .success(function(data, status, headers, config) {
       $scope.team = data;
-      var usernames = [];
-      for (var i = 0; i < $scope.team.userobjects.length; i++) {
-        usernames.push($scope.team.userobjects[i].username);
+      for(var i = 0; i < data.users.length; i++){
+
+        $http.get('/w1/profile/' + data.users[i])
+          .success(function(profile, status, headers, config) {
+            $scope.users.push({
+              url: '/u/' + profile.username,
+              username: profile.username,
+              gravatar: profile.gravatar,
+              name: profile.fullname
+            });
+          })
+          .error(function(profile, status, headers, config) {
+            growl.error(profile.message);
+          });
       }
-      $scope.team.users = usernames;
     })
-  .error(function(data, status, headers, config) {
-    growl.error(data.message);
-  });
+    .error(function(data, status, headers, config) {
+      growl.error(data.message);
+    });
 
   $http.get('/w1/users')
     .success(function(data, status, headers, config) {
-      $scope.allUser = data;
-      for (var i = 0; i < $scope.allUser.length; i++) {
-        availableTags.push($scope.allUser[i].username);
-      }
+      var users = new Bloodhound({
+        datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.username); },
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        limit: 10,
+        local: data
+      });
+
+      users.initialize();
+
+      $('input.typeahead-only').typeahead(null, {
+        name: 'states',
+        displayKey: 'username',
+        source: users.ttAdapter()
+      });
     })
-  .error(function(data, status, headers, config) {
-    growl.error(data.message);
-    return
-  });
-  $("#tags").autocomplete({
-    source: availableTags
-  });
+    .error(function(data, status, headers, config) {
+      growl.error(data.message);
+    });
 
-  $scope.addUserFunc = function() {
-    $scope.findUser = {}
-    $scope.findUser.username = document.getElementById("tags").value;
-
-    //adjust user already add
-    for (var i = 0; i < $scope.team.userobjects.length; i++) {
-      if ($scope.team.userobjects[i].username == document.getElementById("tags").value) {
-        growl.error("user already exist!");
-        $('#myModal').modal('toggle');
-        return;
-      }
-    }
-    $scope.team.users.push($scope.findUser.username);
-    $scope.team.userobjects.push($scope.findUser);
-    $('#myModal').modal('toggle');
-    return
-  }
-
-  $scope.removeUser = function(username) {
-    var userUUIDSNew = [];
-    var usersNew = [];
-    for (var i = 0; i < $scope.team.userobjects.length; i++) {
-      if ($scope.team.userobjects[i].username == username) {
-        continue;
-      }
-      userUUIDSNew.push($scope.team.userobjects[i].username);
-      usersNew.push($scope.team.userobjects[i]);
-    }
-    $scope.team.users = userUUIDSNew;
-    $scope.team.userobjects = usersNew;
-    return
+  $scope.add = function() {
+    var user = document.getElementsByName("finding")[0].value;
   }
 
   $scope.submit = function() {
 
-    if ($scope.team.users.length == 0) {
-      growl.error("Team must have members!");
-      return
-    }
-
-    $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-    $http.put('/w1/team/' + $routeParams.teamUUID, $scope.team)
-      .success(function(data, status, headers, config) {
-        $scope.submitting = true;
-        growl.info(data.message);
-      })
-    .error(function(data, status, headers, config) {
-      $scope.submitting = false;
-      growl.error(data.message);
-    });
-
   }
+
 }])
 .controller('SettingTeamAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
   $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
@@ -233,6 +225,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 
   $scope.submit = function() {
     if ($scope.teamForm.$valid){
+      console.log($scope.team);
       $http.post('/w1/team', $scope.team)
         .success(function(data, status, headers, config) {
           $scope.submitting = true;
@@ -348,7 +341,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
     templateUrl: '/static/views/setting/teamadd.html',
     controller: 'SettingTeamAddCtrl'
   })
-  .when('/team/:teamUUID/edit', {
+  .when('/:org/team/:team', {
     templateUrl: '/static/views/setting/teamedit.html',
     controller: 'SettingTeamEditCtrl'
   })
@@ -443,4 +436,17 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
       }
     }
   };
-}]);
+}])
+.directive('ngEnter', function () {
+  return function (scope, element, attrs) {
+    element.bind("keydown keypress", function (event) {
+      if(event.which === 13) {
+        scope.$apply(function (){
+          scope.$eval(attrs.ngEnter);
+        });
+
+        event.preventDefault();
+      }
+    });
+  };
+});;

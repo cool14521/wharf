@@ -81,7 +81,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 	}
 
 	if exist, _, err := org.Has(org.Name); err != nil {
-		beego.Error("[WEB API V1] Organization singup error: ", err.Error())
+		beego.Error("[WEB API V1] Organization create error: ", err.Error())
 		result := map[string]string{"message": err.Error()}
 		this.Data["json"] = result
 
@@ -99,13 +99,13 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 		return
 	}
 
-	beego.Debug("[WEB API V1] organization create: %s", string(this.Ctx.Input.CopyBody()))
+	beego.Debug("[WEB API V1] organization create:", string(this.Ctx.Input.CopyBody()))
 
 	org.Id = string(utils.GeneralKey(org.Name))
-
 	org.Username = user.Username
 	org.Created = time.Now().UnixNano() / int64(time.Millisecond)
 	org.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
 	if err := org.Save(); err != nil {
 		beego.Error("[WEB API V1] Organization save error:", err.Error())
 
@@ -117,8 +117,12 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 		return
 	}
 
-	user.Organizations = append(user.Organizations, org.Id)
+  beego.Debug("[WEB API V1] organization:", org)
+
+  user.Organizations = append(user.Organizations, org.Name)
+  user.JoinOrganizations = append(user.JoinOrganizations, org.Name)
 	user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
 	if err := user.Save(); err != nil {
 		beego.Error("[WEB API V1] User save error:", err.Error())
 
@@ -130,7 +134,9 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 		return
 	}
 
-	memo, _ := json.Marshal(this.Ctx.Input.Header)
+  beego.Debug("[WEB API V1] user:", user)
+
+  memo, _ := json.Marshal(this.Ctx.Input.Header)
 	if err := user.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.Id, memo); err != nil {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
@@ -138,6 +144,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
+  //Reload user data in session.
 	user.Get(user.Username, user.Password)
 	this.Ctx.Input.CruSession.Set("user", user)
 
@@ -220,10 +227,11 @@ func (this *OrganizationWebV1Controller) GetOrganizations() {
 		this.ServeJson()
 		return
 	} else {
-		organizations := make([]models.Organization, len(user.Organizations))
+    orgs := make([]models.Organization, 0)
 
-		for i, Id := range user.Organizations {
-			if err := organizations[i].GetById(Id); err != nil {
+		for _, name := range user.Organizations {
+      org := new(models.Organization)
+			if err := org.GetByName(name); err != nil {
 				beego.Error("[WEB API V1] Get organizations error:", err.Error())
 
 				result := map[string]string{"message": "Get organizations error."}
@@ -232,9 +240,11 @@ func (this *OrganizationWebV1Controller) GetOrganizations() {
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 				this.ServeJson()
 			}
+
+      orgs = append(orgs, *org)
 		}
 
-		this.Data["json"] = organizations
+		this.Data["json"] = orgs
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()

@@ -26,14 +26,14 @@ type Image struct {
 	Uploaded   bool     `json:"uploaded"`   //
 	Checksumed bool     `json:"checksumed"` //
 	Encrypted  bool     `json:"encrypted"`  //
+  Version    int64    `json:"version"`    //
 	Created    int64    `json:"created"`    //
 	Updated    int64    `json:"updated"`    //
 	Memo       []string `json:"memo"`       //
-	Version    int64    `json:"version"`    //
 }
 
 func (i *Image) Has(image string) (bool, []byte, error) {
-	id, err := GetId("image", image)
+	id, err := GetByGobalId("image", image)
 	if err != nil {
 		return false, nil, err
 	}
@@ -47,7 +47,7 @@ func (i *Image) Has(image string) (bool, []byte, error) {
 }
 
 func (i *Image) HasTarsum(tarsum string) (bool, []byte, error) {
-	id, err := GetId("tarsum", tarsum)
+	id, err := GetByGobalId("tarsum", tarsum)
 	if err != nil {
 		return false, nil, err
 	}
@@ -132,11 +132,7 @@ func (i *Image) PutJSON(imageId, json string, version int64) error {
 	if has, _, err := i.Has(imageId); err != nil {
 		return err
 	} else if has == false {
-		i.ImageId = imageId
-		i.Id = string(utils.GeneralKey(uuid.NewV4().String()))
-		i.JSON = json
-		i.Created = time.Now().UnixNano() / int64(time.Millisecond)
-		i.Version = version
+		i.Id, i.ImageId, i.JSON, i.Created, i.Version = string(utils.GeneralKey(uuid.NewV4().String())), imageId, json, time.Now().UnixNano()/int64(time.Millisecond), version
 
 		log.Println("[REGISTRY API V1&V2]", i.ImageId, "json:", json)
 

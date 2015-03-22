@@ -51,12 +51,12 @@
             <div ng-controller="OrganizationListCtrl">
               <div class="block left-nav" ng-repeat="x in organizaitons">
                 <div class="block-title">
-                  <h6><strong>{{ x.organization }} Settings</strong></h6>
+                  <h6><strong>{{ x.name }} Settings</strong></h6>
                 </div>
                 <div class="list-group">
-                  <span class="list-group-item"><a ng-href="#org/{{x.organization}}"><i class="fa fa-sitemap fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Organization</a></span>
-                  <span class="list-group-item"><a ng-href="#{{x.organization}}/teams"><i class="fa fa-users fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;Teams</a></span>
-                  <span class="list-group-item"><a ng-href="#{{x.organization}}/permissions"><i class="fa fa-inbox fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;Permissions</a></span>
+                  <span class="list-group-item"><a ng-href="#org/{{x.name}}"><i class="fa fa-sitemap fa-fw"></i>&nbsp;&nbsp;&nbsp;&nbsp;Organization</a></span>
+                  <span class="list-group-item"><a ng-href="#{{x.name}}/teams"><i class="fa fa-users fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;Teams</a></span>
+                  <span class="list-group-item"><a ng-href="#{{x.name}}/permissions"><i class="fa fa-inbox fa-fw"></i> &nbsp;&nbsp;&nbsp;&nbsp;Permissions</a></span>
                 </div>
               </div>
             </div>

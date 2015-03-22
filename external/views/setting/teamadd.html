@@ -3,7 +3,7 @@
     <h6><strong class="block-title-setting">Create New Team</strong></h6>
   </div>
 
-  <form name="teamForm" class="team-form" novalidate ng-submit="submit()">
+  <form name="teamForm"å class="team-form" novalidate ng-submit="submit()">
     <div class="form-group">
       <div class=""><lable>Organization Name</lable></div>
       <div class="">
@@ -14,7 +14,7 @@
     <div class="form-group">
       <div class=""><lable>Team Name</lable></div>
       <div class="">
-        <input class="form-control input-sm" type="text" ng-model="team.team" name="team" namespace-validator/>
+        <input class="form-control input-sm" type="text" ng-model="team.name" namespace-validator/>
         <div class="error-message" ng-messages="teamForm.team.$error" ng-if="teamForm.team.$dirty">
           <div ng-message="usernames">New unique Team name; 3 - 30 characters. Only lowercase letters, digits and _ - . characters are allowed</div>
         </div>

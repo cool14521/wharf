@@ -90,3 +90,44 @@
 .tt-hint {
   display: none;
 }
+
+/* Teams */
+.team-navbar {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.team {
+  border: solid #dbe1e8 1px;
+}
+
+.profiles {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: #dbe1e8;
+}
+
+.profiles img {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.leave {
+  margin-top: 15px;
+}
+
+h5 > a {
+  color: #4183c4;
+}
+
+.tags-finder {
+  margin-top: 15px;
+}
+
+.member {
+  margin-top: 5px;
+}
+
+.remove-button {
+  margin-top: 15px;
+}

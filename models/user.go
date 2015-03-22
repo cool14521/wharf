@@ -29,7 +29,7 @@ type User struct {
 }
 
 func (user *User) Has(username string) (bool, []byte, error) {
-	id, err := GetId("user", username)
+	id, err := GetByGobalId("user", username)
 
 	if err != nil {
 		return false, nil, err
@@ -49,6 +49,25 @@ func (user *User) GetById(id string) error {
 		return err
 	}
 	return nil
+}
+
+func (user *User) Get(username, password string) error {
+  if exist, id, err := user.Has(username); err != nil {
+    return err
+  } else if exist == false && err == nil {
+    return fmt.Errorf("User is not exist: %s", username)
+  } else if exist == true && err == nil {
+    if err := Get(user, id); err != nil {
+      return err
+    } else {
+      if user.Password != password {
+        return fmt.Errorf("User password error.")
+      } else {
+        return nil
+      }
+    }
+  }
+  return nil
 }
 
 func (user *User) Save() error {
@@ -86,25 +105,6 @@ func (user *User) Remove() error {
 		return err
 	}
 
-	return nil
-}
-
-func (user *User) Get(username, password string) error {
-	if exist, id, err := user.Has(username); err != nil {
-		return err
-	} else if exist == false && err == nil {
-		return fmt.Errorf("User is not exist: %s", username)
-	} else if exist == true && err == nil {
-		if err := Get(user, id); err != nil {
-			return err
-		} else {
-			if user.Password != password {
-				return fmt.Errorf("User password error.")
-			} else {
-				return nil
-			}
-		}
-	}
 	return nil
 }
 
