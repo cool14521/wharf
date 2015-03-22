@@ -223,7 +223,7 @@ func (this *OrganizationWebV1Controller) GetOrganizations() {
 		organizations := make([]models.Organization, len(user.Organizations))
 
 		for i, Id := range user.Organizations {
-			if err := organizations[i].Get(Id); err != nil {
+			if err := organizations[i].GetById(Id); err != nil {
 				beego.Error("[WEB API V1] Get organizations error:", err.Error())
 
 				result := map[string]string{"message": "Get organizations error."}
@@ -291,7 +291,7 @@ func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
 
 	org := new(models.Organization)
 
-	if err := org.Get(this.Ctx.Input.Param(":org")); err != nil {
+	if err := org.GetByName(this.Ctx.Input.Param(":org")); err != nil {
 		beego.Error("[WEB API V1] Load session failure")
 
 		result := map[string]string{"message": "Organization load failure"}

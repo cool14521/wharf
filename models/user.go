@@ -20,13 +20,12 @@ type User struct {
 	Updated           int64        `json:"updated"`           //
 	Repositories      []string     `json:"repositories"`      //
 	Organizations     []string     `json:"organizations"`     // Owner's Organizations
-	Teams             []string     `json:"teams"`             //
+	Teams             []string     `json:"teams"`             // Owner's Teams
+  JoinOrganizations []string     `json:"joinorganizations"` // Join's Organizations
+  JoinTeams         []string     `json:"jointeams"`         // Join's Teams
 	Starts            []string     `json:"starts"`            //
 	Comments          []string     `json:"comments"`          //
 	Memo              []string     `json:"memo"`              //
-	JoinOrganizations []string     `json:"joinorganizations"` // Join's Organizations
-	JoinTeams         []string     `json:"jointeams"`         //
-	RepositoryObjects []Repository `json:"repositoryobjects"` //
 }
 
 func (user *User) Has(username string) (bool, []byte, error) {
@@ -120,7 +119,7 @@ func (user *User) Orgs(username string) (map[string]string, error) {
 		for _, id := range user.Organizations {
 			var org Organization
 
-			if err := org.Get(id); err == nil {
+			if err := org.GetById(id); err == nil {
 				result[org.Name] = org.Id
 			}
 		}

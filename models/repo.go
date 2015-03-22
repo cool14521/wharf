@@ -37,9 +37,9 @@ type Repository struct {
 	Encrypted     bool      `json:"encrypted"`     //
 	Created       int64     `json:"created"`       //
 	Updated       int64     `json:"updated"`       //
+  Version       int64     `json:"version"`       //
+  Privilege     Privilege `json:"privilege"`     //
 	Memo          []string  `json:"memo"`          //
-	Version       int64     `json:"version"`       //
-	Privilege     Privilege `json:"privilege"`     //
 }
 
 type Star struct {
