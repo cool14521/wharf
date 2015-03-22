@@ -32,6 +32,7 @@ type Repository struct {
 	Icon          string   `json:"icon"`          //
 	Sign          string   `json:"sign"`          //
 	Privated      bool     `json:"privated"`      //
+	Permissions   []string `json:"permissions"`   //
 	Clear         string   `json:"clear"`         //
 	Cleared       bool     `json:"cleared"`       //
 	Encrypted     bool     `json:"encrypted"`     //
@@ -57,19 +58,19 @@ func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {
 }
 
 func (r *Repository) PutImages(namespace, repository string) error {
-  if has, _, err := r.Has(namespace, repository); err != nil {
-    return err
-  } else if has == false {
-    return fmt.Errorf("Repository not found")
-  }
+	if has, _, err := r.Has(namespace, repository); err != nil {
+		return err
+	} else if has == false {
+		return fmt.Errorf("Repository not found")
+	}
 
-  r.Checksumed, r.Uploaded, r.Updated = true, true, time.Now().Unix()
+	r.Checksumed, r.Uploaded, r.Updated = true, true, time.Now().Unix()
 
-  if err := r.Save(); err != nil {
-    return err
-  }
+	if err := r.Save(); err != nil {
+		return err
+	}
 
-  return nil
+	return nil
 }
 
 func (r *Repository) Save() error {
@@ -255,4 +256,3 @@ func (r *Repository) PutTagFromManifests(image, namespace, repository, tag, mani
 
 	return nil
 }
-
