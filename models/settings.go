@@ -82,16 +82,16 @@ type EmailMessage struct {
 }
 
 type EmailServer struct {
-	Id       string   `json:"id"`      //
-	Name     string   `json:"name"`    //
-	Host     string   `json:"host"`    //
-	Port     int64    `json:"port"`    //
-	User     string   `json:"user"`    //
-	Password string   `json:"passwd"`  //
-	API      string   `json:"api"`     //
-	Created  int64    `json:"created"` //
-	Updated  int64    `json:"updated"` //
-	Memo     []string `json:"memo"`    //
+	Id      string   `json:"id"`      //
+	Name    string   `json:"name"`    //
+	Host    string   `json:"host"`    //
+	Port    int64    `json:"port"`    //
+	User    string   `json:"user"`    //
+	Passwd  string   `json:"passwd"`  //
+	API     string   `json:"api"`     //
+	Created int64    `json:"created"` //
+	Updated int64    `json:"updated"` //
+	Memo    []string `json:"memo"`    //
 }
 
 type EmailTemplate struct {
@@ -279,7 +279,7 @@ func (comment *Comment) Log(action, level, t int64, actionId string, content []b
 	return nil
 }
 
-func (p *Privilege) Log(action, level, t int64, actionId string, content []byte) error {
+func (p *Permission) Log(action, level, t int64, actionId string, content []byte) error {
 	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
 	log.Id = string(utils.GeneralKey(actionId))
 

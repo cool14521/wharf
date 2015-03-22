@@ -25,6 +25,7 @@ type UserWebAPIV1Controller struct {
 
 func (this *UserWebAPIV1Controller) URLMapping() {
 	this.Mapping("GetProfile", this.GetProfile)
+	this.Mapping("GetUserProfile", this.GetUserProfile)
 	this.Mapping("GetUser", this.GetUser)
 	this.Mapping("Signup", this.Signup)
 	this.Mapping("Signin", this.Signin)
@@ -62,6 +63,34 @@ func (this *UserWebAPIV1Controller) GetProfile() {
 
 		return
 	}
+}
+
+func (this *UserWebAPIV1Controller) GetUserProfile() {
+	user := new(models.User)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		beego.Error("[WEB API V1] Search user error:", err.Error())
+		result := map[string]string{"message": "Search user error"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	} else if exist == false && err == nil {
+		beego.Info("[WEB API V1] Search user none:", this.Ctx.Input.Param(":username"))
+		result := map[string]string{"message": "Search user error"}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
+	this.Data["json"] = user
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	return
 }
 
 func (this *UserWebAPIV1Controller) GetUser() {

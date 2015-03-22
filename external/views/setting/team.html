@@ -1,23 +1,41 @@
 <div class="block right-div">
   <div class="block-title">
-    <h6><strong class="block-title-setting">Teams</strong></h6>
+      <h6><strong class="block-title-setting">Teams</strong></h6>
   </div>
-  <div>
-    <button type="button" class="btn btn-sm btn-primary" ng-click="createTeam()">Create new team</button>
-      <!-- <div class="org-group" ng-repeat="team in teams">
-        <div class="org-group-gravatar">
-          <img ng-src="{{user.gravatar}}" ng-repeat="user in team.userobjects" class="profile team-profile">
-        </div>
-        <div class="org-group-name">{{team.organization}}</div>
-        <div class="team-group-name">{{team.team}}</div>
-        <div class="org-group-desc">{{team.description}}</div>
-        <div class="org-group-teams">
-          <div class="org-group-teams-team" ng-repeat="repository in team.repositoryobjects">{{repository.repository}}</div>
-        </div>
-        <div class="org-group-btn">
-          <button class="org-group-btn-delete btn btn-danger">Delete</button>
-          <button class="org-group-btn-edit btn btn-default" ng-click="editTeam(team.UUID)">Edit</button>
-        </div>
-      </div> -->
+  <div class="team-navbar">
+    <form class="form-inline text-right" role="form">
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Find a team...">
+      </div>
+      <div class="form-group">
+        <button class="btn btn-default">My Teams</button>
+        <button class="btn btn-default btn-primary" ng-click="create()">New Teams</button>
+      </div>
+    </form>
+  </div>
+
+
+  <div class="row">
+    <div ng-repeat="team in teams">
+      <div class="col-xs-12 col-sm-4 col-md-3 col-lg-6">
+          <div class="col-xs-12">
+            <div class="col-xs-8 text-left">
+              <h5><a href="/setting#/{{team.organization}}/team/{{team.name}}">{{team.name}}</a></h5>
+              <div>{{team.description}}</div>
+              <div>{{team.profiles.length}} members - 20 repositories</div>
+            </div>
+
+            <div class="leave col-xs-4 text-right">
+              <button class="btn btn-danger btn-sm">Leave</button>
+            </div>
+          </div>
+
+          <div ng-repeat="user in team.profiles">
+            <div class="profiles col-xs-12">
+              <a href="{{user.url}}"><img ng-src="{{user.gravatar}}" style="width:50px;height:50px;"></a>
+            </div>
+          </div>
+      </div>
+    </div>
   </div>
 </div>

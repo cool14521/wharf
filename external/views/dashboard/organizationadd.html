@@ -9,7 +9,7 @@
   <div class="form-group">
     <div class=""><lable>Organization Name</lable></div>
     <div class="">
-      <input class="form-control input-sm" type="text" ng-model="organization.organization" name="organization" namespace-validator required/>
+      <input class="form-control input-sm" type="text" ng-model="organization.name" name="organization" namespace-validator required/>
       <div class="error-message" ng-messages="orgForm.organization.$error" ng-if="orgForm.organization.$dirty">
         <div ng-message="required">Please enter organization name</div>
         <div ng-message="namespace">New unique organization name; 3 - 30 characters. Only lowercase letters, digits and _ - . characters are allowed

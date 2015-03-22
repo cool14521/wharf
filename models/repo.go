@@ -10,76 +10,39 @@ import (
 )
 
 type Repository struct {
-	Id            string    `json:"id"`            //
-	Repository    string    `json:"repository"`    //
-	Namespace     string    `json:"namespace"`     //
-	NamespaceType bool      `json:"namespacetype"` //
-	Organization  string    `json:"organization"`  //
-	Tags          []string  `json:"tags"`          //
-	Starts        []string  `json:"starts"`        //
-	Comments      []string  `json:"comments"`      //
-	Short         string    `json:"short"`         //
-	Description   string    `json:"description"`   //
-	JSON          string    `json:"json"`          //
-	Dockerfile    string    `json:"dockerfile"`    //
-	Agent         string    `json:"agent"`         //
-	Links         string    `json:"links"`         //
-	Size          int64     `json:"size"`          //
-	Download      int64     `json:"download"`      //
-	Uploaded      bool      `json:"uploaded"`      //
-	Checksum      string    `json:"checksum"`      //
-	Checksumed    bool      `json:"checksumed"`    //
-	Icon          string    `json:"icon"`          //
-	Sign          string    `json:"sign"`          //
-	Privated      bool      `json:"privated"`      //
-	Clear         string    `json:"clear"`         //
-	Cleared       bool      `json:"cleared"`       //
-	Encrypted     bool      `json:"encrypted"`     //
-	Created       int64     `json:"created"`       //
-	Updated       int64     `json:"updated"`       //
-  Version       int64     `json:"version"`       //
-  Privilege     Privilege `json:"privilege"`     //
-	Memo          []string  `json:"memo"`          //
-}
-
-type Star struct {
-	Id         string   `json:"id"`         //
-	User       string   `json:"user"`       //
-	Repository string   `json:"repository"` //
-	Time       int64    `json:"time"`       //
-	Memo       []string `json:"memo"`       //
-}
-
-type Comment struct {
-	Id         string   `json:"id"`         //
-	Comment    string   `json:"comment"`    //
-	User       string   `json:"user"`       //
-	Repository string   `json:"repository"` //
-	Time       int64    `json:"time"`       //
-	Memo       []string `json:"memo"`       //
-}
-
-type Privilege struct {
-	Id         string   `json:"id"`         //
-	Privilege  bool     `json:"privilege"`  //
-	Team       string   `json:"team"`       //
-	Repository string   `json:"repository"` //
-	Memo       []string `json:"memo"`       //
-}
-
-type Tag struct {
-	Id         string   `json:"id"`         //
-	Name       string   `json:"name"`       //
-	ImageId    string   `json:"imageid"`    //
-	Namespace  string   `json:"namespace"`  //
-	Repository string   `json:"repository"` //
-	Sign       string   `json:"sign"`       //
-	Manifest   string   `json:"manifest"`   //
-	Memo       []string `json:"memo"`       //
+	Id            string   `json:"id"`            //
+	Repository    string   `json:"repository"`    //
+	Namespace     string   `json:"namespace"`     //
+	NamespaceType bool     `json:"namespacetype"` //
+	Organization  string   `json:"organization"`  //
+	Tags          []string `json:"tags"`          //
+	Starts        []string `json:"starts"`        //
+	Comments      []string `json:"comments"`      //
+	Short         string   `json:"short"`         //
+	Description   string   `json:"description"`   //
+	JSON          string   `json:"json"`          //
+	Dockerfile    string   `json:"dockerfile"`    //
+	Agent         string   `json:"agent"`         //
+	Links         string   `json:"links"`         //
+	Size          int64    `json:"size"`          //
+	Download      int64    `json:"download"`      //
+	Uploaded      bool     `json:"uploaded"`      //
+	Checksum      string   `json:"checksum"`      //
+	Checksumed    bool     `json:"checksumed"`    //
+	Icon          string   `json:"icon"`          //
+	Sign          string   `json:"sign"`          //
+	Privated      bool     `json:"privated"`      //
+	Clear         string   `json:"clear"`         //
+	Cleared       bool     `json:"cleared"`       //
+	Encrypted     bool     `json:"encrypted"`     //
+	Version       int64    `json:"version"`       //
+	Created       int64    `json:"created"`       //
+	Updated       int64    `json:"updated"`       //
+	Memo          []string `json:"memo"`          //
 }
 
 func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {
-	id, err := GetId("repository", fmt.Sprintf("%s:%s", namespace, repository))
+	id, err := GetByGobalId("repository", fmt.Sprintf("%s:%s", namespace, repository))
 
 	if err != nil {
 		return false, nil, err
@@ -91,6 +54,22 @@ func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {
 	err = Get(r, id)
 
 	return true, id, err
+}
+
+func (r *Repository) PutImages(namespace, repository string) error {
+  if has, _, err := r.Has(namespace, repository); err != nil {
+    return err
+  } else if has == false {
+    return fmt.Errorf("Repository not found")
+  }
+
+  r.Checksumed, r.Uploaded, r.Updated = true, true, time.Now().Unix()
+
+  if err := r.Save(); err != nil {
+    return err
+  }
+
+  return nil
 }
 
 func (r *Repository) Save() error {
@@ -277,85 +256,3 @@ func (r *Repository) PutTagFromManifests(image, namespace, repository, tag, mani
 	return nil
 }
 
-func (r *Repository) PutImages(namespace, repository string) error {
-	if has, _, err := r.Has(namespace, repository); err != nil {
-		return err
-	} else if has == false {
-		return fmt.Errorf("Repository not found")
-	}
-
-	r.Checksumed, r.Uploaded, r.Updated = true, true, time.Now().Unix()
-
-	if err := r.Save(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *Privilege) Get(id string) error {
-	if err := Get(p, []byte(id)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *Privilege) Save() error {
-	if err := Save(p, []byte(p.Id)); err != nil {
-		return err
-	}
-
-	if _, err := LedisDB.HSet([]byte(GLOBAL_PRIVILEGE_INDEX), []byte(fmt.Sprintf("%s:%s:%s", p.Privilege, p.Team, p.Repository)), []byte(p.Id)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (t *Tag) Has(namespace, repository, tag string) (bool, []byte, error) {
-	id, err := GetId("tag", fmt.Sprintf("%s:%s:%s", namespace, repository, tag))
-	if err != nil {
-		return false, nil, err
-	}
-
-	if len(id) <= 0 {
-		return false, nil, nil
-	}
-
-	err = Get(t, id)
-
-	return true, id, err
-}
-
-func (t *Tag) Save() error {
-	if err := Save(t, []byte(t.Id)); err != nil {
-		return err
-	}
-
-	if _, err := LedisDB.HSet([]byte(GLOBAL_TAG_INDEX), []byte(fmt.Sprintf("%s:%s:%s:%s", t.Namespace, t.Repository, t.ImageId, t.Name)), []byte(t.Id)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (t *Tag) GetById(id string) error {
-	return Get(t, []byte(id))
-}
-
-func (star *Star) Save() error {
-	if err := Save(star, []byte(star.Id)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (comment *Comment) Save() error {
-	if err := Save(comment, []byte(comment.Id)); err != nil {
-		return err
-	}
-
-	return nil
-}

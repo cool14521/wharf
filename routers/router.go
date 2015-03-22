@@ -31,6 +31,7 @@ func init() {
 		//user routers
 		beego.NSRouter("/users", &controllers.UserWebAPIV1Controller{}, "get:GetUsers"),
 		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "get:GetProfile"),
+		beego.NSRouter("/profile/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUserProfile"),
 		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "put:PutProfile"),
 		beego.NSRouter("/namespaces", &controllers.UserWebAPIV1Controller{}, "get:GetNamespaces"),
 		beego.NSRouter("/gravatar", &controllers.UserWebAPIV1Controller{}, "post:PostGravatar"),
@@ -43,8 +44,8 @@ func init() {
 		//team routers
 		beego.NSRouter("/users/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUser"),
 		beego.NSRouter("/team", &controllers.TeamWebV1Controller{}, "post:PostTeam"),
-		beego.NSRouter("/team/:uuid", &controllers.TeamWebV1Controller{}, "get:GetTeam"),
-		beego.NSRouter("/team/:uuid", &controllers.TeamWebV1Controller{}, "put:PutTeam"),
+		beego.NSRouter("/:org/team/:team", &controllers.TeamWebV1Controller{}, "get:GetTeam"),
+		beego.NSRouter("/team/:team", &controllers.TeamWebV1Controller{}, "put:PutTeam"),
 		beego.NSRouter("/:org/teams", &controllers.TeamWebV1Controller{}, "get:GetTeams"),
 		beego.NSRouter("/team/privilege", &controllers.TeamWebV1Controller{}, "post:PostPrivilege"),
 

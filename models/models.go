@@ -53,8 +53,7 @@ func InitDb() {
 	LedisDB, _ = nowLedis.Select(db)
 }
 
-func GetId(ObjectType, Object string) (Id []byte, err error) {
-
+func GetByGobalId(ObjectType, Object string) (Id []byte, err error) {
 	index := ""
 
 	switch strings.TrimSpace(ObjectType) {

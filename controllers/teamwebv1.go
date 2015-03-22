@@ -19,6 +19,7 @@ type TeamWebV1Controller struct {
 func (this *TeamWebV1Controller) URLMapping() {
 	this.Mapping("PostTeam", this.PostTeam)
 	this.Mapping("GetTeams", this.GetTeams)
+  this.Mapping("GetTeam", this.GetTeam)
 }
 
 func (this *TeamWebV1Controller) Prepare() {
@@ -44,7 +45,9 @@ func (this *TeamWebV1Controller) PostTeam() {
 		return
 	}
 
-	var team models.Team
+  var team models.Team
+
+  beego.Trace("[WEB API V1] Create a team:", string(this.Ctx.Input.CopyBody()))
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &team); err != nil {
 		beego.Error("[WEB API V1] Unmarshal team data error.", err.Error())
@@ -57,7 +60,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 		return
 	}
 
-	beego.Info("[Web API V1] Add team successfully: ", string(this.Ctx.Input.CopyBody()))
+	beego.Info("[Web API V1] Create team: ", string(this.Ctx.Input.CopyBody()))
 
 	org := new(models.Organization)
 
@@ -78,12 +81,11 @@ func (this *TeamWebV1Controller) PostTeam() {
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
 		return
-	} else if exist == true {
 	}
 
 	team.Id = string(utils.GeneralKey(team.Name))
 	team.Username = user.Username
-	team.Users = append(team.Users, user.Id)
+	team.Users = append(team.Users, user.Username)
 
 	if err := team.Save(); err != nil {
 		beego.Error("[WEB API V1] Team save error:", err.Error())
@@ -97,8 +99,9 @@ func (this *TeamWebV1Controller) PostTeam() {
 	}
 
 	user.Teams = append(user.Teams, team.Name)
+  user.JoinTeams = append(user.JoinTeams, team.Name)
 
-	if err := user.Save(); err != nil {
+  if err := user.Save(); err != nil {
 		beego.Error("[WEB API V1] User save error:", err.Error())
 
 		result := map[string]string{"message": "User save error."}
@@ -108,6 +111,8 @@ func (this *TeamWebV1Controller) PostTeam() {
 		this.ServeJson()
 		return
 	}
+
+  beego.Trace("[WEB API V1] User teams:", user.Teams)
 
 	org.Teams = append(org.Teams, team.Name)
 
@@ -121,6 +126,8 @@ func (this *TeamWebV1Controller) PostTeam() {
 		this.ServeJson()
 		return
 	}
+
+  beego.Trace("[WEB API V1] Org teams:", org.Teams)
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
 	if err := team.Log(models.ACTION_ADD_TEAM, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
@@ -143,8 +150,7 @@ func (this *TeamWebV1Controller) PostTeam() {
 }
 
 func (this *TeamWebV1Controller) GetTeams() {
-	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if exist != true {
+	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
 		beego.Error("[WEB API V1] Load session failure")
 
 		result := map[string]string{"message": "Session load failure", "url": "/auth"}
@@ -159,18 +165,16 @@ func (this *TeamWebV1Controller) GetTeams() {
 
 	org := new(models.Organization)
 	if err := org.GetByName(this.Ctx.Input.Param(":org")); err != nil {
-		beego.Error(fmt.Sprintf("[WEB API V1] Get organization error:: %s", err.Error()))
-		result := map[string]string{"message": err.Error()}
-		this.Data["json"] = result
+    beego.Error(fmt.Sprintf("[WEB API V1] Get organization error:: %s", err.Error()))
+    result := map[string]string{"message": err.Error()}
+    this.Data["json"] = result
 
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
-		return
-	}
+    this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+    this.ServeJson()
+    return
+  }
 
-  beego.Trace("[WEB API V1] User:", user)
-
-	for _, name := range user.Teams {
+	for _, name := range org.Teams {
     beego.Trace("[WEB API V1] Team Name:", name)
 		team := new(models.Team)
 		if err := team.GetByName(org.Name, name); err != nil {
@@ -211,11 +215,11 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 	teamUUID := repo["teamUUID"].(string)
 	repoUUID := repo["repoUUID"].(string)
 
-	privilegeObj := new(models.Privilege)
+	privilegeObj := new(models.Permission)
 	privilegeObj.Id = string(utils.GeneralKey(uuid.NewV4().String()))
-	privilegeObj.Privilege = privilege
+	privilegeObj.Write = privilege
 	privilegeObj.Team = teamUUID
-	privilegeObj.Repository = repoUUID
+	privilegeObj.Object = repoUUID
 
 	if err := privilegeObj.Save(); err != nil {
 
@@ -239,7 +243,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 		return
 	}
 	team.Repositories = append(team.Repositories, repoUUID)
-	team.TeamPrivileges = append(team.TeamPrivileges, privilegeObj.Id)
+	team.Permissions = append(team.Permissions, privilegeObj.Id)
 
 	if err := team.Save(); err != nil {
 		beego.Error("[WEB API V1] Team save error:", err.Error())
@@ -267,7 +271,7 @@ func (this *TeamWebV1Controller) PostPrivilege() {
 func (this *TeamWebV1Controller) GetTeam() {
 	team := new(models.Team)
 
-	if err := team.GetById(this.Ctx.Input.Param(":uuid")); err != nil {
+	if err := team.GetByName(this.Ctx.Input.Param(":org"),this.Ctx.Input.Param(":team")); err != nil {
 		beego.Error("[WEB API] Team get error:", err.Error())
 		result := map[string]string{"message": "Team get error."}
 		this.Data["json"] = result
@@ -276,17 +280,6 @@ func (this *TeamWebV1Controller) GetTeam() {
 		this.ServeJson()
 		return
 	}
-
-	userObjects := make([]models.User, 0)
-	for _, id := range team.Users {
-		user := new(models.User)
-		if err := user.GetById(id); err != nil {
-			beego.Error("[WEB API] user load failure,uuid=", id, err.Error())
-			continue
-		}
-		userObjects = append(userObjects, *user)
-	}
-	//team.UserObjects = userObjects
 
 	this.Data["json"] = team
 
@@ -403,7 +396,7 @@ func (this *TeamWebV1Controller) PutTeam() {
 	team.Id = teamOld.Id
 	team.Username = teamOld.Username
 	team.Users = usersUUID
-	team.TeamPrivileges = teamOld.TeamPrivileges
+	team.Permissions = teamOld.Permissions
 	team.Repositories = teamOld.Repositories
 	team.Memo = teamOld.Memo
 

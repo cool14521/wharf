@@ -25,8 +25,7 @@ type Compose struct {
 }
 
 func (c *Compose) Has(namespace, compose string) (bool, []byte, error) {
-
-	id, err := GetId("compose", fmt.Sprintf("%s:%s", namespace, compose))
+	id, err := GetByGobalId("compose", fmt.Sprintf("%s:%s", namespace, compose))
 
 	if err != nil {
 		return false, nil, err
