@@ -1,5 +1,5 @@
 /*
- *  Document   : setting.js
+ *  Document   : dashboard.js
  *  Author     : Meaglith Ma <genedna@gmail.com> @genedna
  *  Description:
  *
@@ -30,7 +30,6 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
     $http.get('/w1/namespaces')
     .success(function(data, status, headers, config) {
       $scope.namespaces = data;
-      /* $scope.repository.namespace = data[0];*/
       $scope.namespaceObject = data[0];
     })
   .error(function(data, status, headers, config) {
@@ -226,11 +225,8 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
   }];
 
   $scope.privated.selection = $scope.privated.values[0];
-
 }])
 .controller('OrganizationAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
-  $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-
   $scope.submit = function() {
     if($scope.orgForm.$valid){
       $http.post('/w1/organization', $scope.organization)

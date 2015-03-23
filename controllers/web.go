@@ -26,6 +26,8 @@ func (this *WebController) URLMapping() {
 }
 
 func (this *WebController) Prepare() {
+	this.EnableXSRF = false
+
 	beego.Debug("[Header] ")
 	beego.Debug(this.Ctx.Request.Header)
 }
@@ -77,7 +79,6 @@ func (this *WebController) GetSetting() {
 }
 
 func (this *WebController) GetRepository() {
-
 	namespace := this.Ctx.Input.Param(":namespace")
 	repository := this.Ctx.Input.Param(":repository")
 

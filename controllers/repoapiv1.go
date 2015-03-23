@@ -46,7 +46,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 		beego.Error("[REGISTRY API V1] Put repository error:", err.Error())
 
 		result := map[string]string{"Error": err.Error()}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 		this.ServeJson()
@@ -67,7 +67,7 @@ func (this *RepoAPIV1Controller) PutRepository() {
 		beego.Error("[REGISTRY API V1] Get user error:", err.Error())
 
 		result := map[string]string{"Error": err.Error()}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 		this.ServeJson()
@@ -103,7 +103,7 @@ func (this *RepoAPIV1Controller) PutTag() {
 		beego.Error("[REGISTRY API V1] Put repository tag error:", err.Error())
 
 		result := map[string]string{"Error": err.Error()}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusForbidden)
 		this.ServeJson()
@@ -130,7 +130,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 		beego.Error("[REGISTRY API V1] Update Uploaded flag error: %s", namespace, repository, err.Error())
 
 		result := map[string]string{"message": "Update Uploaded flag error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -148,7 +148,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 		beego.Error("[REGISTRY API V1] Search Organization Error: ", err.Error())
 
 		result := map[string]string{"message": "Search Organization Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -162,7 +162,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 		beego.Error("[REGISTRY API V1] Search User Error: ", err.Error())
 
 		result := map[string]string{"Error": err.Error()}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -173,7 +173,7 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 		beego.Error("[REGISTRY API V1] Search Namespace Error")
 
 		result := map[string]string{"message": "Search Namespace Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -206,7 +206,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 		beego.Error("[REGISTRY API V1] Read repository json error: %s", namespace, repository, err.Error())
 
 		result := map[string]string{"message": "Read repository json error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -215,7 +215,7 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 		beego.Error("[REGISTRY API V1] Read repository no found", namespace, repository)
 
 		result := map[string]string{"message": "Read repository no found"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -248,7 +248,7 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 		beego.Error("[REGISTRY API V1] Read repository json error: %s", namespace, repository, err.Error())
 
 		result := map[string]string{"message": "Read repository json error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -257,7 +257,7 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 		beego.Error("[REGISTRY API V1] Read repository no found", namespace, repository)
 
 		result := map[string]string{"message": "Read repository no found"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -272,7 +272,7 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 			beego.Error(fmt.Sprintf("[REGISTRY API V1]  %s/%s Tags is not exist", namespace, repository))
 
 			result := map[string]string{"message": fmt.Sprintf("%s/%s Tags is not exist", namespace, repository)}
-			this.Data["json"] = result
+			this.Data["json"] = &result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
@@ -282,7 +282,7 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 		tag[t.Name] = t.ImageId
 	}
 
-	this.Data["json"] = tag
+	this.Data["json"] = &tag
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()

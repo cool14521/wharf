@@ -36,6 +36,8 @@ func (this *UserWebAPIV1Controller) URLMapping() {
 }
 
 func (this *UserWebAPIV1Controller) Prepare() {
+	this.EnableXSRF = false
+
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
 		user.GetById(user.Id)
 		this.Ctx.Input.CruSession.Set("user", user)
@@ -53,14 +55,12 @@ func (this *UserWebAPIV1Controller) GetProfile() {
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
-
 		return
 	} else {
-		this.Data["json"] = user
+		this.Data["json"] = &user
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
-
 		return
 	}
 }
@@ -86,7 +86,7 @@ func (this *UserWebAPIV1Controller) GetUserProfile() {
 		return
 	}
 
-	this.Data["json"] = user
+	this.Data["json"] = &user
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()
@@ -126,7 +126,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 			users := make([]models.User, 0)
 			users = append(users, *user)
 
-			this.Data["json"] = users
+			this.Data["json"] = &users
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.ServeJson()
 			return
@@ -140,7 +140,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
 		beego.Error("[WEB API V1] Unmarshal user signin data error:", err.Error())
 		result := map[string]string{"message": err.Error()}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -151,7 +151,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 		if err := user.Get(user.Username, user.Password); err != nil {
 			beego.Error("[WEB API V1] User singin error:", err.Error())
 			result := map[string]string{"message": err.Error()}
-			this.Data["json"] = result
+			this.Data["json"] = &result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
@@ -170,12 +170,11 @@ func (this *UserWebAPIV1Controller) Signin() {
 		this.Ctx.Input.CruSession.Set("user", user)
 
 		result := map[string]string{"message": "User Singin Successfully!"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
 		return
-
 	}
 }
 
@@ -187,7 +186,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 		beego.Error("[WEB API V1] Unmarshal user signup data error:", err.Error())
 
 		result := map[string]string{"message": err.Error()}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -198,7 +197,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 		if exist, _, err := org.Has(user.Username); err != nil {
 			beego.Error("[WEB API V1] User singup error: ", err.Error())
 			result := map[string]string{"message": err.Error()}
-			this.Data["json"] = result
+			this.Data["json"] = &result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
@@ -207,7 +206,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			beego.Error("[WEB API V1] Organization already exist:", user.Username)
 
 			result := map[string]string{"message": "Namespace is occupation already by organization."}
-			this.Data["json"] = result
+			this.Data["json"] = &result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
@@ -217,7 +216,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 		if exist, _, err := user.Has(user.Username); err != nil {
 			beego.Error("[WEB API V1] User singup error: ", err.Error())
 			result := map[string]string{"message": err.Error()}
-			this.Data["json"] = result
+			this.Data["json"] = &result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
@@ -226,7 +225,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			beego.Error("[WEB API V1] User already exist:", user.Username)
 
 			result := map[string]string{"message": "User already exist."}
-			this.Data["json"] = result
+			this.Data["json"] = &result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 			this.ServeJson()
@@ -234,11 +233,12 @@ func (this *UserWebAPIV1Controller) Signup() {
 		} else {
 			user.Id = string(utils.GeneralKey(user.Username))
 			user.Created = time.Now().UnixNano() / int64(time.Millisecond)
+			user.Gravatar = "/static/images/default-user-icon-profile.png"
 
 			if err := user.Save(); err != nil {
 				beego.Error("[WEB API V1] User save error:", err.Error())
 				result := map[string]string{"message": "User save error."}
-				this.Data["json"] = result
+				this.Data["json"] = &result
 
 				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 				this.ServeJson()
@@ -251,7 +251,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 			}
 
 			result := map[string]string{"message": "User Singup Successfully!"}
-			this.Data["json"] = result
+			this.Data["json"] = &result
 
 			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 			this.ServeJson()
@@ -286,7 +286,7 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 			namespaces = append(namespaces, namespaceOrg)
 		}
 
-		this.Data["json"] = namespaces
+		this.Data["json"] = &namespaces
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 		this.ServeJson()
@@ -490,7 +490,9 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 		this.ServeJson()
 		return
 	} else if u["oldPassword"].(string) != user.Password {
-		result := map[string]string{"message": "password not match"}
+		beego.Error("[WEB API V1] User's password error!")
+
+		result := map[string]string{"message": "account and password not match"}
 		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -500,6 +502,8 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 
 	user.Password = u["newPassword"].(string)
 	if err := user.Save(); err != nil {
+		beego.Error("[WEB API V1] User's save error!")
+
 		result := map[string]string{"message": "Update password failure"}
 		this.Data["json"] = &result
 
