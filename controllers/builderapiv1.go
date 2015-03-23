@@ -9,6 +9,7 @@ type BuilderAPIV1Controller struct {
 }
 
 func (this *BuilderAPIV1Controller) Prepare() {
+	this.EnableXSRF = false
 }
 
 func (this *BuilderAPIV1Controller) URLMapping() {

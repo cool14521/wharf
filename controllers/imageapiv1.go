@@ -48,7 +48,7 @@ func (this *ImageAPIV1Controller) GetImageJSON() {
 	if json, err = image.GetJSON(imageId); err != nil {
 		beego.Error("[REGISTRY API V1] Search Image JSON Error: ", err.Error())
 		result := map[string]string{"Error": "Search Image JSON Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -58,7 +58,7 @@ func (this *ImageAPIV1Controller) GetImageJSON() {
 	if checksum, err = image.GetChecksum(imageId); err != nil {
 		beego.Error("[REGISTRY API V1] Search Image Checksum Error: ", err.Error())
 		result := map[string]string{"Error": "Search Image Checksum Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -82,7 +82,7 @@ func (this *ImageAPIV1Controller) PutImageJSON() {
 	if err := image.PutJSON(imageId, j, models.APIVERSION_V1); err != nil {
 		beego.Error("[REGISTRY API V1] Put Image JSON Error: ", err.Error())
 		result := map[string]string{"Error": "Put Image JSON Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -121,7 +121,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 	if err := ioutil.WriteFile(layerfile, data, 0777); err != nil {
 		beego.Error("[REGISTRY API V1] Put Image Layer File Error: ", err.Error())
 		result := map[string]string{"Error": "Put Image Layer File Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -131,7 +131,7 @@ func (this *ImageAPIV1Controller) PutImageLayer() {
 	if err := image.PutLayer(imageId, layerfile, true, int64(len(data))); err != nil {
 		beego.Error("[REGISTRY API V1] Put Image Layer File Data Error: ", err.Error())
 		result := map[string]string{"Error": "Put Image Layer File Data Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -162,7 +162,7 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 	if err := image.PutChecksum(imageId, checksum, true, payload); err != nil {
 		beego.Error("[REGISTRY API V1] Put Image Checksum & Payload Error: ", err.Error())
 		result := map[string]string{"Error": "Put Image Checksum & Payload Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -172,7 +172,7 @@ func (this *ImageAPIV1Controller) PutChecksum() {
 	if err := image.PutAncestry(imageId); err != nil {
 		beego.Error("[REGISTRY API V1] Put Image Ancestry Error: ", err.Error())
 		result := map[string]string{"Error": "Put Image Ancestry Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -197,7 +197,7 @@ func (this *ImageAPIV1Controller) GetImageAncestry() {
 	if has, _, err := image.Has(imageId); err != nil {
 		beego.Error("[REGISTRY API V1] Read Image Ancestry Error: ", err.Error())
 		result := map[string]string{"Error": "Read Image Ancestry Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -205,7 +205,7 @@ func (this *ImageAPIV1Controller) GetImageAncestry() {
 	} else if has == false {
 		beego.Error("[REGISTRY API V1] Read Image None: ", err.Error())
 		result := map[string]string{"Error": "Read Image None"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -225,7 +225,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 	if has, _, err := image.Has(imageId); err != nil {
 		beego.Error("[REGISTRY API V1] Read Image Layer File Status Error: ", err.Error())
 		result := map[string]string{"Error": "Read Image Layer file Error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -233,7 +233,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 	} else if has == false {
 		beego.Error("[REGISTRY API V1] Read Image None Error")
 		result := map[string]string{"Error": "Read Image None"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -245,7 +245,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 	if _, err := os.Stat(layerfile); err != nil {
 		beego.Error("[REGISTRY API V1] Read Image file state error: ", err.Error())
 		result := map[string]string{"Error": "Read Image file state error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()
@@ -256,7 +256,7 @@ func (this *ImageAPIV1Controller) GetImageLayer() {
 	if err != nil {
 		beego.Error("[REGISTRY API V1] Read Image file error: ", err.Error())
 		result := map[string]string{"Error": "Read Image file error"}
-		this.Data["json"] = result
+		this.Data["json"] = &result
 
 		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
 		this.ServeJson()

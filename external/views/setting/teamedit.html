@@ -18,7 +18,7 @@
         <div class="form-group">
           <div class=""><lable>Team Name</lable></div>
           <div class="">
-            <input class="form-control input-sm" type="text" ng-model="team.name" namespace-validator/>
+            <input class="form-control input-sm" type="text" ng-model="team.name" namespace-validator disabled/>
             <div class="error-message" ng-messages="teamForm.team.$error" ng-if="teamForm.team.$dirty">
               <div ng-message="usernames">New unique Team name; 3 - 30 characters. Only lowercase letters, digits and _ - . characters are allowed</div>
             </div>
@@ -37,9 +37,9 @@
     </div>
 
     <div class="col-xs-12 col-sm-4 col-md-3 col-lg-7">
-      <form class="form-inline text-right tags-finder" novalidate ng-submit="add()">
+      <form name="findForm" class="form-inline text-right tags-finder" novalidate ng-submit="add()">
         <div class="form-group">
-          <input type="text" class="form-control typeahead-only" placeholder="Find a user..." name="finding" ng-enter="add()" required>
+          <input type="text" class="form-control typeahead" placeholder="Find a user..." name="finding" ng-enter="add()">
         </div>
       </form>
 
@@ -53,7 +53,7 @@
             <span>{{user.name}}</span>
           </div>
           <div class="col-xs-7 text-right remove-button">
-            <button class="btn btn-xs btn-danger">Remove</button>
+            <button class="btn btn-xs btn-danger" ng-click="remove(user.username)">Remove</button>
           </div>
         </div>
         <hr>

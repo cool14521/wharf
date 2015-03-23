@@ -45,6 +45,8 @@ func init() {
 		beego.NSRouter("/users/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUser"),
 		beego.NSRouter("/team", &controllers.TeamWebV1Controller{}, "post:PostTeam"),
 		beego.NSRouter("/:org/team/:team", &controllers.TeamWebV1Controller{}, "get:GetTeam"),
+		beego.NSRouter("/:org/team/:team/add/:username", &controllers.TeamWebV1Controller{}, "put:PutTeamAddMember"),
+		beego.NSRouter("/:org/team/:team/remove/:username", &controllers.TeamWebV1Controller{}, "put:PutTeamRemoveMember"),
 		beego.NSRouter("/team/:team", &controllers.TeamWebV1Controller{}, "put:PutTeam"),
 		beego.NSRouter("/:org/teams", &controllers.TeamWebV1Controller{}, "get:GetTeams"),
 		beego.NSRouter("/team/privilege", &controllers.TeamWebV1Controller{}, "post:PostPrivilege"),

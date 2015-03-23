@@ -27,7 +27,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 
   //upload user profile    
   $scope.upload = function(files) {
-    $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
     if (files && files.length) {
       for (var i = 0; i < files.length; i++) {
         $scope.progress = 0;
@@ -48,7 +47,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
   //submit user profile
   $scope.submit = function() {
     if ($scope.profileForm.$valid) {
-      $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
       $http.put('/w1/profile', $scope.user)
         .success(function(data, status, headers, config) {
           growl.info(data.message);
@@ -64,7 +62,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
   $scope.submitting = false;
   $scope.submit = function() {
     if ($scope.accountForm.$valid) {
-      $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
       $http.put('/w1/password', $scope.user)
         .success(function(data, status, headers, config) {
           $scope.submitting = true;
@@ -87,20 +84,14 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 }])
 //Email Setting
 .controller('SettingEmailsCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
-  $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-
   $scope.submit = function(){}
 }])
 //Notification Setting
 .controller('SettingNotificationCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window) {
-  $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-
   $scope.submit = function(){}
 }])
 //Organization Edit
 .controller('SettingOrganizationCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-  $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-
   $http.get('/w1/organizations/' + $routeParams.org)
     .success(function(data, status, headers, config) {
       $scope.organization = data;
@@ -121,8 +112,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 }])
 //Team List
 .controller('SettingTeamCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-  $http.defaults.headers.put['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-
   $http.get('/w1/' + $routeParams.org + '/teams')
     .success(function(data, status, headers, config) {
       data.forEach(
@@ -158,7 +147,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 }])
 //Team Edit And Add & Remove Users
 .controller('SettingTeamEditCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-  $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
   $scope.users = [];
   $scope.team = {};
   $scope.team.organization = $routeParams.org;
@@ -198,7 +186,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 
       users.initialize();
 
-      $('input.typeahead-only').typeahead(null, {
+      $('input.typeahead').typeahead(null, {
         name: 'states',
         displayKey: 'username',
         source: users.ttAdapter()
@@ -210,22 +198,56 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 
   $scope.add = function() {
     var user = document.getElementsByName("finding")[0].value;
+
+    if (user.length > 0){
+      $http.put('/w1/' + $routeParams.org + '/team/' + $routeParams.team + '/add/' + user)
+        .success(function(data, status, headers, config){
+          $scope.users.push({
+            url: '/u/' + data.username,
+            username: data.username,
+            gravatar: data.gravatar,
+            name: data.fullname
+          });
+          document.getElementsByName("finding")[0].value = null;
+          $('.typeahead').typeahead('val', '');
+        })
+        .error(function(data, status, headers, config){
+          growl.error(data.message);
+          document.getElementsByName("finding")[0].value = null;
+          $('.typeahead').typeahead('val', '');
+        });
+    }
+  }
+  
+  $scope.remove = function(user) {
+    $http.put('/w1/' + $routeParams.org + '/team/' + $routeParams.team + '/remove/' + user)
+      .success(function(data, status, headers, config){
+        $scope.users = _.filter($scope.users, function(u){
+          return u.username != user;
+        });
+      })
+      .error(function(data, status, headers, config){
+        growl.error(data.message);
+      });
   }
 
-  $scope.submit = function() {
-
+  $scope.submit = function() { 
+    $http.put('/w1/team/' + $routeParams.team, $scope.team)
+      .success(function(data, status, headers, config){
+        growl.info(data.message);
+      })
+      .error(function(data, status, headers, config){
+        growl.error(data.message);
+      });  
   }
 
 }])
 .controller('SettingTeamAddCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-  $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-
   $scope.team = {};
   $scope.team.organization = $routeParams.org;
 
   $scope.submit = function() {
     if ($scope.teamForm.$valid){
-      console.log($scope.team);
       $http.post('/w1/team', $scope.team)
         .success(function(data, status, headers, config) {
           $scope.submitting = true;
@@ -289,7 +311,6 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 
   $scope.addRepo4Team = function() {
     $scope.repo.repoUUID = $scope.repositoryAdd.UUID;
-    $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
     $http.post('/w1/team/privilege', $scope.repo)
       .success(function(data, status, headers, config) {
         $('#myModal').modal('toggle');

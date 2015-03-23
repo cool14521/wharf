@@ -88,7 +88,8 @@ func (this *ManifestsAPIV2Controller) GetTags() {
 	}
 
 	data["tags"] = tags
-	this.Data["json"] = data
+
+	this.Data["json"] = &data
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.ServeJson()

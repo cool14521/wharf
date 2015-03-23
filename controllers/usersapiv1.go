@@ -41,7 +41,6 @@ func (this *UserAPIV1Controller) PostUsers() {
 //There is nothing in request body, just authorization through Basic Authorization.
 func (this *UserAPIV1Controller) GetUsers() {
 	if username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization")); err != nil {
-
 		beego.Error("[REGISTRY API V1] Decode Basic Auth Error:", err.Error())
 
 		result := map[string]string{"error": "Decode authorization failure."}

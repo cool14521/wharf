@@ -1,5 +1,5 @@
 /*
- *  Document   : auth.js
+ *  Document   : utils.js
  *  Author     : Meaglith Ma <genedna@gmail.com> @genedna
  *  Description: 
  *
