@@ -260,11 +260,6 @@ func (this *UserWebAPIV1Controller) Signup() {
 	}
 }
 
-type Namespace struct {
-	Namespace     string `json:"namespace"`     //仓库所有者的名字
-	NamespaceType bool   `json:"namespacetype"` // false 为普通用户，true为组织
-}
-
 func (this *UserWebAPIV1Controller) GetNamespaces() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		beego.Error("[WEB API V1] Load session failure")
@@ -275,16 +270,10 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 		this.ServeJson()
 		return
 	} else {
-		namespaces := make([]Namespace, 0)
-		namespaceUser := Namespace{Namespace: user.Username, NamespaceType: false}
-		namespaces = append(namespaces, namespaceUser)
+		namespaces := make([]string, 0)
 
-		orgs, _ := user.Orgs(user.Username)
-
-		for k, _ := range orgs {
-			namespaceOrg := Namespace{Namespace: k, NamespaceType: true}
-			namespaces = append(namespaces, namespaceOrg)
-		}
+		namespaces = append(namespaces, user.Username)
+		namespaces = append(namespaces, user.Organizations...)
 
 		this.Data["json"] = &namespaces
 
