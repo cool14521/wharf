@@ -11,68 +11,116 @@
 angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'ui.codemirror', 'ui.bootstrap', 'ui.codemirror'])
 //App Config
 .config(['growlProvider', function(growlProvider){
-  growlProvider.globalTimeToLive(6000);
+  growlProvider.globalTimeToLive(3000);
 }])
+//Add Repository
 .controller('AddRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
-  $scope.editorOptions = {
-    lineWrapping: true,
-    lineNumbers: true,
-    theme:"foo bar",
-    indentWithTabs:true,
-  };
+  $scope.repo = {};
   $scope.privated = {};
   $scope.namespaces = {};
-  $scope.repository = {};
-  $scope.namespaceObject = {};
 
-  //init user data
-  $scope.addPrivilege = false
-    $http.get('/w1/namespaces')
+  $http.get('/w1/namespaces')
     .success(function(data, status, headers, config) {
       $scope.namespaces = data;
-      $scope.namespaceObject = data[0];
+      $scope.repo.namespace = data[0];
     })
-  .error(function(data, status, headers, config) {
+    .error(function(data, status, headers, config) {
+      growl.error(data.message);
+    });
 
-  });
-  $scope.privated = {};
   $scope.privated.values = [{
-    code: 0,
-    name: "Public"
-  }, {
-    code: 1,
-    name: "Private"
-  }];
+      code: 0,
+      name: "Public"
+    }, {
+      code: 1,
+      name: "Private"
+    }];
 
   $scope.privated.selection = $scope.privated.values[0];
 
-  //deal with create repository
-  $scope.createRepo = function() {
+  $scope.create = function() {
     if ($scope.repoCreateForm.$valid) {
       if ($scope.privated.selection.code == 1) {
-        $scope.repository.privated = true;
+        $scope.repo.privated = true;
       } else {
-        $scope.repository.privated = false;
+        $scope.repo.privated = false;
       }
 
-      $scope.repository.namespace = $scope.namespaceObject.namespace;
-      $scope.repository.namespacetype = $scope.namespaceObject.namespacetype;
-
-      $http.defaults.headers.post['X-XSRFToken'] = base64_decode($cookies._xsrf.split('|')[0]);
-      $http.post('/w1/repository', $scope.repository)
+      $http.post('/w1/repository', $scope.repo)
         .success(function(data, status, headers, config) {
-          $scope.addPrivilege = true;
           growl.info(data.message);
           $timeout(function() {
-            $window.location.href = '/dashboard';
-          }, 3000);
+            $window.location.href = '/dashboard#/repo/' + $scope.repo.namespace + '/' + $scope.repo.repository + '/edit';
+          }, 2000);
         })
-      .error(function(data, status, headers, config) {
-        growl.error(data.message);
-      });
+        .error(function(data, status, headers, config) {
+          growl.error(data.message);
+        });
     }
   }
 
+  $scope.cancel = function() {
+    $window.location.href = '/dashboard';
+  }
+
+}])
+//Edit Repository
+.controller('EditRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $window, $routeParams) {
+  $scope.editorOptions = {
+    lineWrapping: true,
+    lineNumbers: false,
+    theme:"solarized",
+    indentWithTabs:true,
+    mode: "markdown"
+  };
+
+  $scope.dockerfileOptions = {
+    lineWrapping: true,
+    lineNumbers: false,
+    theme:"solarized",
+    indentWithTabs:true,
+    mode: "dockerfile"
+  };
+
+  $scope.privated = {};
+
+  $scope.privated.values = [{
+      code: 0,
+      name: "Public"
+    }, {
+      code: 1,
+      name: "Private"
+    }];
+
+  $scope.privated.selection = $scope.privated.values[0];
+
+  $http.get('/w1/repository/' + $routeParams.namespace + '/' + $routeParams.repository)
+    .success(function(data, status, headers, config){
+      $scope.repo = data;
+      if(data.privated == true){
+        $scope.privated.selection = $scope.privated.values[1];
+      }
+    })
+    .error(function(data, status, headers, config) {
+      growl.error(data.message);
+    });  
+
+  $scope.update = function(){
+    if ($scope.privated.selection.code == 1) {
+      $scope.repo.privated = true;
+    } else {
+      $scope.repo.privated = false;
+    }
+
+    $http.put('/w1/repository/' + $routeParams.namespace + '/' + $routeParams.repository, $scope.repo)
+      .success(function(data, status, headers, config) {
+        growl.info(data.message);
+        $scope.fetch = true;
+      })
+      .error(function(data, status, headers, config) {
+        growl.error(data.message);
+      });   
+  }
 }])
 .controller('PublicRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
   $scope.repoTop = [];
@@ -115,32 +163,33 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
   $scope.perPage = 5;
   $scope.bigCurrentPage = 1;
   $scope.pagingShow = false;
+  
   $http.get('/w1/repositories')
     .success(function(data, status, headers, config) {
-      $scope.user = data;
-      var repositories = $scope.user.repositoryobjects;
-      var conut = 0;
-      for (var i = 0; i < repositories.length; i++) {
-        if (repositories[i].starts == null) {
-          repositories[i].totalStars = 0;
-        } else {
-          repositories[i].totalStars = repositories[i].starts.length;
-        }
-        if (i > 5) {
-          $scope.repoBottom.push(repositories[i]);
-          continue;
-        }
-        $scope.repoTop.push(repositories[i]);
-      }
-      $scope.bigTotalItems = $scope.repoBottom.length;
-      if ($scope.repoBottom.length > 5) {
-        $scope.pagingShow = true;
-      }
-      $scope.repoBottomShow = $scope.repoBottom.slice(0, $scope.perPage);
+      // $scope.user = data;
+      // var repositories = $scope.user.repositoryobjects;
+      // var conut = 0;
+      // for (var i = 0; i < repositories.length; i++) {
+      //   if (repositories[i].starts == null) {
+      //     repositories[i].totalStars = 0;
+      //   } else {
+      //     repositories[i].totalStars = repositories[i].starts.length;
+      //   }
+      //   if (i > 5) {
+      //     $scope.repoBottom.push(repositories[i]);
+      //     continue;
+      //   }
+      //   $scope.repoTop.push(repositories[i]);
+      // }
+      // $scope.bigTotalItems = $scope.repoBottom.length;
+      // if ($scope.repoBottom.length > 5) {
+      //   $scope.pagingShow = true;
+      // }
+      // $scope.repoBottomShow = $scope.repoBottom.slice(0, $scope.perPage);
     })
-  .error(function(data, status, headers, config) {
-    growl.error(data.message);
-  });
+    .error(function(data, status, headers, config) {
+      growl.error(data.message);
+    });
 
   $scope.pageChanged = function() {
     $scope.repoBottomShow = $scope.repoBottom.slice(($scope.bigCurrentPage - 1) * $scope.perPage, $scope.bigCurrentPage * $scope.perPage);
@@ -233,7 +282,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
         .success(function(data, status, headers, config) {
           growl.info(data.message);
           $timeout(function() {
-            $window.location.href = '/setting#/' + $scope.organization.organization + '/team/add';
+            $window.location.href = '/setting#/' + $scope.organization.name + '/team/add';
           }, 3000);
         })
         .error(function(data, status, headers, config) {
@@ -267,7 +316,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
     controller: 'RepositoriesCtrl'
   })
   .when('/repo/add', {
-    templateUrl: '/static/views/dashboard/repositoryadd.html',
+    templateUrl: '/static/views/dashboard/repoadd.html',
     controller: 'AddRepositoryCtrl'
   })
   .when('/repo/public', {
@@ -291,11 +340,15 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
     controller: 'DockerfileCtrl'
   })
   .when('/org/add', {
-    templateUrl: '/static/views/dashboard/organizationadd.html',
+    templateUrl: '/static/views/dashboard/orgadd.html',
     controller: 'OrganizationAddCtrl'
   })
-  .when('/org/:orgUUID/repo', {
-    templateUrl: '/static/views/dashboard/organizationrepo.html',
+  .when('/repo/:namespace/:repository/edit', {
+    templateUrl: '/static/views/dashboard/repoedit.html',
+    controller: 'EditRepositoryCtrl'
+  })
+  .when('/org/:org/repo', {
+    templateUrl: '/static/views/dashboard/orgrepo.html',
     controller: 'OrgRepositoriesCtrl'
   });
 })

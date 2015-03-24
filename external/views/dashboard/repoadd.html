@@ -1,0 +1,56 @@
+<div class="block right-div">
+  <div class="block-title">
+    <h6><strong class="block-title-setting">Add Repository</strong></h6>
+  </div>
+
+  <form name="repoCreateForm" class="repo-form" novalidate ng-submit="create()">
+
+    <div class="form-group">
+      
+      <div><lable>Namespace and Repository Name</lable></div>
+      <div class="row namespace-row">
+        <div class="col-xs-5">
+          <select data-toggle="select" class="form-control namespace-input" ng-model="repo.namespace" ng-options="namespace for namespace in namespaces"></select>
+        </div>
+
+        <span class="col-xs-1 text-center splash">/</span>
+
+        <div  class="col-xs-5">
+          <input class="form-control repository-input" type="text" placeholder="Repository Name" name="repository" ng-model="repo.repository" required namespace-validator>
+          <div class="error-message" ng-messages="repoCreateForm.repository.$error" ng-if="repoCreateForm.repository.$dirty">
+            <div ng-message="required">Please enter your repository.</div>
+            <div ng-message="namespace">Please enter a valid repository.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="form-group">
+      <div><lable>Short Description</lable></div>
+      <div>
+        <input class="form-control" type="text" name="short" ng-model="repo.short" ng-maxlength="100">
+        <div ng-messages="repoCreateForm.short.$error" ng-if="repoCreateForm.short.$dirty">
+          <div ng-message="maxlength">Short description is too long (maximum is 100 characters).</div>
+        </div>
+      </div>
+    </div>  
+
+    <div class="form-group">
+      <div><lable>Repository Type</lable></div>
+      <div>
+        <div class="btn-group">
+          <label ng-repeat="value in privated.values" ng-class="{btn: true, 'btn-info': true,active: value.code == privated.selection.code}">
+            <input type="radio" class="hidden" ng-model="privated.selection" ng-value="value"/>{{value.name}}
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <button class="btn btn-sm btn-primary">Create Repository</button>
+      <button class="btn btn-link" ng-click="cancel()">Cancel</button>
+    </div>
+
+  </form>
+</div>

@@ -11,7 +11,7 @@
 angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
 //App Config
 .config(['growlProvider', function(growlProvider){
-  growlProvider.globalTimeToLive(6000);
+  growlProvider.globalTimeToLive(3000);
 }])
 //Controllers
 .controller('SigninCtrl', ['$scope', '$cookies', '$http', 'growl', '$window', '$timeout', function($scope, $cookies, $http, growl, $window, $timeout) {

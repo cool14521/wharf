@@ -11,7 +11,7 @@
 angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl', 'angularFileUpload', 'ui.bootstrap'])
 //App Config
 .config(['growlProvider', function(growlProvider){
-  growlProvider.globalTimeToLive(6000);
+  growlProvider.globalTimeToLive(3000);
 }])
 //User Profile 
 .controller('SettingProfileCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', function($scope, $cookies, $http, growl, $location, $timeout, $upload) {
@@ -92,6 +92,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
 }])
 //Organization Edit
 .controller('SettingOrganizationCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
+  //Get Organization
   $http.get('/w1/organizations/' + $routeParams.org)
     .success(function(data, status, headers, config) {
       $scope.organization = data;
@@ -100,6 +101,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
       growl.error(data.message);
     });
 
+  //Submit Organization
   $scope.submit = function() {
     $http.put('/w1/organization', $scope.organization)
       .success(function(data, status, headers, config) {
@@ -111,7 +113,8 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
   }
 }])
 //Team List
-.controller('SettingTeamCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
+.controller('SettingTeamListCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
+  //Get teams and members in team
   $http.get('/w1/' + $routeParams.org + '/teams')
     .success(function(data, status, headers, config) {
       data.forEach(
@@ -137,10 +140,12 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
       growl.error(data.message);
     });
 
+  //Create Team Button
   $scope.create = function() {
     $window.location.href = '/setting#/' + $routeParams.org + '/team/add';
   }
 
+  //Edit Team Button
   $scope.edit = function(name) {
     $window.location.href = '/setting#/team/' + name + '/edit';
   }
@@ -175,6 +180,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
       growl.error(data.message);
     });
 
+  //Get all users for typeahead
   $http.get('/w1/users')
     .success(function(data, status, headers, config) {
       var users = new Bloodhound({
@@ -196,6 +202,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
       growl.error(data.message);
     });
 
+  //Add a user
   $scope.add = function() {
     var user = document.getElementsByName("finding")[0].value;
 
@@ -219,6 +226,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
     }
   }
   
+  //Remove a user
   $scope.remove = function(user) {
     $http.put('/w1/' + $routeParams.org + '/team/' + $routeParams.team + '/remove/' + user)
       .success(function(data, status, headers, config){
@@ -231,6 +239,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
       });
   }
 
+  //Update a team
   $scope.submit = function() { 
     $http.put('/w1/team/' + $routeParams.team, $scope.team)
       .success(function(data, status, headers, config){
@@ -246,6 +255,7 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
   $scope.team = {};
   $scope.team.organization = $routeParams.org;
 
+  //Add a team
   $scope.submit = function() {
     if ($scope.teamForm.$valid){
       $http.post('/w1/team', $scope.team)
@@ -269,67 +279,12 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
     .success(function(data, status, headers, config) {
       $scope.organizaitons = data;
     })
-  .error(function(data, status, headers, config) {
-    $timeout(function() {
-    }, 3000);
-  });
-}])
-.controller('SettingCompetenceCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
-  //get teams data
-  $scope.repositoryAdd = {};
-  $scope.repo = {};
-  $http.get('/w1/' + $routeParams.org + '/teams')
-    .success(function(data, status, headers, config) {
-      $scope.teams = data;
-    })
-  .error(function(data, status, headers, config) {
-    $timeout(function() {
-      //$window.location.href = '/auth';
-      alert(data.message);
-    }, 3000);
-  });
-  //get repotories data
-  $http.get('/w1/organizations/' + $routeParams.org + '/repo')
-    .success(function(data, status, headers, config) {
-      $scope.organiztionrepos = data;
-      $scope.repositoryAdd = data[0];
-    })
-  .error(function(data, status, headers, config) {
-    $timeout(function() {
-      //$window.location.href = '/auth';
-      alert(data.message);
-    }, 3000);
-  });
-
-  //
-  $scope.repo.privilege = "false";
-
-  $scope.open = function(teamUUID) {
-    $('#myModal').modal('toggle');
-    $scope.repo.teamUUID = teamUUID;
-  }
-
-  $scope.addRepo4Team = function() {
-    $scope.repo.repoUUID = $scope.repositoryAdd.UUID;
-    $http.post('/w1/team/privilege', $scope.repo)
-      .success(function(data, status, headers, config) {
-        $('#myModal').modal('toggle');
-        growl.info(data.message);
-        $http.get('/w1/' + $routeParams.org + '/teams')
-          .success(function(data, status, headers, config) {
-            $scope.teams = data;
-          })
-        .error(function(data, status, headers, config) {
-          $timeout(function() {
-            alert(data.message);
-          }, 3000);
-        });
-      })
     .error(function(data, status, headers, config) {
-      $('#myModal').modal('toggle');
       growl.error(data.message);
     });
-  }
+}])
+.controller('SettingTeamPermissionCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$upload', '$window', '$routeParams', function($scope, $cookies, $http, growl, $location, $timeout, $upload, $window, $routeParams) {
+  
 }])
 //routes
 .config(function($routeProvider, $locationProvider) {
@@ -368,11 +323,11 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
   })
   .when('/:org/teams', {
     templateUrl: '/static/views/setting/team.html',
-    controller: 'SettingTeamCtrl'
+    controller: 'SettingTeamListCtrl'
   })
   .when('/:org/permissions', {
     templateUrl: '/static/views/setting/competence.html',
-    controller: 'SettingCompetenceCtrl'
+    controller: 'SettingTeamPermissionCtrl'
   });
 })
 .directive('emailValidator', [function() {

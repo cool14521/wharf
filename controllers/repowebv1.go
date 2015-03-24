@@ -76,7 +76,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 		} else {
 			repo.Id = string(utils.GeneralKey(fmt.Sprint(repo.Namespace, repo.Repository)))
 			repo.Created = time.Now().UnixNano() / int64(time.Millisecond)
-			repo.Updated = repo.Created
+			repo.Updated = time.Now().UnixNano() / int64(time.Millisecond)
 
 			if err := repo.Save(); err != nil {
 				beego.Error("[WEB API V1] Repository save error:", err.Error())
@@ -88,25 +88,11 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 				return
 			}
 
-			if repo.NamespaceType {
-				org := new(models.Organization)
-				if exist, _, _ := org.Has(repo.Namespace); exist {
-					org.Repositories = append(org.Repositories, repo.Id)
-					if err := org.Save(); err != nil {
-						beego.Error("[WEB API V1] Repository save error:", err.Error())
-						result := map[string]string{"message": "Repository save error."}
-						this.Data["json"] = &result
-
-						this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-						this.ServeJson()
-						return
-					}
-				}
-			} else {
+			if user.Username == repo.Namespace {
 				user.Repositories = append(user.Repositories, repo.Id)
 				if err := user.Save(); err != nil {
-					beego.Error("[WEB API V1] Repository save error:", err.Error())
-					result := map[string]string{"message": "Repository save error."}
+					beego.Error("[WEB API V1] User save error:", err.Error())
+					result := map[string]string{"message": "User save error."}
 					this.Data["json"] = &result
 
 					this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
@@ -114,6 +100,20 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 					return
 				}
 				this.Ctx.Input.CruSession.Set("user", user)
+			} else {
+				org := new(models.Organization)
+				if exist, _, _ := org.Has(repo.Namespace); exist == true {
+					org.Repositories = append(org.Repositories, repo.Id)
+					if err := org.Save(); err != nil {
+						beego.Error("[WEB API V1] Organization save error:", err.Error())
+						result := map[string]string{"message": "Organization save error."}
+						this.Data["json"] = &result
+
+						this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+						this.ServeJson()
+						return
+					}
+				}
 			}
 
 			memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -132,6 +132,89 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 			return
 		}
 	}
+}
+
+func (this *RepoWebAPIV1Controller) GetRepository() {
+	repo := new(models.Repository)
+
+	if exist, _, err := repo.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repository")); err != nil {
+		beego.Error("[WEB API V1] Search repository error:", err.Error())
+
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	} else if exist == false {
+		beego.Error("[WEB API V1] Search repository don't exist:", this.Ctx.Input.Param(":namespace"), '/', this.Ctx.Input.Param(":repository"))
+
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
+	this.Data["json"] = &repo
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	return
+}
+
+func (this *RepoWebAPIV1Controller) PutRepository() {
+	repo := new(models.Repository)
+
+	if exist, _, err := repo.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repository")); err != nil {
+		beego.Error("[WEB API V1] Search repository error:", err.Error())
+
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	} else if exist == false {
+		beego.Error("[WEB API V1] Search repository don't exist:", this.Ctx.Input.Param(":namespace"), '/', this.Ctx.Input.Param(":repository"))
+
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &repo); err != nil {
+		beego.Error("[WEB API V1] Unmarshal Repository create data error:", err.Error())
+		result := map[string]string{"message": err.Error()}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
+	repo.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+	if err := repo.Save(); err != nil {
+		beego.Error("[WEB API V1] Repository save error:", err.Error())
+		result := map[string]string{"message": "Repository save error."}
+		this.Data["json"] = &result
+
+		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
+		this.ServeJson()
+		return
+	}
+
+	result := map[string]string{"message": "Repository update successfully!"}
+	this.Data["json"] = &result
+
+	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
+	this.ServeJson()
+	return
 }
 
 func (this *RepoWebAPIV1Controller) GetRepositories() {
@@ -153,9 +236,9 @@ func (this *RepoWebAPIV1Controller) GetRepositories() {
 		if err := repo.Get(repoUUID); err != nil {
 			beego.Error("[WEB API] Repository get error,err=", err.Error())
 			continue
-		} else if repo.NamespaceType {
-			continue
-		}
+		} //else if repo.NamespaceType {
+		//continue
+		//}
 		repositories = append(repositories, *repo)
 	}
 

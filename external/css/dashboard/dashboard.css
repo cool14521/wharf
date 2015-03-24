@@ -66,5 +66,49 @@
 
 /* Org Form */
 .org-form {
+  margin-top: 10px;
   width: 500px;
+}
+
+.repo-form {
+  margin-top: 10px;
+  width: 500px;
+}
+
+.namespace-row {
+  height: 50px;
+}
+.namespace-input {
+  margin-top: 5px;
+  width: 200px;
+}
+
+.repository-input {
+  margin-top: 5px;
+  width: 200px; 
+}
+
+.splash {
+  margin-top: 1px;
+  font-size: 30px;
+}
+
+.tabs-block {
+  margin-top: 10px;
+}
+
+.info-form {
+  width: 500px;
+}
+
+.dockrefile-form {
+  width: 500px;
+}
+
+.description {
+  height: 350px;
+}
+
+.dockerfile {
+  height: 500px;
 }

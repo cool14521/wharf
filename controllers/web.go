@@ -39,7 +39,7 @@ func (this *WebController) GetIndex() {
 }
 
 func (this *WebController) GetAuth() {
-	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
 		this.TplNames = "auth.html"
 		this.Render()
 
@@ -64,7 +64,7 @@ func (this *WebController) GetDashboard() {
 }
 
 func (this *WebController) GetSetting() {
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
 		beego.Error("[WEB API] Load session failure")
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
 
@@ -89,35 +89,35 @@ func (this *WebController) GetRepository() {
 			if !exist == true {
 				this.Abort("404")
 				return
-			} else if repo.NamespaceType {
-				userHasOrg := false
+				// } else if repo.NamespaceType {
+				// 	userHasOrg := false
 
-				org := new(models.Organization)
-				_, orgUUID, _ := org.Has(namespace)
-				for _, userOrgUUID := range user.Organizations {
-					if userOrgUUID == string(orgUUID) {
-						userHasOrg = true
-						return
-					}
-				}
-				if !userHasOrg {
-					this.Abort("404")
-					return
-				}
-				this.Data["username"] = user.Username
-				this.Data["privated"] = repo.Privated
-				this.Data["namespace"] = repo.Namespace
-				this.Data["repository"] = repo.Repository
-				this.Data["created"] = repo.Created
-				this.Data["short"] = repo.Short
-				this.Data["description"] = string(github_flavored_markdown.Markdown([]byte(repo.Description)))
-				this.Data["download"] = repo.Download
-				this.Data["comments"] = len(repo.Comments)
-				this.Data["starts"] = len(repo.Starts)
+				// 	org := new(models.Organization)
+				// 	_, orgUUID, _ := org.Has(namespace)
+				// 	for _, userOrgUUID := range user.Organizations {
+				// 		if userOrgUUID == string(orgUUID) {
+				// 			userHasOrg = true
+				// 			return
+				// 		}
+				// 	}
+				// 	if !userHasOrg {
+				// 		this.Abort("404")
+				// 		return
+				// 	}
+				// 	this.Data["username"] = user.Username
+				// 	this.Data["privated"] = repo.Privated
+				// 	this.Data["namespace"] = repo.Namespace
+				// 	this.Data["repository"] = repo.Repository
+				// 	this.Data["created"] = repo.Created
+				// 	this.Data["short"] = repo.Short
+				// 	this.Data["description"] = string(github_flavored_markdown.Markdown([]byte(repo.Description)))
+				// 	this.Data["download"] = repo.Download
+				// 	this.Data["comments"] = len(repo.Comments)
+				// 	this.Data["starts"] = len(repo.Starts)
 
-				this.TplNames = "repository.html"
-				this.Render()
-				return
+				// 	this.TplNames = "repository.html"
+				// 	this.Render()
+				// 	return
 
 			} else {
 				if user.Username != namespace {
@@ -179,7 +179,7 @@ func (this *WebController) GetAdminAuth() {
 }
 
 func (this *WebController) GetSignout() {
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
 		this.TplNames = "auth.html"
 		this.Render()
 
