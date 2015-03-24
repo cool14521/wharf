@@ -8,4 +8,8 @@
 'use strict';
 
 //Auth Page Module
-angular.module('repository', []);
+angular.module('repository', [])
+//App Config
+.config(['growlProvider', function(growlProvider){
+  growlProvider.globalTimeToLive(3000);
+}]);
