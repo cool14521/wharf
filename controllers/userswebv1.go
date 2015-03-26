@@ -35,6 +35,18 @@ func (this *UserWebAPIV1Controller) URLMapping() {
 	this.Mapping("PutPassword", this.PutPassword)
 }
 
+func (this *UserWebAPIV1Controller) JSONOut(code int, message string, data interface{}) {
+	if data == nil {
+		result := map[string]string{"message": message}
+		this.Data["json"] = result
+	} else {
+		this.Data["json"] = data
+	}
+
+	this.Ctx.Output.Context.Output.SetStatus(code)
+	this.ServeJson()
+}
+
 func (this *UserWebAPIV1Controller) Prepare() {
 	this.EnableXSRF = false
 
@@ -169,11 +181,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 		this.Ctx.Input.CruSession.Set("user", user)
 
-		result := map[string]string{"message": "User Singin Successfully!"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.ServeJson()
+		this.JSONOut(http.StatusOK, "User Singin Successfully!", nil)
 		return
 	}
 }

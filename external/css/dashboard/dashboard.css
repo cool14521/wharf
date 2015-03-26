@@ -98,10 +98,14 @@
 }
 
 .info-form {
+  margin-top: 5px;
+  margin-left: 10px;
   width: 500px;
 }
 
 .dockrefile-form {
+  margin-top: 5px;
+  margin-left: 10px;
   width: 500px;
 }
 
@@ -111,4 +115,13 @@
 
 .dockerfile {
   height: 500px;
+}
+
+.collaborators {
+  margin-top: 5px;
+  margin-left: 10px;
+}
+
+.input-collaborator {
+  width: 240px;
 }

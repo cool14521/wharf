@@ -17,8 +17,9 @@ func init() {
 	beego.Router("/admin/auth", &controllers.WebController{}, "get:GetAdminAuth")
 	beego.Router("/admin", &controllers.WebController{}, "get:GetAdmin")
 
-	//Docker Repository View Page
-	beego.Router("/d/:namespace/:repository", &controllers.WebController{}, "get:GetRepository")
+	beego.Router("/r/:namespace/:repository", &controllers.WebController{}, "get:GetRepository")
+	beego.Router("/o/:org", &controllers.WebController{}, "get:GetOrganization")
+	beego.Router("/u/:username", &controllers.WebController{}, "get:GetUser")
 
 	//Static File Route
 	beego.Router("/pubkeys.gpg", &controllers.FileController{}, "get:GetGPG")
@@ -35,30 +36,29 @@ func init() {
 		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "get:GetProfile"),
 		beego.NSRouter("/gravatar", &controllers.UserWebAPIV1Controller{}, "post:PostGravatar"),
 		beego.NSRouter("/password", &controllers.UserWebAPIV1Controller{}, "put:PutPassword"),
-		beego.NSRouter("/profile/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUserProfile"),
 		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "put:PutProfile"),
+		beego.NSRouter("/profile/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUserProfile"),
 
 		//repository routers
+		beego.NSRouter("/repositories", &controllers.RepoWebAPIV1Controller{}, "get:GetRepositories"),
 		beego.NSRouter("/repository", &controllers.RepoWebAPIV1Controller{}, "post:PostRepository"),
 		beego.NSRouter("/repository/:namespace/:repository", &controllers.RepoWebAPIV1Controller{}, "put:PutRepository"),
 		beego.NSRouter("/repository/:namespace/:repository", &controllers.RepoWebAPIV1Controller{}, "get:GetRepository"),
-		beego.NSRouter("/repositories", &controllers.RepoWebAPIV1Controller{}, "get:GetRepositories"),
-
-		//team routers
-		beego.NSRouter("/team", &controllers.TeamWebV1Controller{}, "post:PostTeam"),
-		beego.NSRouter("/team/:team", &controllers.TeamWebV1Controller{}, "put:PutTeam"),
-		beego.NSRouter("/team/privilege", &controllers.TeamWebV1Controller{}, "post:PostPrivilege"),
+		beego.NSRouter("/repository/:namespace/:repository/collaborators", &controllers.RepoWebAPIV1Controller{}, "get:GetCollaborators"),
+		beego.NSRouter("/repository/:namespace/:repository/collaborators/:collaborator", &controllers.RepoWebAPIV1Controller{}, "post:PostCollaborator"),
+		beego.NSRouter("/repository/:namespace/:repository/collaborators/:collaborator/:action", &controllers.RepoWebAPIV1Controller{}, "put:PutCollaborator"),
 
 		//organization routers
 		beego.NSRouter("/organizations", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizations"),
 		beego.NSRouter("/organization", &controllers.OrganizationWebV1Controller{}, "post:PostOrganization"),
-		beego.NSRouter("/organization", &controllers.OrganizationWebV1Controller{}, "put:PutOrganization"),
-		beego.NSRouter("/organizations/:org", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizationDetail"),
-		beego.NSRouter("/organizations/:org/repo", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizationRepo"),
-		beego.NSRouter("/:org/teams", &controllers.TeamWebV1Controller{}, "get:GetTeams"),
-		beego.NSRouter("/:org/team/:team", &controllers.TeamWebV1Controller{}, "get:GetTeam"),
-		beego.NSRouter("/:org/team/:team/add/:username", &controllers.TeamWebV1Controller{}, "put:PutTeamAddMember"),
-		beego.NSRouter("/:org/team/:team/remove/:username", &controllers.TeamWebV1Controller{}, "put:PutTeamRemoveMember"),
+		beego.NSRouter("/organization/:org", &controllers.OrganizationWebV1Controller{}, "put:PutOrganization"),
+		beego.NSRouter("/organization/:org", &controllers.OrganizationWebV1Controller{}, "get:GetOrganization"),
+		beego.NSRouter("/organization/:org/repo", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizationRepo"),
+		beego.NSRouter("/organization/:org/teams", &controllers.TeamWebV1Controller{}, "get:GetTeams"),
+		beego.NSRouter("/organization/:org/team", &controllers.TeamWebV1Controller{}, "post:PostTeam"),
+		beego.NSRouter("/organization/:org/team/:team", &controllers.TeamWebV1Controller{}, "put:PutTeam"),
+		beego.NSRouter("/organization/:org/team/:team", &controllers.TeamWebV1Controller{}, "get:GetTeam"),
+		beego.NSRouter("/organization/:org/team/:team/:username/:action", &controllers.TeamWebV1Controller{}, "put:PutTeamAddMember"),
 	)
 
 	//Docker Registry API V1 remain
@@ -120,7 +120,6 @@ func init() {
 
 	beego.AddNamespace(web)
 	beego.AddNamespace(apiv1)
-
 	if beego.AppConfig.String("docker::API") == "v2" {
 		beego.AddNamespace(apiv2)
 	}

@@ -83,6 +83,7 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
   };
 
   $scope.privated = {};
+  $scope.collaborators = {};
 
   $scope.privated.values = [{
       code: 0,
@@ -121,6 +122,65 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
         growl.error(data.message);
       });   
   }
+
+  $http.get('w1/' + $routeParams.namespace + '/teams')
+    .success(function(data, status, headers, config) {
+      data.forEach(
+        function getTeam(value) {
+          value.profiles = [];
+          value.users.forEach(
+            function getUser(username){
+              $http.get('/w1/profile/' + username)
+                .success(function(profile, status, headers, config) {
+                  value.profiles.push({url: '/u/' + profile.username, gravatar: profile.gravatar});
+                })
+                .error(function(profile, status, headers, config) {
+                  growl.error(profile.message);
+                });
+            }
+          );
+        }
+      );
+
+      var teams = new Bloodhound({
+        datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.name); },
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        limit: 10,
+        local: data
+      });
+
+      teams.initialize();
+
+      $('input.typeahead').typeahead(null, {
+        name: 'states',
+        displayKey: 'name',
+        source: teams.ttAdapter()
+      });
+
+    })
+    .error(function(data, status, headers, config) {
+      console.log(data);
+    });
+
+  $scope.addCollaborator = function() {
+    var collaborator = document.getElementsByName("collaborator")[0].value;
+
+    if(collaborator.length > 0) {
+      $http.post('/w1/repository/' + $routeParams.namespace + '/' + $routeParams.repository + '/collaborators/' + collaborator)
+        .success(function(data, status, headers, config){
+          console.log(data);
+          $scope.collaborators.push(data);
+          document.getElementsByName("collaborator")[0].value = null;
+          $('.typeahead').typeahead('val', '');
+        })
+        .error(function(message, status, headers, config){
+          growl.error(data.message);
+          document.getElementsByName("collaborator")[0].value = null;
+          $('.typeahead').typeahead('val', '');
+        });
+    }
+  }
+
 }])
 .controller('PublicRepositoryCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', '$window', function($scope, $cookies, $http, growl, $location, $timeout, $window) {
   $scope.repoTop = [];
@@ -364,4 +424,17 @@ angular.module('dashboard', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-grow
       }
     }
   };
-}]);
+}])
+.directive('ngEnter', function () {
+  return function (scope, element, attrs) {
+    element.bind("keydown keypress", function (event) {
+      if(event.which === 13) {
+        scope.$apply(function (){
+          scope.$eval(attrs.ngEnter);
+        });
+
+        event.preventDefault();
+      }
+    });
+  };
+});
