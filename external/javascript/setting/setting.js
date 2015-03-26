@@ -425,4 +425,4 @@ angular.module('setting', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'
       }
     });
   };
-});;
+});

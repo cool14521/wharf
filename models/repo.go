@@ -10,34 +10,35 @@ import (
 )
 
 type Repository struct {
-	Id          string   `json:"id"`          //
-	Repository  string   `json:"repository"`  //
-	Namespace   string   `json:"namespace"`   //
-	Tags        []string `json:"tags"`        //
-	Starts      []string `json:"starts"`      //
-	Comments    []string `json:"comments"`    //
-	Short       string   `json:"short"`       //
-	Description string   `json:"description"` //
-	JSON        string   `json:"json"`        //
-	Dockerfile  string   `json:"dockerfile"`  //
-	Agent       string   `json:"agent"`       //
-	Links       string   `json:"links"`       //
-	Size        int64    `json:"size"`        //
-	Download    int64    `json:"download"`    //
-	Uploaded    bool     `json:"uploaded"`    //
-	Checksum    string   `json:"checksum"`    //
-	Checksumed  bool     `json:"checksumed"`  //
-	Icon        string   `json:"icon"`        //
-	Sign        string   `json:"sign"`        //
-	Privated    bool     `json:"privated"`    //
-	Permissions []string `json:"permissions"` //
-	Clear       string   `json:"clear"`       //
-	Cleared     bool     `json:"cleared"`     //
-	Encrypted   bool     `json:"encrypted"`   //
-	Version     int64    `json:"version"`     //
-	Created     int64    `json:"created"`     //
-	Updated     int64    `json:"updated"`     //
-	Memo        []string `json:"memo"`        //
+	Id            string   `json:"id"`            //
+	Repository    string   `json:"repository"`    //
+	Namespace     string   `json:"namespace"`     //
+	Tags          []string `json:"tags"`          //
+	Starts        []string `json:"starts"`        //
+	Comments      []string `json:"comments"`      //
+	Short         string   `json:"short"`         //
+	Description   string   `json:"description"`   //
+	JSON          string   `json:"json"`          //
+	Dockerfile    string   `json:"dockerfile"`    //
+	Agent         string   `json:"agent"`         //
+	Links         string   `json:"links"`         //
+	Size          int64    `json:"size"`          //
+	Download      int64    `json:"download"`      //
+	Uploaded      bool     `json:"uploaded"`      //
+	Checksum      string   `json:"checksum"`      //
+	Checksumed    bool     `json:"checksumed"`    //
+	Icon          string   `json:"icon"`          //
+	Sign          string   `json:"sign"`          //
+	Privated      bool     `json:"privated"`      //
+	Collaborators []string `json:"collaborators"` //
+	Permissions   []string `json:"permissions"`   //
+	Clear         string   `json:"clear"`         //
+	Cleared       bool     `json:"cleared"`       //
+	Encrypted     bool     `json:"encrypted"`     //
+	Version       int64    `json:"version"`       //
+	Created       int64    `json:"created"`       //
+	Updated       int64    `json:"updated"`       //
+	Memo          []string `json:"memo"`          //
 }
 
 func (r *Repository) Has(namespace, repository string) (bool, []byte, error) {

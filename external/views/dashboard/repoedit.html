@@ -1,97 +1,128 @@
 <div class="block right-div">
-<div class="block-title">
-  <h6><strong class="block-title-setting">Edit Repository</strong></h6>
-</div>
+  <div class="block-title">
+    <h6><strong class="block-title-setting">Edit Repository</strong></h6>
+  </div>
 
-<div class="tabs-block">
-  <tabset Information="true">
-
-  <tab heading="Information">
-
-  <form name="infoForm" class="info-form" novalidate ng-submit="update()">
-    <div class="form-group">
-      <div><lable>Repository Name</lable></div>
-      <div class="row namespace-row">
-        <div class="col-xs-4">
-          <input class="form-control namespace-input" ng-model="repo.namespace" disabled>
+  <div class="tabs-block">
+    <tabset Information="true">
+    <!-- Edit Information -->
+    <tab heading="Information">
+      <form name="infoForm" class="info-form" novalidate ng-submit="update()">
+        <div class="form-group">
+          <div><lable>Repository Name</lable></div>
+          <div class="row namespace-row">
+            <div class="col-xs-4">
+              <input class="form-control namespace-input" ng-model="repo.namespace" disabled>
+            </div>
+            <span class="col-xs-1 text-right splash">/</span>
+            <div  class="col-xs-4">
+              <input class="form-control repository-input" type="text" ng-model="repo.repository" disabled>
+            </div>
+          </div>
         </div>
-        <span class="col-xs-1 text-right splash">/</span>
-        <div  class="col-xs-4">
-          <input class="form-control repository-input" type="text" ng-model="repo.repository" disabled>
+
+        <div class="form-group">
+          <div><lable>Short Description</lable></div>
+          <div>
+            <input class="form-control" type="text" name="short" ng-model="repo.short" ng-maxlength="100">
+            <div ng-messages="repoCreateForm.short.$error" ng-if="repoCreateForm.short.$dirty">
+              <div ng-message="maxlength">Short description is too long (maximum is 100 characters).</div>
+            </div>
+          </div>
+        </div>  
+
+        <div class="form-group">
+          <div><lable>Repository Type</lable></div>
+          <div>
+            <div class="btn-group">
+              <label ng-repeat="value in privated.values" ng-class="{btn: true, 'btn-info': true,active: value.code == privated.selection.code}">
+                <input type="radio" class="hidden" ng-model="privated.selection" ng-value="value"/>{{value.name}}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div><lable>Description(Markdown)</lable></div>
+          <div>
+            <ui-codemirror class="description" ui-codemirror-opts="editorOptions" ng-model="repo.description"></ui-codemirror>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <button class="btn btn-sm btn-primary">Update Repository</button>
+        </div>
+      </form>
+    </tab>
+    <!-- End Information -->
+
+    <!-- Edit Dockerfile -->
+    <tab heading="Dockerfile">
+      <form name="dockerfileForm" class="dockrefile-form" novalidate ng-submit="update()">
+        <div class="form-group">
+          <div><lable>Repository Name</lable></div>
+          <div class="row namespace-row">
+            <div class="col-xs-4">
+              <input class="form-control namespace-input" ng-model="repo.namespace" disabled>
+            </div>
+            <span class="col-xs-1 text-right splash">/</span>
+            <div  class="col-xs-4">
+              <input class="form-control repository-input" type="text" ng-model="repo.repository" disabled>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div><lable>Dockerfile</lable></div>
+          <div>
+            <ui-codemirror class="dockerfile" ui-codemirror-opts="dockerfileOptions" ng-model="repo.dockerfile" ui-refresh="fetch"></ui-codemirror>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <button class="btn btn-sm btn-primary">Update Repository</button>
+        </div>
+      </form>  
+    </tab>
+    <!-- End Dockerfile -->
+
+    <!-- Edit Images -->
+    <tab heading="Images"></tab>
+    <!-- End Images -->
+
+    <!-- Edit Tags -->
+    <tab heading="Tags"></tab>
+    <!-- End Tags -->
+
+    <!-- Edit Issues -->
+    <tab heading="Issues"></tab>
+    <!-- End Issues -->
+
+    <!-- Edit Comments -->
+    <tab heading="Comments"></tab>
+    <!-- End Comments -->
+    
+    <!-- Edit Settings -->
+    <tab heading="Settings">
+      <div class="collaborators">
+        <strong>Collaborators</strong>
+        <hr>
+        <div class="row">
+          <div class="row">
+            <div class="col-xs-8"></div>
+            <div class="col-xs-4">
+              <input type="text" class="form-control typeahead input-collaborator" placeholder="Find a team..." name="collaborator" ng-enter="addCollaborator()">
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </tab>
+    <!-- End Settings -->
 
-    <div class="form-group">
-      <div><lable>Short Description</lable></div>
-      <div>
-        <input class="form-control" type="text" name="short" ng-model="repo.short" ng-maxlength="100">
-        <div ng-messages="repoCreateForm.short.$error" ng-if="repoCreateForm.short.$dirty">
-          <div ng-message="maxlength">Short description is too long (maximum is 100 characters).</div>
-        </div>
-      </div>
-    </div>  
+    <!-- Edit Statistics -->
+    <tab heading="Statistics"></tab>
+    <!-- End Statistics -->
 
-    <div class="form-group">
-      <div><lable>Repository Type</lable></div>
-      <div>
-        <div class="btn-group">
-          <label ng-repeat="value in privated.values" ng-class="{btn: true, 'btn-info': true,active: value.code == privated.selection.code}">
-            <input type="radio" class="hidden" ng-model="privated.selection" ng-value="value"/>{{value.name}}
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <div><lable>Description(Markdown)</lable></div>
-      <div>
-        <ui-codemirror class="description" ui-codemirror-opts="editorOptions" ng-model="repo.description"></ui-codemirror>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <button class="btn btn-sm btn-primary">Update Repository</button>
-    </div>
-
-  </form>
-
-  </tab>
-
-  <tab heading="Dockerfile">
-  <form name="dockerfileForm" class="dockrefile-form" novalidate ng-submit="update()">
-    <div class="form-group">
-      <div><lable>Repository Name</lable></div>
-      <div class="row namespace-row">
-        <div class="col-xs-4">
-          <input class="form-control namespace-input" ng-model="repo.namespace" disabled>
-        </div>
-        <span class="col-xs-1 text-right splash">/</span>
-        <div  class="col-xs-4">
-          <input class="form-control repository-input" type="text" ng-model="repo.repository" disabled>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <div><lable>Dockerfile</lable></div>
-      <div>
-        <ui-codemirror class="dockerfile" ui-codemirror-opts="dockerfileOptions" ng-model="repo.dockerfile" ui-refresh="fetch"></ui-codemirror>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <button class="btn btn-sm btn-primary">Update Repository</button>
-    </div>
-
-  </form>  
-  </tab>
-  <tab heading="Images"></tab>
-  <tab heading="Tags"></tab>
-  <tab heading="Issues"></tab>
-  <tab heading="Comments"></tab>
-  <tab heading="Settings"></tab>
-  <tab heading="Statistics"></tab>
   </tabset>
 </div>
 
