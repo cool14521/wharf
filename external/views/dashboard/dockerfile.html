@@ -1,55 +1,55 @@
 <div class="block right-div">
-    <div class="block-title">
-        <h2><strong class="block-title-setting">
-                  Add Repository From Dockerfile
-                </strong></h2>
+<div class="block-title">
+  <h2><strong class="block-title-setting">
+      Add Repository From Dockerfile
+    </strong></h2>
+</div>
+<form class="repoCreateForm">
+  <div class="form-group">
+    <div class="form-title">
+      <lable><strong>Namespace (optional) and Repository Name:</strong>
+      </lable>
     </div>
-    <form class="repoCreateForm">
-        <div class="form-group">
-            <div class="form-title">
-                <lable><strong>Namespace (optional) and Repository Name:</strong>
-                </lable>
-            </div>
-            <div class="form-content">
-                <select class="form-control" ng-model="repository.namespace" ng-options="namespace for namespace in namespaces"></select>
+    <div class="form-content">
+      <select class="form-control" ng-model="repository.namespace" ng-options="namespace for namespace in namespaces"></select>
 
-                </select>
-                <div class="slash">/</div>
+      </select>
+      <div class="slash">/</div>
 
-                <input class="" type="text" placeholder="Repository Name">
-                <p>New unique Repo name; 3 - 30 characters. Only lowercase letters, digits and _ - . characters are allowed</p>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="form-title">
-                <lable><strong>Description</strong>
-                </lable>
-            </div>
-            <div class="form-content">
-                <input class="form-control repoCreateDesc" type="text" style="width:460px;">
-                <p>Limit 100 Characters</p>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="form-title">
-                <lable><strong>Repository Type:</strong>
-                </lable>
-            </div>
-            <div class="form-content repoCreateFormAuthority">
-                <div class="btn-group" data-toggle="buttons">
-                    <label class="btn btn-primary active">
-                        <input type="radio" name="options" id="option1" autocomplete="off"> &nbsp;&nbsp;Public&nbsp;&nbsp;
-                    </label>
-                    <label class="btn btn-primary">
-                        <input type="radio" name="options" id="option2" autocomplete="off"> <i class="fa fa-lock fa-2"></i>&nbsp;&nbsp;Private
-                    </label>
-                </div>
-                <p>Anyone can pull this repository and it will be listed and searchable for public use.</p>
-            </div>
-        </div>
-        <div class="form-group">
-            <button class="addRepoBtn">Add Repository</button>
-            <a class="cancelRepoBtn" href="/dashboard">Cancel</a>
-        </div>
-    </form>
+      <input class="" type="text" placeholder="Repository Name">
+      <p>New unique Repo name; 3 - 30 characters. Only lowercase letters, digits and _ - . characters are allowed</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="form-title">
+      <lable><strong>Description</strong>
+      </lable>
+    </div>
+    <div class="form-content">
+      <input class="form-control repoCreateDesc" type="text" style="width:460px;">
+      <p>Limit 100 Characters</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="form-title">
+      <lable><strong>Repository Type:</strong>
+      </lable>
+    </div>
+    <div class="form-content repoCreateFormAuthority">
+      <div class="btn-group" data-toggle="buttons">
+        <label class="btn btn-primary active">
+          <input type="radio" name="options" id="option1" autocomplete="off"> &nbsp;&nbsp;Public&nbsp;&nbsp;
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" name="options" id="option2" autocomplete="off"> <i class="fa fa-lock fa-2"></i>&nbsp;&nbsp;Private
+        </label>
+      </div>
+      <p>Anyone can pull this repository and it will be listed and searchable for public use.</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <button class="addRepoBtn">Add Repository</button>
+    <a class="cancelRepoBtn" href="/dashboard">Cancel</a>
+  </div>
+</form>
 </div>

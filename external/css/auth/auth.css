@@ -47,29 +47,29 @@ img.full-bg {
 }
 
 #login-container > .block {
-    border: none;
+  border: none;
 }
 
 .block {
-    margin: 0 0 10px;
-    padding: 20px 15px 1px;
-    background-color: #ffffff;
+  margin: 0 0 10px;
+  padding: 20px 15px 1px;
+  background-color: #ffffff;
 }
 
 .form-bordered {
-    margin: -15px -15px -1px;
+  margin: -15px -15px -1px;
 }
 
 .form-control-borderless .form-control,
 .form-control-borderless .input-group-addon,
 .form-control-borderless,
 .form-control-borderless:focus {
-    border: transparent !important;
+  border: transparent !important;
 }
 
 .form-bordered .form-group {
-    margin: 0;
-    border: none;
-    padding: 15px;
-    border-bottom: 1px dashed #eaedf1;
+  margin: 0;
+  border: none;
+  padding: 15px;
+  border-bottom: 1px dashed #eaedf1;
 }

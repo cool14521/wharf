@@ -1,91 +1,91 @@
 .repo-privated {
-    margin-left: 20px;
-    font-size: 20px;
-    font-weight: 400;
-    color: #008BB8;
+  margin-left: 20px;
+  font-size: 20px;
+  font-weight: 400;
+  color: #008BB8;
 }
 .repo-title {
-    margin-left: 5px;
-    float: left;
-    color: #005976;
-    font-size: 20px;
+  margin-left: 5px;
+  float: left;
+  color: #005976;
+  font-size: 20px;
 }
 .repo-pull {
-    float: right;
+  float: right;
 }
 .repo-pull-prefix {
-    float: right;
-    text-align: right;
-    margin-top: 7px;
-    font-size: 13px;
+  float: right;
+  text-align: right;
+  margin-top: 7px;
+  font-size: 13px;
 }
 .repo-pull-input {
-    background-color: #FFF;
-    border-bottom-color: rgba(162, 199, 229, 0.906);
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-image-outset: 0 0 0 0;
-    border-image-repeat: stretch stretch;
-    border-image-slice: 100% 100% 100% 100%;
-    border-image-source: none;
-    border-image-width: 1 1 1 1;
-    border-left-color: rgba(162, 199, 229, 0.906);
-    border-left-style: solid;
-    border-left-width: 1px;
-    border-right-color: rgba(162, 199, 229, 0.906);
-    border-right-style: solid;
-    border-right-width: 1px;
-    border-top-color: rgba(162, 199, 229, 0.906);
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-top-style: solid;
-    border-top-width: 1px;
-    color: #253237;
-    display: inline-block;
-    font-family: "Helvetica Neue", HelveticaNeue, TeXGyreHeros, FreeSans, "Nimbus Sans L", "Liberation Sans", Arimo, Helvetica, Arial, sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    height: 35px;
-    line-height: 20px;
-    margin-bottom: 0px;
-    margin-right: 15px;
-    margin-top: 0px;
-    padding-bottom: 0px;
-    padding-left: 12px;
-    padding-right: 12px;
-    padding-top: 0px;
-    transition-delay: 0s, 0s;
-    transition-duration: 0.2s, 0.2s;
-    transition-property: border, box-shadow;
-    transition-timing-function: cubic-bezier(0, 0, 1, 1), cubic-bezier(0, 0, 1, 1);
-    vertical-align: middle;
-    width: 300px;
-    float: right;
+  background-color: #FFF;
+  border-bottom-color: rgba(162, 199, 229, 0.906);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-image-outset: 0 0 0 0;
+  border-image-repeat: stretch stretch;
+  border-image-slice: 100% 100% 100% 100%;
+  border-image-source: none;
+  border-image-width: 1 1 1 1;
+  border-left-color: rgba(162, 199, 229, 0.906);
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-right-color: rgba(162, 199, 229, 0.906);
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-top-color: rgba(162, 199, 229, 0.906);
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  color: #253237;
+  display: inline-block;
+  font-family: "Helvetica Neue", HelveticaNeue, TeXGyreHeros, FreeSans, "Nimbus Sans L", "Liberation Sans", Arimo, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  height: 35px;
+  line-height: 20px;
+  margin-bottom: 0px;
+  margin-right: 15px;
+  margin-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 0px;
+  transition-delay: 0s, 0s;
+  transition-duration: 0.2s, 0.2s;
+  transition-property: border, box-shadow;
+  transition-timing-function: cubic-bezier(0, 0, 1, 1), cubic-bezier(0, 0, 1, 1);
+  vertical-align: middle;
+  width: 300px;
+  float: right;
 }
 .repo-desc {
-    margin-left: 20px;
-    font-size: 13px;
+  margin-left: 20px;
+  font-size: 13px;
 }
 .repo-calc {
-    margin-left: 20px;
+  margin-left: 20px;
 }
 .repo-calc-group {
-    float: left;
+  float: left;
 }
 .repo-calc-group-icon {
-    font-size: 18px;
+  font-size: 18px;
 }
 .repo-calc-group-calc {
-    font-size: 20px;
+  font-size: 20px;
 }
 .repo-created {
-    margin-left: 25px;
-    font-size: 15px;
+  margin-left: 25px;
+  font-size: 15px;
 }
 .repo-created-icon {
-    font-size: 18px;
-    float: left;
-    margin-top: 4px;
+  font-size: 18px;
+  float: left;
+  margin-top: 4px;
 }
