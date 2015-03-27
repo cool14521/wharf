@@ -2,18 +2,21 @@ package models
 
 import (
 	"fmt"
+	"time"
+
+	"github.com/dockercn/wharf/utils"
 )
 
 type Team struct {
-	Id           string   `json:"id"`             //
-	Name         string   `json:"name"`           //
-	Organization string   `json:"organization"`   //
-	Username     string   `json:"username"`       //
-	Description  string   `json:"description"`    //
-	Users        []string `json:"users"`          //
-	Permissions  []string `json:"permissions"` //
-	Repositories []string `json:"repositories"`   //
-	Memo         []string `json:"memo"`           //
+	Id           string   `json:"id"`           //
+	Name         string   `json:"name"`         //
+	Organization string   `json:"organization"` //
+	Username     string   `json:"username"`     //
+	Description  string   `json:"description"`  //
+	Users        []string `json:"users"`        //
+	Permissions  []string `json:"permissions"`  //
+	Repositories []string `json:"repositories"` //
+	Memo         []string `json:"memo"`         //
 }
 
 func (team *Team) Has(org, name string) (bool, []byte, error) {
@@ -67,6 +70,23 @@ func (team *Team) Remove() error {
 	}
 
 	if _, err := LedisDB.HDel([]byte(GLOBAL_TEAM_INDEX), []byte(team.Id)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (team *Team) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	team.Memo = append(team.Memo, log.Id)
+
+	if err := team.Save(); err != nil {
 		return err
 	}
 

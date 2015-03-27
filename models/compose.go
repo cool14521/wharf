@@ -2,6 +2,9 @@ package models
 
 import (
 	"fmt"
+	"time"
+
+	"github.com/dockercn/wharf/utils"
 )
 
 type Compose struct {
@@ -47,6 +50,23 @@ func (c *Compose) Save() error {
 	}
 
 	if _, err := LedisDB.HSet([]byte(GLOBAL_COMPOSE_INDEX), []byte(fmt.Sprintf("%s:%s", c.Namespace, c.Compose)), []byte(c.Id)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (compose *Compose) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	compose.Memo = append(compose.Memo, log.Id)
+
+	if err := compose.Save(); err != nil {
 		return err
 	}
 

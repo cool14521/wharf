@@ -3,29 +3,32 @@ package models
 import (
 	"fmt"
 	"regexp"
+	"time"
+
+	"github.com/dockercn/wharf/utils"
 )
 
 type User struct {
-	Id                string       `json:"id"`                //
-	Username          string       `json:"username"`          //
-	Password          string       `json:"password"`          //
-	Email             string       `json:"email"`             //
-	Fullname          string       `json:"fullname"`          //
-	Company           string       `json:"company"`           //
-	Location          string       `json:"location"`          //
-	Mobile            string       `json:"mobile"`            //
-	URL               string       `json:"url"`               //
-	Gravatar          string       `json:"gravatar"`          //
-	Created           int64        `json:"created"`           //
-	Updated           int64        `json:"updated"`           //
-	Repositories      []string     `json:"repositories"`      //
-	Organizations     []string     `json:"organizations"`     // Owner's Organizations
-	Teams             []string     `json:"teams"`             // Owner's Teams
-  JoinOrganizations []string     `json:"joinorganizations"` // Join's Organizations
-  JoinTeams         []string     `json:"jointeams"`         // Join's Teams
-	Starts            []string     `json:"starts"`            //
-	Comments          []string     `json:"comments"`          //
-	Memo              []string     `json:"memo"`              //
+	Id                string   `json:"id"`                //
+	Username          string   `json:"username"`          //
+	Password          string   `json:"password"`          //
+	Email             string   `json:"email"`             //
+	Fullname          string   `json:"fullname"`          //
+	Company           string   `json:"company"`           //
+	Location          string   `json:"location"`          //
+	Mobile            string   `json:"mobile"`            //
+	URL               string   `json:"url"`               //
+	Gravatar          string   `json:"gravatar"`          //
+	Created           int64    `json:"created"`           //
+	Updated           int64    `json:"updated"`           //
+	Repositories      []string `json:"repositories"`      //
+	Organizations     []string `json:"organizations"`     // Owner's Organizations
+	Teams             []string `json:"teams"`             // Owner's Teams
+	JoinOrganizations []string `json:"joinorganizations"` // Join's Organizations
+	JoinTeams         []string `json:"jointeams"`         // Join's Teams
+	Starts            []string `json:"starts"`            //
+	Comments          []string `json:"comments"`          //
+	Memo              []string `json:"memo"`              //
 }
 
 func (user *User) Has(username string) (bool, []byte, error) {
@@ -52,22 +55,22 @@ func (user *User) GetById(id string) error {
 }
 
 func (user *User) Get(username, password string) error {
-  if exist, id, err := user.Has(username); err != nil {
-    return err
-  } else if exist == false && err == nil {
-    return fmt.Errorf("User is not exist: %s", username)
-  } else if exist == true && err == nil {
-    if err := Get(user, id); err != nil {
-      return err
-    } else {
-      if user.Password != password {
-        return fmt.Errorf("User password error.")
-      } else {
-        return nil
-      }
-    }
-  }
-  return nil
+	if exist, id, err := user.Has(username); err != nil {
+		return err
+	} else if exist == false && err == nil {
+		return fmt.Errorf("User is not exist: %s", username)
+	} else if exist == true && err == nil {
+		if err := Get(user, id); err != nil {
+			return err
+		} else {
+			if user.Password != password {
+				return fmt.Errorf("User password error.")
+			} else {
+				return nil
+			}
+		}
+	}
+	return nil
 }
 
 func (user *User) Save() error {
@@ -140,4 +143,21 @@ func (user *User) All() []*User {
 	}
 
 	return allUsers
+}
+
+func (user *User) Log(action, level, t int64, actionID string, content []byte) error {
+	log := Log{Action: action, ActionId: actionID, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionID))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	user.Memo = append(user.Memo, log.Id)
+
+	if err := user.Save(); err != nil {
+		return err
+	}
+
+	return nil
 }

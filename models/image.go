@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -26,7 +25,7 @@ type Image struct {
 	Uploaded   bool     `json:"uploaded"`   //
 	Checksumed bool     `json:"checksumed"` //
 	Encrypted  bool     `json:"encrypted"`  //
-  Version    int64    `json:"version"`    //
+	Version    int64    `json:"version"`    //
 	Created    int64    `json:"created"`    //
 	Updated    int64    `json:"updated"`    //
 	Memo       []string `json:"memo"`       //
@@ -134,16 +133,12 @@ func (i *Image) PutJSON(imageId, json string, version int64) error {
 	} else if has == false {
 		i.Id, i.ImageId, i.JSON, i.Created, i.Version = string(utils.GeneralKey(uuid.NewV4().String())), imageId, json, time.Now().UnixNano()/int64(time.Millisecond), version
 
-		log.Println("[REGISTRY API V1&V2]", i.ImageId, "json:", json)
-
 		if err = i.Save(); err != nil {
 			return err
 		}
 	} else {
 		i.ImageId, i.JSON = imageId, json
 		i.Uploaded, i.Checksumed, i.Encrypted, i.Size, i.Updated, i.Version = false, false, false, 0, time.Now().UnixNano()/int64(time.Millisecond), version
-
-		log.Println("[REGISTRY API V1&V2]", i.ImageId, "json:", json)
 
 		if err := i.Save(); err != nil {
 			return err
@@ -164,10 +159,6 @@ func (i *Image) PutLayer(imageId string, path string, uploaded bool, size int64)
 		if err := i.Save(); err != nil {
 			return err
 		}
-
-		log.Println("[REGISTRY API V1&V2]", i.ImageId, "path:", path)
-		log.Println("[REGISTRY API V1&V2]", i.ImageId, "size:", size)
-
 	}
 
 	return nil
@@ -194,9 +185,6 @@ func (i *Image) PutChecksum(imageId string, checksum string, checksumed bool, pa
 		if _, err := LedisDB.HSet([]byte(GLOBAL_TARSUM_INDEX), []byte(checksum), []byte(i.Id)); err != nil {
 			return err
 		}
-
-		log.Println("[REGISTRY API V1&V2]", i.ImageId, "checksum:", i.Checksum)
-
 	}
 
 	return nil
@@ -242,7 +230,22 @@ func (i *Image) PutAncestry(imageId string) error {
 		return err
 	}
 
-	log.Println("[REGISTRY API V1&V2]", i.ImageId, "ancestry:", i.Ancestry)
+	return nil
+}
+
+func (image *Image) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	image.Memo = append(image.Memo, log.Id)
+
+	if err := image.Save(); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -2,6 +2,9 @@ package models
 
 import (
 	"fmt"
+	"time"
+
+	"github.com/dockercn/wharf/utils"
 )
 
 type Organization struct {
@@ -66,6 +69,23 @@ func (org *Organization) Remove() error {
 	}
 
 	if _, err := LedisDB.HDel([]byte(GLOBAL_ORGANIZATION_INDEX), []byte(org.Id)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (org *Organization) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	org.Memo = append(org.Memo, log.Id)
+
+	if err := org.Save(); err != nil {
 		return err
 	}
 

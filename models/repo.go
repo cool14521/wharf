@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/dockercn/wharf/utils"
@@ -215,8 +214,6 @@ func (r *Repository) PutJSONFromManifests(image map[string]string, namespace, re
 		return err
 	}
 
-	log.Println("[REGISTRY API V2] Convert Manifests To JSON: ", r.JSON)
-
 	return nil
 }
 
@@ -250,8 +247,22 @@ func (r *Repository) PutTagFromManifests(image, namespace, repository, tag, mani
 		return err
 	}
 
-	log.Println("[REGISTRY API V2] Tag: ", t)
-	log.Println("[REGISTRY API V2] Repository Tags: ", r.Tags)
+	return nil
+}
+
+func (repo *Repository) Log(action, level, t int64, actionId string, content []byte) error {
+	log := Log{Action: action, ActionId: actionId, Level: level, Type: t, Content: string(content), Created: time.Now().UnixNano() / int64(time.Millisecond)}
+	log.Id = string(utils.GeneralKey(actionId))
+
+	if err := log.Save(); err != nil {
+		return err
+	}
+
+	repo.Memo = append(repo.Memo, log.Id)
+
+	if err := repo.Save(); err != nil {
+		return err
+	}
 
 	return nil
 }
