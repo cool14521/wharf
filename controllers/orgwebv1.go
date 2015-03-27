@@ -22,6 +22,18 @@ func (this *OrganizationWebV1Controller) URLMapping() {
 	this.Mapping("GetOrganizationDetail", this.GetOrganizationDetail)
 }
 
+func (this *OrganizationWebV1Controller) JSONOut(code int, message string, data interface{}) {
+	if data == nil {
+		result := map[string]string{"message": message}
+		this.Data["json"] = result
+	} else {
+		this.Data["json"] = data
+	}
+
+	this.Ctx.Output.Context.Output.SetStatus(code)
+	this.ServeJson()
+}
+
 func (this *OrganizationWebV1Controller) Prepare() {
 	this.EnableXSRF = false
 
@@ -41,12 +53,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 	if exist != true {
 		beego.Error("[WEB API V1] Load session failure")
-
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	}
 
@@ -54,50 +61,27 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
 		beego.Error("[WEB API V1] Unmarshal organization data error:", err.Error())
-
-		result := map[string]string{"message": err.Error()}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	if exist, _, err := user.Has(org.Name); err != nil {
 		beego.Error("[WEB API V1] Organization singup error: ", err.Error())
-		result := map[string]string{"message": err.Error()}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else if exist == true {
 		beego.Error("[WEB API V1] Organization already exist:", user.Username)
-
-		result := map[string]string{"message": "Namespace is occupation already by another user."}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "Namespace is occupation already by another user", nil)
 		return
 	}
 
 	if exist, _, err := org.Has(org.Name); err != nil {
 		beego.Error("[WEB API V1] Organization create error: ", err.Error())
-		result := map[string]string{"message": err.Error()}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else if exist == true {
 		beego.Error("[WEB API V1] Organization already exist:", user.Username)
-
-		result := map[string]string{"message": "Namespace is occupation already by another organization."}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "Namespace is occupation already by another organization", nil)
 		return
 	}
 
@@ -110,12 +94,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 	if err := org.Save(); err != nil {
 		beego.Error("[WEB API V1] Organization save error:", err.Error())
-
-		result := map[string]string{"message": "Organization save error."}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "Organization save error", nil)
 		return
 	}
 
@@ -127,12 +106,7 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 
 	if err := user.Save(); err != nil {
 		beego.Error("[WEB API V1] User save error:", err.Error())
-
-		result := map[string]string{"message": "User save error."}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "User save error", nil)
 		return
 	}
 
@@ -150,39 +124,21 @@ func (this *OrganizationWebV1Controller) PostOrganization() {
 	user.Get(user.Username, user.Password)
 	this.Ctx.Input.CruSession.Set("user", user)
 
-	result := map[string]string{"message": "Create organization successfully."}
-	this.Data["json"] = &result
-
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.ServeJson()
+	this.JSONOut(http.StatusOK, "Create organization successfully.", nil)
 	return
 }
 
 func (this *OrganizationWebV1Controller) PutOrganization() {
-
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-
 		beego.Error("[WEB API V1] Load session failure")
-
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
-
 	} else {
-
 		var org models.Organization
 
 		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
 			beego.Error("[WEB API V1] Unmarshal organization data error:", err.Error())
-
-			result := map[string]string{"message": err.Error()}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 			return
 		}
 
@@ -192,12 +148,7 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 
 		if err := org.Save(); err != nil {
 			beego.Error("[WEB API V1] Organization save error:", err.Error())
-
-			result := map[string]string{"message": "Organization save error."}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, "Organization save error", nil)
 			return
 		}
 
@@ -209,11 +160,7 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 			beego.Error("[WEB API V1] Log Erro:", err.Error())
 		}
 
-		result := map[string]string{"message": "Update organization successfully."}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.ServeJson()
+		this.JSONOut(http.StatusOK, "Update organization successfully", nil)
 		return
 	}
 }
@@ -221,12 +168,7 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 func (this *OrganizationWebV1Controller) GetOrganizations() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		beego.Error("[WEB API V1] Load session failure")
-
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	} else {
 		orgs := make([]models.Organization, 0)
@@ -235,69 +177,41 @@ func (this *OrganizationWebV1Controller) GetOrganizations() {
 			org := new(models.Organization)
 			if err := org.GetByName(name); err != nil {
 				beego.Error("[WEB API V1] Get organizations error:", err.Error())
-
-				result := map[string]string{"message": "Get organizations error."}
-				this.Data["json"] = &result
-
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-				this.ServeJson()
+				this.JSONOut(http.StatusBadRequest, "Get organizations error", nil)
+				return
 			}
 
 			orgs = append(orgs, *org)
 		}
 
-		this.Data["json"] = &orgs
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.ServeJson()
+		this.JSONOut(http.StatusOK, "", orgs)
 		return
 	}
 }
 
 func (this *OrganizationWebV1Controller) GetOrganizationDetail() {
 	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-
 		beego.Error("[WEB API V1] Load session failure")
-
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	} else {
 		organization := new(models.Organization)
 
 		if _, _, err := organization.Has(this.Ctx.Input.Param(":org")); err != nil {
 			beego.Error("[WEB API V1] Get organizations error:", err.Error())
-
-			result := map[string]string{"message": "Get organizations error."}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, "Get organizations error", nil)
 			return
 		}
 
-		this.Data["json"] = &organization
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.ServeJson()
+		this.JSONOut(http.StatusOK, "", organization)
 		return
 	}
 }
 
 func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
-
 	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-
 		beego.Error("[WEB API V1] Load session failure")
-
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	}
 
@@ -305,12 +219,7 @@ func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
 
 	if err := org.GetByName(this.Ctx.Input.Param(":org")); err != nil {
 		beego.Error("[WEB API V1] Load session failure")
-
-		result := map[string]string{"message": "Organization load failure"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "Get organizations error", nil)
 		return
 	}
 
@@ -324,9 +233,6 @@ func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
 		repositories = append(repositories, *repository)
 	}
 
-	this.Data["json"] = &repositories
-
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.ServeJson()
+	this.JSONOut(http.StatusOK, "", repositories)
 	return
 }

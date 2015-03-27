@@ -20,6 +20,18 @@ func (this *PingAPIV2Controller) URLMapping() {
 	this.Mapping("GetPing", this.GetPing)
 }
 
+func (this *PingAPIV2Controller) JSONOut(code int, message string, data interface{}) {
+	if data == nil {
+		result := map[string]string{"message": message}
+		this.Data["json"] = result
+	} else {
+		this.Data["json"] = data
+	}
+
+	this.Ctx.Output.Context.Output.SetStatus(code)
+	this.ServeJson()
+}
+
 func (this *PingAPIV2Controller) Prepare() {
 	this.EnableXSRF = false
 
@@ -30,35 +42,20 @@ func (this *PingAPIV2Controller) Prepare() {
 
 func (this *PingAPIV2Controller) GetPing() {
 	if len(this.Ctx.Input.Header("Authorization")) == 0 {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-
-		this.ServeJson()
+		this.JSONOut(http.StatusUnauthorized, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}})
 		return
 	}
 
 	if username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization")); err != nil {
 		beego.Error("[REGISTRY API V2] Decode Basic Auth Error:", err.Error())
-
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.ServeJson()
+		this.JSONOut(http.StatusUnauthorized, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}})
 		return
 	} else {
 		user := new(models.User)
 
 		if err := user.Get(username, passwd); err != nil {
 			beego.Error("[REGISTRY API V2] Search user error: ", err.Error())
-
-			result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.ServeJson()
+			this.JSONOut(http.StatusUnauthorized, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}})
 			return
 		}
 
@@ -69,11 +66,7 @@ func (this *PingAPIV2Controller) GetPing() {
 			beego.Error("[REGISTRY API V2] Log Erro:", err.Error())
 		}
 
-		result := map[string]string{"status": "User authorization successfully."}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.ServeJson()
+		this.JSONOut(http.StatusOK, "", "User authorization successfully.")
 		return
 	}
 }

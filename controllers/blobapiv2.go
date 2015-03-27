@@ -25,6 +25,18 @@ func (this *BlobAPIV2Controller) URLMapping() {
 	this.Mapping("GetBlobs", this.GetBlobs)
 }
 
+func (this *BlobAPIV2Controller) JSONOut(code int, message string, data interface{}) {
+	if data == nil {
+		result := map[string]string{"message": message}
+		this.Data["json"] = result
+	} else {
+		this.Data["json"] = data
+	}
+
+	this.Ctx.Output.Context.Output.SetStatus(code)
+	this.ServeJson()
+}
+
 func (this *BlobAPIV2Controller) Prepare() {
 	this.EnableXSRF = false
 
@@ -39,11 +51,7 @@ func (this *BlobAPIV2Controller) HeadDigest() {
 	beego.Debug("[REGISTRY API V2] Tarsum.v1+sha256: ", digest)
 
 	if has, _, _ := image.HasTarsum(digest); has == false {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
-		this.ServeJson()
+		this.JSONOut(http.StatusNotFound, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}})
 		return
 	}
 
@@ -84,8 +92,7 @@ func (this *BlobAPIV2Controller) PutBlobs() {
 	data, _ := ioutil.ReadAll(this.Ctx.Request.Body)
 
 	if err := ioutil.WriteFile(layerfile, data, 0777); err != nil {
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeBlobUploadUnknown]}})
 		return
 	}
 
@@ -101,32 +108,20 @@ func (this *BlobAPIV2Controller) GetBlobs() {
 	beego.Debug("[REGISTRY API V2] Tarsum.v1+sha256: ", digest)
 
 	if has, _, _ := image.HasTarsum(digest); has == false {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusNotFound)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}})
 		return
 	}
 
 	layerfile := image.Path
 
 	if _, err := os.Stat(layerfile); err != nil {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeBlobUnknown]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeBlobUnknown]}})
 		return
 	}
 
 	file, err := ioutil.ReadFile(layerfile)
 	if err != nil {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeBlobUnknown]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeBlobUnknown]}})
 		return
 	}
 

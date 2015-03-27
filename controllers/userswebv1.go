@@ -61,18 +61,10 @@ func (this *UserWebAPIV1Controller) Prepare() {
 func (this *UserWebAPIV1Controller) GetProfile() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
 		beego.Error("[WEB API V1] Load user session failure!")
-
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	} else {
-		this.Data["json"] = &user
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.ServeJson()
+		this.JSONOut(http.StatusOK, "", user)
 		return
 	}
 }
@@ -82,19 +74,11 @@ func (this *UserWebAPIV1Controller) GetUserProfile() {
 
 	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
 		beego.Error("[WEB API V1] Search user error:", err.Error())
-		result := map[string]string{"message": "Search user error"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else if exist == false && err == nil {
 		beego.Info("[WEB API V1] Search user none:", this.Ctx.Input.Param(":username"))
-		result := map[string]string{"message": "Search user error"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 		return
 	}
 
@@ -108,39 +92,24 @@ func (this *UserWebAPIV1Controller) GetUserProfile() {
 func (this *UserWebAPIV1Controller) GetUser() {
 	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		beego.Error("[WEB API V1] Load session failure")
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
-
 	} else {
 		user := new(models.User)
 
 		if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
 			beego.Error("[WEB API V1] Search user error:", err.Error())
-			result := map[string]string{"message": "Search user error"}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 			return
 		} else if exist == false && err == nil {
 			beego.Info("[WEB API V1] Search user none:", this.Ctx.Input.Param(":username"))
-			result := map[string]string{"message": "Search user error"}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 			return
 		} else {
 			users := make([]models.User, 0)
 			users = append(users, *user)
 
-			this.Data["json"] = &users
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-			this.ServeJson()
+			this.JSONOut(http.StatusOK, "", users)
 			return
 		}
 	}
@@ -151,27 +120,15 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
 		beego.Error("[WEB API V1] Unmarshal user signin data error:", err.Error())
-		result := map[string]string{"message": err.Error()}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else {
 		beego.Debug("[WEB API V1] User signin:", string(this.Ctx.Input.CopyBody()))
 
 		if err := user.Get(user.Username, user.Password); err != nil {
 			beego.Error("[WEB API V1] User singin error:", err.Error())
-			result := map[string]string{"message": err.Error()}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 			return
-		}
-
-		if user.Gravatar == "" {
-			user.Gravatar = "/static/images/default-user-icon-profile.png"
 		}
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
@@ -192,51 +149,28 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
 		beego.Error("[WEB API V1] Unmarshal user signup data error:", err.Error())
-
-		result := map[string]string{"message": err.Error()}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else {
 		beego.Debug("[WEB API V1] User signup:", string(this.Ctx.Input.CopyBody()))
 
 		if exist, _, err := org.Has(user.Username); err != nil {
 			beego.Error("[WEB API V1] User singup error: ", err.Error())
-			result := map[string]string{"message": err.Error()}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 			return
 		} else if exist == true {
 			beego.Error("[WEB API V1] Organization already exist:", user.Username)
-
-			result := map[string]string{"message": "Namespace is occupation already by organization."}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, "Namespace is occupation already by organization.", nil)
 			return
 		}
 
 		if exist, _, err := user.Has(user.Username); err != nil {
 			beego.Error("[WEB API V1] User singup error: ", err.Error())
-			result := map[string]string{"message": err.Error()}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 			return
 		} else if exist == true {
 			beego.Error("[WEB API V1] User already exist:", user.Username)
-
-			result := map[string]string{"message": "User already exist."}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, "User already exist.", nil)
 			return
 		} else {
 			user.Id = string(utils.GeneralKey(user.Username))
@@ -245,11 +179,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 			if err := user.Save(); err != nil {
 				beego.Error("[WEB API V1] User save error:", err.Error())
-				result := map[string]string{"message": "User save error."}
-				this.Data["json"] = &result
-
-				this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-				this.ServeJson()
+				this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 				return
 			}
 
@@ -258,11 +188,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 				beego.Error("[WEB API V1] Log Erro:", err.Error())
 			}
 
-			result := map[string]string{"message": "User Singup Successfully!"}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-			this.ServeJson()
+			this.JSONOut(http.StatusOK, "User Singup Successfully!", nil)
 			return
 		}
 	}
@@ -271,11 +197,7 @@ func (this *UserWebAPIV1Controller) Signup() {
 func (this *UserWebAPIV1Controller) GetNamespaces() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		beego.Error("[WEB API V1] Load session failure")
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	} else {
 		namespaces := make([]string, 0)
@@ -283,10 +205,7 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 		namespaces = append(namespaces, user.Username)
 		namespaces = append(namespaces, user.Organizations...)
 
-		this.Data["json"] = &namespaces
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.ServeJson()
+		this.JSONOut(http.StatusOK, "", namespaces)
 		return
 	}
 }
@@ -295,23 +214,14 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 	file, fileHeader, err := this.Ctx.Request.FormFile("file")
 	if err != nil {
 		beego.Error(fmt.Sprintf("[image] upload gravatar err,err=%s", err))
-
-		result := map[string]string{"message": "Upload gravatar failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	prefix := strings.Split(fileHeader.Filename, ".")[0]
 	suffix := strings.Split(fileHeader.Filename, ".")[1]
 	if suffix != "png" && suffix != "jpg" && suffix != "jpeg" {
-		result := map[string]string{"message": "gravatar must be .jpg,.jepg or .png", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "gravatar must be .jpg,.jepg or .png", nil)
 		return
 	}
 
@@ -321,11 +231,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 	f, err := os.OpenFile(fmt.Sprintf("%s%s%s", beego.AppConfig.String("gravatar"), "/", fileHeader.Filename), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		result := map[string]string{"message": "Upload gravatar failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -336,11 +242,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 	var img image.Image
 	imageFile, err := os.Open(fmt.Sprintf("%s%s%s", beego.AppConfig.String("gravatar"), "/", fileHeader.Filename))
 	if err != nil {
-		result := map[string]string{"message": "Upload gravatar failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -355,11 +257,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 	if err != nil {
 		imageFile.Close()
-		result := map[string]string{"message": "Upload gravatar resize failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -371,11 +269,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 	out, err := os.Create(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix))
 	if err != nil {
-		result := map[string]string{"message": "Upload gravatar resize failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	defer out.Close()
@@ -391,12 +285,7 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 	//删除用户自己上传的图片
 	os.Remove(fmt.Sprintf("%s%s%s", beego.AppConfig.String("gravatar"), "/", fileHeader.Filename))
-
-	result := map[string]string{"message": "Please click button to finish uploading gravatar", "url": fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix)}
-
-	this.Data["json"] = &result
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.ServeJson()
+	this.JSONOut(http.StatusOK, "", map[string]string{"message": "Please click button to finish uploading gravatar", "url": fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix)})
 	return
 }
 
@@ -404,23 +293,14 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	var u map[string]interface{}
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
 		beego.Error(fmt.Sprintf("[WEB API V1] JSON unmarshal failure: %s", err.Error()))
-		result := map[string]string{"message": "Update User failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if exist != true {
 		beego.Error("[WEB API V1] Load session failure")
-
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	}
 
@@ -439,11 +319,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	user.Gravatar, user.Company, user.URL = u["gravatar"].(string), u["company"].(string), u["url"].(string)
 
 	if err := user.Save(); err != nil {
-		result := map[string]string{"message": "User save failure"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "User save failure", nil)
 		return
 	}
 
@@ -454,11 +330,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
-	result := map[string]string{"message": "Update Profile Successfully!"}
-	this.Data["json"] = &result
-
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.ServeJson()
+	this.JSONOut(http.StatusOK, "Update Profile Successfully!", nil)
 	return
 }
 
@@ -466,46 +338,27 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 	var u map[string]interface{}
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
 		beego.Error(fmt.Sprintf("[WEB API] JSON unmarshal failure: %s", err.Error()))
-		result := map[string]string{"message": "Update password failure"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	beego.Debug("[WEB API V1] Password updated:", string(this.Ctx.Input.CopyBody()))
 
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if exist != true {
+	if exist == false {
 		beego.Error("[WEB API V1] Load session failure")
-
-		result := map[string]string{"message": "Session load failure", "url": "/auth"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	} else if u["oldPassword"].(string) != user.Password {
 		beego.Error("[WEB API V1] User's password error!")
-
-		result := map[string]string{"message": "account and password not match"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "account and password not match", nil)
 		return
 	}
 
 	user.Password = u["newPassword"].(string)
 	if err := user.Save(); err != nil {
 		beego.Error("[WEB API V1] User's save error!")
-
-		result := map[string]string{"message": "Update password failure"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -514,21 +367,14 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 		beego.Error("[WEB API V1] Log Erro:", err.Error())
 	}
 
-	result := map[string]string{"message": "Update password success!"}
-	this.Data["json"] = &result
-
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.ServeJson()
+	this.JSONOut(http.StatusOK, "Update password success!", nil)
 	return
 }
 
 func (this *UserWebAPIV1Controller) GetUsers() {
 	user := new(models.User)
-
 	users := user.All()
-	this.Data["json"] = &users
 
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.ServeJson()
+	this.JSONOut(http.StatusOK, "", users)
 	return
 }

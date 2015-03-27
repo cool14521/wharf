@@ -21,6 +21,18 @@ func (this *ManifestsAPIV2Controller) URLMapping() {
 	this.Mapping("GetManifests", this.GetManifests)
 }
 
+func (this *ManifestsAPIV2Controller) JSONOut(code int, message string, data interface{}) {
+	if data == nil {
+		result := map[string]string{"message": message}
+		this.Data["json"] = result
+	} else {
+		this.Data["json"] = data
+	}
+
+	this.Ctx.Output.Context.Output.SetStatus(code)
+	this.ServeJson()
+}
+
 func (this *ManifestsAPIV2Controller) Prepare() {
 	this.EnableXSRF = false
 
@@ -36,11 +48,7 @@ func (this *ManifestsAPIV2Controller) PutManifests() {
 	repo := new(models.Repository)
 
 	if err := repo.Put(namespace, repository, "", this.Ctx.Input.Header("User-Agent"), models.APIVERSION_V2); err != nil {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeManifestInvalid]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeManifestInvalid]}})
 		return
 	}
 
@@ -60,11 +68,7 @@ func (this *ManifestsAPIV2Controller) GetTags() {
 	repo := new(models.Repository)
 
 	if has, _, err := repo.Has(namespace, repository); err != nil || has == false {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeNameInvalid]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeNameInvalid]}})
 		return
 	}
 
@@ -76,11 +80,7 @@ func (this *ManifestsAPIV2Controller) GetTags() {
 	for _, value := range repo.Tags {
 		t := new(models.Tag)
 		if err := t.GetById(value); err != nil {
-			result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeTagInvalid]}}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-			this.ServeJson()
+			this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeTagInvalid]}})
 			return
 		}
 
@@ -103,11 +103,7 @@ func (this *ManifestsAPIV2Controller) GetManifests() {
 
 	t := new(models.Tag)
 	if err := t.GetById(fmt.Sprintf("%s:%s:%s", namespace, repository, tag)); err != nil {
-		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeTagInvalid]}}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeTagInvalid]}})
 		return
 	}
 

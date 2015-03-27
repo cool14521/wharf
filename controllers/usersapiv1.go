@@ -19,6 +19,18 @@ func (this *UserAPIV1Controller) URLMapping() {
 	this.Mapping("GetUsers", this.GetUsers)
 }
 
+func (this *UserAPIV1Controller) JSONOut(code int, message string, data interface{}) {
+	if data == nil {
+		result := map[string]string{"message": message}
+		this.Data["json"] = result
+	} else {
+		this.Data["json"] = data
+	}
+
+	this.Ctx.Output.Context.Output.SetStatus(code)
+	this.ServeJson()
+}
+
 func (this *UserAPIV1Controller) Prepare() {
 	this.EnableXSRF = false
 
@@ -42,24 +54,14 @@ func (this *UserAPIV1Controller) PostUsers() {
 func (this *UserAPIV1Controller) GetUsers() {
 	if username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization")); err != nil {
 		beego.Error("[REGISTRY API V1] Decode Basic Auth Error:", err.Error())
-
-		result := map[string]string{"error": "Decode authorization failure."}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-		this.ServeJson()
+		this.JSONOut(http.StatusUnauthorized, err.Error(), nil)
 		return
 	} else {
 		user := new(models.User)
 
 		if err := user.Get(username, passwd); err != nil {
 			beego.Error("[REGISTRY API V1] Search user error: ", err.Error())
-
-			result := map[string]string{"error": "User authorization failure."}
-			this.Data["json"] = &result
-
-			this.Ctx.Output.Context.Output.SetStatus(http.StatusUnauthorized)
-			this.ServeJson()
+			this.JSONOut(http.StatusUnauthorized, err.Error(), nil)
 			return
 		}
 
@@ -70,11 +72,7 @@ func (this *UserAPIV1Controller) GetUsers() {
 			beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
 		}
 
-		result := map[string]string{"status": "User authorization successfully."}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-		this.ServeJson()
+		this.JSONOut(http.StatusOK, "User authorization successfully.", nil)
 		return
 	}
 }
