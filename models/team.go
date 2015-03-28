@@ -13,8 +13,8 @@ type Team struct {
 	Organization string   `json:"organization"` //
 	Username     string   `json:"username"`     //
 	Description  string   `json:"description"`  //
+	Write        bool     `json:"write"`        //
 	Users        []string `json:"users"`        //
-	Permissions  []string `json:"permissions"`  //
 	Repositories []string `json:"repositories"` //
 	Memo         []string `json:"memo"`         //
 }
