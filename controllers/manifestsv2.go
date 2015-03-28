@@ -52,9 +52,7 @@ func (this *ManifestsAPIV2Controller) PutManifests() {
 		return
 	}
 
-	if err := manifestsConvertV1(manifest); err != nil {
-		beego.Error("[REGISTRY API V2] Decode Manifest Error: ", err.Error())
-	}
+	manifestsConvertV1(manifest)
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
@@ -89,10 +87,7 @@ func (this *ManifestsAPIV2Controller) GetTags() {
 
 	data["tags"] = tags
 
-	this.Data["json"] = &data
-
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.ServeJson()
+	this.JSONOut(http.StatusOK, "", data)
 	return
 }
 
@@ -106,8 +101,6 @@ func (this *ManifestsAPIV2Controller) GetManifests() {
 		this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeTagInvalid]}})
 		return
 	}
-
-	beego.Trace("[Docker Registry API V2] Manifests:", t.Manifest)
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(t.Manifest))

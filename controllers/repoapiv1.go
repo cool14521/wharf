@@ -55,7 +55,6 @@ func (this *RepoAPIV1Controller) PutRepository() {
 	repo := new(models.Repository)
 
 	if err := repo.Put(namespace, repository, string(this.Ctx.Input.CopyBody()), this.Ctx.Input.Header("User-Agent"), models.APIVERSION_V1); err != nil {
-		beego.Error("[REGISTRY API V1] Put repository error:", err.Error())
 		this.JSONOut(http.StatusForbidden, err.Error(), nil)
 		return
 	}
@@ -67,21 +66,15 @@ func (this *RepoAPIV1Controller) PutRepository() {
 		this.Ctx.Output.Context.ResponseWriter.Header().Set("WWW-Authenticate", token)
 	}
 
-	memo, _ := json.Marshal(this.Ctx.Input.Header)
-
 	user := new(models.User)
 	if _, _, err := user.Has(username); err != nil {
-		beego.Error("[REGISTRY API V1] Get user error:", err.Error())
 		this.JSONOut(http.StatusForbidden, err.Error(), nil)
 		return
 	}
 
-	if err := user.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo); err != nil {
-		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
-	}
-	if err := repo.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo); err != nil {
-		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
-	}
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	user.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo)
+	repo.Log(models.ACTION_UPDATE_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo)
 
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("X-Docker-Endpoints", beego.AppConfig.String("docker::Endpoints"))
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
@@ -95,21 +88,17 @@ func (this *RepoAPIV1Controller) PutTag() {
 
 	tag := this.Ctx.Input.Param(":tag")
 
-	beego.Debug("[REGISTRY API V1] Repository Tag:", string(this.Ctx.Input.CopyBody()))
-
 	r, _ := regexp.Compile(`"([[:alnum:]]+)"`)
 	imageIds := r.FindStringSubmatch(string(this.Ctx.Input.CopyBody()))
 
 	repo := new(models.Repository)
 	if err := repo.PutTag(imageIds[1], namespace, repository, tag); err != nil {
-		beego.Error("[REGISTRY API V1] Put repository tag error:", err.Error())
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := repo.Log(models.ACTION_PUT_TAG, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo); err != nil {
-		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
-	}
+	repo.Log(models.ACTION_PUT_TAG, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo)
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(""))
@@ -123,20 +112,16 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 	repo := new(models.Repository)
 
 	if err := repo.PutImages(namespace, repository); err != nil {
-		beego.Error("[REGISTRY API V1] Update Uploaded flag error: %s", namespace, repository, err.Error())
 		this.JSONOut(http.StatusBadRequest, "Update Uploaded flag error", nil)
 		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := repo.Log(models.ACTION_PUT_REPO_IMAGES, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo); err != nil {
-		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
-	}
+	repo.Log(models.ACTION_PUT_REPO_IMAGES, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo)
 
 	org := new(models.Organization)
 	isOrg, _, err := org.Has(namespace)
 	if err != nil {
-		beego.Error("[REGISTRY API V1] Search Organization Error: ", err.Error())
 		this.JSONOut(http.StatusBadRequest, "Search Organization Error", nil)
 		return
 	}
@@ -145,13 +130,11 @@ func (this *RepoAPIV1Controller) PutRepositoryImages() {
 	authUsername, _, _ := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization"))
 	isUser, _, err := user.Has(authUsername)
 	if err != nil {
-		beego.Error("[REGISTRY API V1] Search User Error: ", err.Error())
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	if !isUser && !isOrg {
-		beego.Error("[REGISTRY API V1] Search Namespace Error")
 		this.JSONOut(http.StatusBadRequest, "Search Namespace Error", nil)
 		return
 	}
@@ -179,11 +162,9 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 	repo := new(models.Repository)
 
 	if has, _, err := repo.Has(namespace, repository); err != nil {
-		beego.Error("[REGISTRY API V1] Read repository json error: %s", namespace, repository, err.Error())
 		this.JSONOut(http.StatusBadRequest, "Read repository json error", nil)
 		return
 	} else if has == false {
-		beego.Error("[REGISTRY API V1] Read repository no found", namespace, repository)
 		this.JSONOut(http.StatusBadRequest, "Read repository no found", nil)
 		return
 	}
@@ -191,13 +172,11 @@ func (this *RepoAPIV1Controller) GetRepositoryImages() {
 	repo.Download += 1
 
 	if err := repo.Save(); err != nil {
-		beego.Error("[REGISTRY API V1] Update download count error: ", err.Error())
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := repo.Log(models.ACTION_GET_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo); err != nil {
-		beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
-	}
+	repo.Log(models.ACTION_GET_REPO, models.LEVELINFORMATIONAL, models.TYPE_APIV1, repo.Id, memo)
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
 	this.Ctx.Output.Context.Output.Body([]byte(repo.JSON))
@@ -211,11 +190,9 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 	repo := new(models.Repository)
 
 	if has, _, err := repo.Has(namespace, repository); err != nil {
-		beego.Error("[REGISTRY API V1] Read repository json error: %s", namespace, repository, err.Error())
 		this.JSONOut(http.StatusBadRequest, "Read repository json error", nil)
 		return
 	} else if has == false {
-		beego.Error("[REGISTRY API V1] Read repository no found", namespace, repository)
 		this.JSONOut(http.StatusBadRequest, "Read repository no found", nil)
 		return
 	}
@@ -225,7 +202,6 @@ func (this *RepoAPIV1Controller) GetRepositoryTags() {
 	for _, value := range repo.Tags {
 		t := new(models.Tag)
 		if err := t.GetById(value); err != nil {
-			beego.Error(fmt.Sprintf("[REGISTRY API V1]  %s/%s Tags is not exist", namespace, repository))
 			this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": fmt.Sprintf("%s/%s Tags is not exist", namespace, repository)})
 			return
 		}

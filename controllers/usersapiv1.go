@@ -53,24 +53,18 @@ func (this *UserAPIV1Controller) PostUsers() {
 //There is nothing in request body, just authorization through Basic Authorization.
 func (this *UserAPIV1Controller) GetUsers() {
 	if username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization")); err != nil {
-		beego.Error("[REGISTRY API V1] Decode Basic Auth Error:", err.Error())
 		this.JSONOut(http.StatusUnauthorized, err.Error(), nil)
 		return
 	} else {
 		user := new(models.User)
 
 		if err := user.Get(username, passwd); err != nil {
-			beego.Error("[REGISTRY API V1] Search user error: ", err.Error())
 			this.JSONOut(http.StatusUnauthorized, err.Error(), nil)
 			return
 		}
 
-		beego.Info("[REGISTRY API V1]", username, "authorization successfully")
-
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_APIV1, user.Id, memo); err != nil {
-			beego.Error("[REGISTRY API V1] Log Erro:", err.Error())
-		}
+		user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_APIV1, user.Id, memo)
 
 		this.JSONOut(http.StatusOK, "User authorization successfully.", nil)
 		return

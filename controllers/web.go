@@ -51,7 +51,6 @@ func (this *WebController) GetAuth() {
 
 func (this *WebController) GetDashboard() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
-		beego.Error("[WEB API] Load session failure")
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
 		return
 	} else {
@@ -65,9 +64,7 @@ func (this *WebController) GetDashboard() {
 
 func (this *WebController) GetSetting() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
-		beego.Error("[WEB API] Load session failure")
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
-
 		return
 	} else {
 		this.TplNames = "setting.html"
@@ -89,36 +86,6 @@ func (this *WebController) GetRepository() {
 			if !exist == true {
 				this.Abort("404")
 				return
-				// } else if repo.NamespaceType {
-				// 	userHasOrg := false
-
-				// 	org := new(models.Organization)
-				// 	_, orgUUID, _ := org.Has(namespace)
-				// 	for _, userOrgUUID := range user.Organizations {
-				// 		if userOrgUUID == string(orgUUID) {
-				// 			userHasOrg = true
-				// 			return
-				// 		}
-				// 	}
-				// 	if !userHasOrg {
-				// 		this.Abort("404")
-				// 		return
-				// 	}
-				// 	this.Data["username"] = user.Username
-				// 	this.Data["privated"] = repo.Privated
-				// 	this.Data["namespace"] = repo.Namespace
-				// 	this.Data["repository"] = repo.Repository
-				// 	this.Data["created"] = repo.Created
-				// 	this.Data["short"] = repo.Short
-				// 	this.Data["description"] = string(github_flavored_markdown.Markdown([]byte(repo.Description)))
-				// 	this.Data["download"] = repo.Download
-				// 	this.Data["comments"] = len(repo.Comments)
-				// 	this.Data["starts"] = len(repo.Starts)
-
-				// 	this.TplNames = "repository.html"
-				// 	this.Render()
-				// 	return
-
 			} else {
 				if user.Username != namespace {
 					this.Abort("404")
@@ -186,9 +153,7 @@ func (this *WebController) GetSignout() {
 		return
 	} else {
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SINGOUT, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
-			beego.Error("[WEB] Log Erro:", err.Error())
-		}
+		user.Log(models.ACTION_SINGOUT, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
 
 		this.Ctx.Input.CruSession.Delete("user")
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")

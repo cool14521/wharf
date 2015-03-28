@@ -47,8 +47,6 @@ func (this *BlobAPIV2Controller) HeadDigest() {
 	image := new(models.Image)
 	digest := strings.Split(this.Ctx.Input.Param(":digest"), ":")[1]
 
-	beego.Debug("[REGISTRY API V2] Tarsum.v1+sha256: ", digest)
-
 	if has, _, _ := image.HasTarsum(digest); has == false {
 		this.JSONOut(http.StatusNotFound, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}})
 		return
@@ -74,7 +72,6 @@ func (this *BlobAPIV2Controller) PutBlobs() {
 	var digest string
 
 	this.Ctx.Input.Bind(&digest, "digest")
-	beego.Debug("[REGISTRY API V2] Digest: ", digest)
 
 	basePath := beego.AppConfig.String("docker::BasePath")
 	imagePath := fmt.Sprintf("%v/uuid/%v", basePath, strings.Split(digest, ":")[1])
@@ -103,8 +100,6 @@ func (this *BlobAPIV2Controller) PutBlobs() {
 func (this *BlobAPIV2Controller) GetBlobs() {
 	image := new(models.Image)
 	digest := strings.Split(this.Ctx.Input.Param(":digest"), ":")[1]
-
-	beego.Debug("[REGISTRY API V2] Tarsum.v1+sha256: ", digest)
 
 	if has, _, _ := image.HasTarsum(digest); has == false {
 		this.JSONOut(http.StatusBadRequest, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}})

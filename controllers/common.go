@@ -53,8 +53,6 @@ func manifestsConvertV1(data []byte) error {
 		tarsum := manifest["fsLayers"].([]interface{})[k].(map[string]interface{})["blobSum"].(string)
 		sha256 := strings.Split(tarsum, ":")[1]
 
-		beego.Debug("[Registry API V2] Image %s sha256: %s", image["id"].(string), v.(map[string]interface{})["v1Compatibility"].(string))
-
 		//Put Image Json
 		if err := img.PutJSON(image["id"].(string), v.(map[string]interface{})["v1Compatibility"].(string), models.APIVERSION_V2); err != nil {
 			return err

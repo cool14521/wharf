@@ -16,6 +16,18 @@ func (this *FileController) URLMapping() {
 	this.Mapping("GetGPG", this.GetGPG)
 }
 
+func (this *FileController) JSONOut(code int, message string, data interface{}) {
+	if data == nil {
+		result := map[string]string{"message": message}
+		this.Data["json"] = result
+	} else {
+		this.Data["json"] = data
+	}
+
+	this.Ctx.Output.Context.Output.SetStatus(code)
+	this.ServeJson()
+}
+
 func (this *FileController) Prepare() {
 	this.EnableXSRF = false
 }
@@ -24,23 +36,13 @@ func (this *FileController) GetGPG() {
 	gpgPath := beego.AppConfig.String("rocket::GPG")
 
 	if _, err := os.Stat(gpgPath); err != nil {
-		beego.Error("[Rocket API] PGP file: ", err.Error())
-		result := map[string]string{"Error": "PGP File State Error"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	file, err := ioutil.ReadFile(gpgPath)
 	if err != nil {
-		beego.Error("[Rocket API] PGP read file: ", err.Error())
-		result := map[string]string{"Error": "PGP read file"}
-		this.Data["json"] = &result
-
-		this.Ctx.Output.Context.Output.SetStatus(http.StatusBadRequest)
-		this.ServeJson()
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 

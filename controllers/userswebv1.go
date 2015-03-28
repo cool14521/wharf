@@ -60,7 +60,6 @@ func (this *UserWebAPIV1Controller) Prepare() {
 
 func (this *UserWebAPIV1Controller) GetProfile() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
-		beego.Error("[WEB API V1] Load user session failure!")
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	} else {
@@ -73,11 +72,9 @@ func (this *UserWebAPIV1Controller) GetUserProfile() {
 	user := new(models.User)
 
 	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
-		beego.Error("[WEB API V1] Search user error:", err.Error())
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else if exist == false && err == nil {
-		beego.Info("[WEB API V1] Search user none:", this.Ctx.Input.Param(":username"))
 		this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 		return
 	}
@@ -99,18 +96,15 @@ func (this *UserWebAPIV1Controller) GetUsers() {
 
 func (this *UserWebAPIV1Controller) GetUser() {
 	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-		beego.Error("[WEB API V1] Load session failure")
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	} else {
 		user := new(models.User)
 
 		if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
-			beego.Error("[WEB API V1] Search user error:", err.Error())
 			this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 			return
 		} else if exist == false && err == nil {
-			beego.Info("[WEB API V1] Search user none:", this.Ctx.Input.Param(":username"))
 			this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 			return
 		} else {
@@ -124,22 +118,16 @@ func (this *UserWebAPIV1Controller) Signin() {
 	var user models.User
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
-		beego.Error("[WEB API V1] Unmarshal user signin data error:", err.Error())
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else {
-		beego.Debug("[WEB API V1] User signin:", string(this.Ctx.Input.CopyBody()))
-
 		if err := user.Get(user.Username, user.Password); err != nil {
-			beego.Error("[WEB API V1] User singin error:", err.Error())
 			this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 			return
 		}
 
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SIGNIN, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
-			beego.Error("[WEB API V1] Log Erro:", err.Error())
-		}
+		user.Log(models.ACTION_SIGNIN, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
 
 		this.Ctx.Input.CruSession.Set("user", user)
 
@@ -153,28 +141,21 @@ func (this *UserWebAPIV1Controller) Signup() {
 	var org models.Organization
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
-		beego.Error("[WEB API V1] Unmarshal user signup data error:", err.Error())
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else {
-		beego.Debug("[WEB API V1] User signup:", string(this.Ctx.Input.CopyBody()))
-
 		if exist, _, err := org.Has(user.Username); err != nil {
-			beego.Error("[WEB API V1] User singup error: ", err.Error())
 			this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 			return
 		} else if exist == true {
-			beego.Error("[WEB API V1] Organization already exist:", user.Username)
 			this.JSONOut(http.StatusBadRequest, "Namespace is occupation already by organization.", nil)
 			return
 		}
 
 		if exist, _, err := user.Has(user.Username); err != nil {
-			beego.Error("[WEB API V1] User singup error: ", err.Error())
 			this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 			return
 		} else if exist == true {
-			beego.Error("[WEB API V1] User already exist:", user.Username)
 			this.JSONOut(http.StatusBadRequest, "User already exist.", nil)
 			return
 		} else {
@@ -183,15 +164,12 @@ func (this *UserWebAPIV1Controller) Signup() {
 			user.Gravatar = "/static/images/default-user-icon-profile.png"
 
 			if err := user.Save(); err != nil {
-				beego.Error("[WEB API V1] User save error:", err.Error())
 				this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 				return
 			}
 
 			memo, _ := json.Marshal(this.Ctx.Input.Header)
-			if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
-				beego.Error("[WEB API V1] Log Erro:", err.Error())
-			}
+			user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
 
 			this.JSONOut(http.StatusOK, "User Singup Successfully!", nil)
 			return
@@ -201,7 +179,6 @@ func (this *UserWebAPIV1Controller) Signup() {
 
 func (this *UserWebAPIV1Controller) GetNamespaces() {
 	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-		beego.Error("[WEB API V1] Load session failure")
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	} else {
@@ -218,7 +195,6 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 func (this *UserWebAPIV1Controller) PostGravatar() {
 	file, fileHeader, err := this.Ctx.Request.FormFile("file")
 	if err != nil {
-		beego.Error(fmt.Sprintf("[image] upload gravatar err,err=%s", err))
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
@@ -296,14 +272,12 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 func (this *UserWebAPIV1Controller) PutProfile() {
 	var u map[string]interface{}
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
-		beego.Error(fmt.Sprintf("[WEB API V1] JSON unmarshal failure: %s", err.Error()))
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if exist != true {
-		beego.Error("[WEB API V1] Load session failure")
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	}
@@ -330,9 +304,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	this.Ctx.Input.CruSession.Set("user", user)
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_UPDATE_PROFILE, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
-		beego.Error("[WEB API V1] Log Erro:", err.Error())
-	}
+	user.Log(models.ACTION_UPDATE_PROFILE, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
 
 	this.JSONOut(http.StatusOK, "Update Profile Successfully!", nil)
 	return
@@ -341,35 +313,27 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 func (this *UserWebAPIV1Controller) PutPassword() {
 	var u map[string]interface{}
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
-		beego.Error(fmt.Sprintf("[WEB API] JSON unmarshal failure: %s", err.Error()))
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	beego.Debug("[WEB API V1] Password updated:", string(this.Ctx.Input.CopyBody()))
-
 	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
 	if exist == false {
-		beego.Error("[WEB API V1] Load session failure")
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	} else if u["oldPassword"].(string) != user.Password {
-		beego.Error("[WEB API V1] User's password error!")
 		this.JSONOut(http.StatusBadRequest, "account and password not match", nil)
 		return
 	}
 
 	user.Password = u["newPassword"].(string)
 	if err := user.Save(); err != nil {
-		beego.Error("[WEB API V1] User's save error!")
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	memo, _ := json.Marshal(this.Ctx.Input.Header)
-	if err := user.Log(models.ACTION_UPDATE_PASSWORD, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo); err != nil {
-		beego.Error("[WEB API V1] Log Erro:", err.Error())
-	}
+	user.Log(models.ACTION_UPDATE_PASSWORD, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
 
 	this.JSONOut(http.StatusOK, "Update password success!", nil)
 	return

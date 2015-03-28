@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 
 	"github.com/dockercn/wharf/models"
@@ -35,19 +34,16 @@ func FilterAuth(ctx *context.Context) {
 
 	//Check Authorization In Header
 	if len(ctx.Input.Header("Authorization")) == 0 || strings.Index(ctx.Input.Header("Authorization"), "Basic") == -1 {
-		beego.Error("[Docker Registry API] Header Authorization Error!")
 		auth = false
 		goto AUTH
 	}
 
 	//Check Username, Password And Get User
 	if username, passwd, err := utils.DecodeBasicAuth(ctx.Input.Header("Authorization")); err != nil {
-		beego.Error("[Docker Registry API] DecodeBasicAuth Error!")
 		auth = false
 		goto AUTH
 	} else {
 		if err := user.Get(username, passwd); err != nil {
-			beego.Error("[Docker Registry API] Username And Password Check Error:", err.Error())
 			auth = false
 			goto AUTH
 		}
@@ -55,7 +51,6 @@ func FilterAuth(ctx *context.Context) {
 
 	//Docker Registry V1 Image Don't Check User/Org Permission
 	if isImageResource(ctx.Request.URL.String()) == true {
-		beego.Error("[Docker Registry API] Docker Registry V1 Image Don't Check User/Org Permission!")
 		goto AUTH
 	}
 
@@ -67,7 +62,6 @@ func FilterAuth(ctx *context.Context) {
 			goto AUTH
 		} else if has == false {
 			//Org Repository Check
-			beego.Trace("[Docker Registry API] Namepsace different user.Username, will check org/team privileges.")
 			auth = checkOrgRepositoryPermission(user, namespace, repository, permission)
 		} else if has == true {
 			//Different User and Public/Private Repository
@@ -76,8 +70,6 @@ func FilterAuth(ctx *context.Context) {
 	}
 
 AUTH:
-	beego.Debug("[Docker Registry API] Authorization Result:", auth)
-
 	if auth == false {
 		result := map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}}
 

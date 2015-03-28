@@ -47,24 +47,18 @@ func (this *PingAPIV2Controller) GetPing() {
 	}
 
 	if username, passwd, err := utils.DecodeBasicAuth(this.Ctx.Input.Header("Authorization")); err != nil {
-		beego.Error("[REGISTRY API V2] Decode Basic Auth Error:", err.Error())
 		this.JSONOut(http.StatusUnauthorized, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}})
 		return
 	} else {
 		user := new(models.User)
 
 		if err := user.Get(username, passwd); err != nil {
-			beego.Error("[REGISTRY API V2] Search user error: ", err.Error())
 			this.JSONOut(http.StatusUnauthorized, "", map[string][]modules.ErrorDescriptor{"errors": []modules.ErrorDescriptor{modules.ErrorDescriptors[modules.APIErrorCodeUnauthorized]}})
 			return
 		}
 
-		beego.Info("[REGISTRY API V2]", username, "authorization successfully")
-
 		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		if err := user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_APIV2, user.Id, memo); err != nil {
-			beego.Error("[REGISTRY API V2] Log Erro:", err.Error())
-		}
+		user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_APIV2, user.Id, memo)
 
 		this.JSONOut(http.StatusOK, "", "User authorization successfully.")
 		return
