@@ -89,6 +89,14 @@ func (this *UserWebAPIV1Controller) GetUserProfile() {
 	return
 }
 
+func (this *UserWebAPIV1Controller) GetUsers() {
+	user := new(models.User)
+	users := user.All()
+
+	this.JSONOut(http.StatusOK, "", users)
+	return
+}
+
 func (this *UserWebAPIV1Controller) GetUser() {
 	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		beego.Error("[WEB API V1] Load session failure")
@@ -106,10 +114,7 @@ func (this *UserWebAPIV1Controller) GetUser() {
 			this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 			return
 		} else {
-			users := make([]models.User, 0)
-			users = append(users, *user)
-
-			this.JSONOut(http.StatusOK, "", users)
+			this.JSONOut(http.StatusOK, "", user)
 			return
 		}
 	}
@@ -283,7 +288,6 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 		jpeg.Encode(out, m, nil)
 	}
 
-	//删除用户自己上传的图片
 	os.Remove(fmt.Sprintf("%s%s%s", beego.AppConfig.String("gravatar"), "/", fileHeader.Filename))
 	this.JSONOut(http.StatusOK, "", map[string]string{"message": "Please click button to finish uploading gravatar", "url": fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix)})
 	return
@@ -368,13 +372,5 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 	}
 
 	this.JSONOut(http.StatusOK, "Update password success!", nil)
-	return
-}
-
-func (this *UserWebAPIV1Controller) GetUsers() {
-	user := new(models.User)
-	users := user.All()
-
-	this.JSONOut(http.StatusOK, "", users)
 	return
 }

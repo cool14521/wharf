@@ -43,7 +43,6 @@ func (this *BlobAPIV2Controller) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 }
 
-//Has image return 200; other return 404
 func (this *BlobAPIV2Controller) HeadDigest() {
 	image := new(models.Image)
 	digest := strings.Split(this.Ctx.Input.Param(":digest"), ":")[1]

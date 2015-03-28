@@ -205,15 +205,6 @@ func (this *RepoWebAPIV1Controller) PostCollaborator() {
 		}
 
 		if user.Username == this.Ctx.Input.Param("namespace") {
-			u := new(models.User)
-
-			if exist, _, err := u.Has(this.Ctx.Input.Param("namespace")); err != nil {
-
-			} else if exist == false {
-
-			} else {
-
-			}
 		} else {
 			for _, v := range repo.Permissions {
 				if v == this.Ctx.Input.Param(":collaborator") {
