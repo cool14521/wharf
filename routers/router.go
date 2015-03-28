@@ -26,18 +26,19 @@ func init() {
 
 	//Web API
 	web := beego.NewNamespace("/w1",
+		//sign in and sign up
 		beego.NSRouter("/signin", &controllers.UserWebAPIV1Controller{}, "post:Signin"),
 		beego.NSRouter("/signup", &controllers.UserWebAPIV1Controller{}, "post:Signup"),
 
 		//user routers
 		beego.NSRouter("/users", &controllers.UserWebAPIV1Controller{}, "get:GetUsers"),
-		beego.NSRouter("/users/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUser"),
-		beego.NSRouter("/namespaces", &controllers.UserWebAPIV1Controller{}, "get:GetNamespaces"),
-		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "get:GetProfile"),
-		beego.NSRouter("/gravatar", &controllers.UserWebAPIV1Controller{}, "post:PostGravatar"),
-		beego.NSRouter("/password", &controllers.UserWebAPIV1Controller{}, "put:PutPassword"),
-		beego.NSRouter("/profile", &controllers.UserWebAPIV1Controller{}, "put:PutProfile"),
-		beego.NSRouter("/profile/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUserProfile"),
+		beego.NSRouter("/user/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUser"),
+		beego.NSRouter("/user/:username/namespaces", &controllers.UserWebAPIV1Controller{}, "get:GetNamespaces"),
+		beego.NSRouter("/user/:username/profile", &controllers.UserWebAPIV1Controller{}, "get:GetProfile"),
+		beego.NSRouter("/user/:username/gravatar", &controllers.UserWebAPIV1Controller{}, "post:PostGravatar"),
+		beego.NSRouter("/user/:username/password", &controllers.UserWebAPIV1Controller{}, "put:PutPassword"),
+		beego.NSRouter("/user/:username/profile", &controllers.UserWebAPIV1Controller{}, "put:PutProfile"),
+		beego.NSRouter("/user/:username/profile", &controllers.UserWebAPIV1Controller{}, "get:GetUserProfile"),
 
 		//repository routers
 		beego.NSRouter("/repositories", &controllers.RepoWebAPIV1Controller{}, "get:GetRepositories"),
