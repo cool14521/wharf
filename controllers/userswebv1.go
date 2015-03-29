@@ -24,15 +24,14 @@ type UserWebAPIV1Controller struct {
 }
 
 func (this *UserWebAPIV1Controller) URLMapping() {
-	this.Mapping("GetProfile", this.GetProfile)
-	this.Mapping("GetUserProfile", this.GetUserProfile)
-	this.Mapping("GetUser", this.GetUser)
-	this.Mapping("Signup", this.Signup)
 	this.Mapping("Signin", this.Signin)
+	this.Mapping("Signup", this.Signup)
+	this.Mapping("GetUsers", this.GetUsers)
+	this.Mapping("GetUser", this.GetUser)
 	this.Mapping("GetNamespaces", this.GetNamespaces)
 	this.Mapping("PostGravatar", this.PostGravatar)
-	this.Mapping("PutProfile", this.PutProfile)
 	this.Mapping("PutPassword", this.PutPassword)
+	this.Mapping("PutProfile", this.PutProfile)
 }
 
 func (this *UserWebAPIV1Controller) JSONOut(code int, message string, data interface{}) {
@@ -58,62 +57,6 @@ func (this *UserWebAPIV1Controller) Prepare() {
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 }
 
-func (this *UserWebAPIV1Controller) GetProfile() {
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
-		return
-	} else {
-		this.JSONOut(http.StatusOK, "", user)
-		return
-	}
-}
-
-func (this *UserWebAPIV1Controller) GetUserProfile() {
-	user := new(models.User)
-
-	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
-		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
-		return
-	} else if exist == false && err == nil {
-		this.JSONOut(http.StatusBadRequest, "Search user error", nil)
-		return
-	}
-
-	this.Data["json"] = &user
-
-	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-	this.ServeJson()
-	return
-}
-
-func (this *UserWebAPIV1Controller) GetUsers() {
-	user := new(models.User)
-	users := user.All()
-
-	this.JSONOut(http.StatusOK, "", users)
-	return
-}
-
-func (this *UserWebAPIV1Controller) GetUser() {
-	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
-		return
-	} else {
-		user := new(models.User)
-
-		if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
-			this.JSONOut(http.StatusBadRequest, "Search user error", nil)
-			return
-		} else if exist == false && err == nil {
-			this.JSONOut(http.StatusBadRequest, "Search user error", nil)
-			return
-		} else {
-			this.JSONOut(http.StatusOK, "", user)
-			return
-		}
-	}
-}
-
 func (this *UserWebAPIV1Controller) Signin() {
 	var user models.User
 
@@ -131,7 +74,7 @@ func (this *UserWebAPIV1Controller) Signin() {
 
 		this.Ctx.Input.CruSession.Set("user", user)
 
-		this.JSONOut(http.StatusOK, "User Singin Successfully!", nil)
+		this.JSONOut(http.StatusOK, "User singin successfully!", nil)
 		return
 	}
 }
@@ -171,10 +114,34 @@ func (this *UserWebAPIV1Controller) Signup() {
 			memo, _ := json.Marshal(this.Ctx.Input.Header)
 			user.Log(models.ACTION_SIGNUP, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
 
-			this.JSONOut(http.StatusOK, "User Singup Successfully!", nil)
+			this.JSONOut(http.StatusOK, "User singup successfully!", nil)
 			return
 		}
 	}
+}
+
+func (this *UserWebAPIV1Controller) GetUsers() {
+	user := new(models.User)
+	users := user.All()
+
+	this.JSONOut(http.StatusOK, "", users)
+	return
+}
+
+func (this *UserWebAPIV1Controller) GetUser() {
+	user := new(models.User)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false && err == nil {
+		this.JSONOut(http.StatusBadRequest, "Search user error", nil)
+		return
+	}
+
+	user.Password = "xxxxxx"
+	this.JSONOut(http.StatusOK, "", user)
+	return
 }
 
 func (this *UserWebAPIV1Controller) GetNamespaces() {
@@ -284,7 +251,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 
 	if strings.Contains(fmt.Sprint(u["gravatar"]), "resize") {
 		suffix := strings.Split(fmt.Sprint(u["gravatar"]), ".")[1]
-		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", user.Username, "_show.", suffix)
+		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", user.Username, "_gravatar.", suffix)
 		if _, err := os.Stat(gravatar); err == nil {
 			os.Remove(gravatar)
 		}

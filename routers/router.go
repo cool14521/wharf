@@ -34,15 +34,13 @@ func init() {
 		beego.NSRouter("/users", &controllers.UserWebAPIV1Controller{}, "get:GetUsers"),
 		beego.NSRouter("/user/:username", &controllers.UserWebAPIV1Controller{}, "get:GetUser"),
 		beego.NSRouter("/user/:username/namespaces", &controllers.UserWebAPIV1Controller{}, "get:GetNamespaces"),
-		beego.NSRouter("/user/:username/profile", &controllers.UserWebAPIV1Controller{}, "get:GetProfile"),
 		beego.NSRouter("/user/:username/gravatar", &controllers.UserWebAPIV1Controller{}, "post:PostGravatar"),
 		beego.NSRouter("/user/:username/password", &controllers.UserWebAPIV1Controller{}, "put:PutPassword"),
 		beego.NSRouter("/user/:username/profile", &controllers.UserWebAPIV1Controller{}, "put:PutProfile"),
-		beego.NSRouter("/user/:username/profile", &controllers.UserWebAPIV1Controller{}, "get:GetUserProfile"),
 
 		//repository routers
-		beego.NSRouter("/repositories", &controllers.RepoWebAPIV1Controller{}, "get:GetRepositories"),
-		beego.NSRouter("/repository", &controllers.RepoWebAPIV1Controller{}, "post:PostRepository"),
+		beego.NSRouter("/repository/:namespace/repositories", &controllers.RepoWebAPIV1Controller{}, "get:GetRepositories"),
+		beego.NSRouter("/repository/:namespace/:repository", &controllers.RepoWebAPIV1Controller{}, "post:PostRepository"),
 		beego.NSRouter("/repository/:namespace/:repository", &controllers.RepoWebAPIV1Controller{}, "put:PutRepository"),
 		beego.NSRouter("/repository/:namespace/:repository", &controllers.RepoWebAPIV1Controller{}, "get:GetRepository"),
 		beego.NSRouter("/repository/:namespace/:repository/collaborators", &controllers.RepoWebAPIV1Controller{}, "get:GetCollaborators"),
