@@ -45,7 +45,7 @@ func init() {
 		beego.NSRouter("/repository/:namespace/:repository", &controllers.RepoWebAPIV1Controller{}, "get:GetRepository"),
 		beego.NSRouter("/repository/:namespace/:repository/collaborators", &controllers.RepoWebAPIV1Controller{}, "get:GetCollaborators"),
 		beego.NSRouter("/repository/:namespace/:repository/collaborators/:collaborator", &controllers.RepoWebAPIV1Controller{}, "post:PostCollaborator"),
-		beego.NSRouter("/repository/:namespace/:repository/collaborators/:collaborator/:action", &controllers.RepoWebAPIV1Controller{}, "put:PutCollaborator"),
+		beego.NSRouter("/repository/:namespace/:repository/collaborators/:collaborator", &controllers.RepoWebAPIV1Controller{}, "put:PutCollaborator"),
 
 		//organization routers
 		beego.NSRouter("/organizations", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizations"),

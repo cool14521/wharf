@@ -104,7 +104,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else {
-		if exist, _, err := repo.Has(repo.Namespace, repo.Repository); err != nil {
+		if exist, _, err := repo.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repository")); err != nil {
 			this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 			return
 		} else if exist == true {
@@ -114,6 +114,7 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 			repo.Id = string(utils.GeneralKey(fmt.Sprint(repo.Namespace, repo.Repository)))
 			repo.Created = time.Now().UnixNano() / int64(time.Millisecond)
 			repo.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+			repo.Collaborators, repo.Permissions = []string{}, []string{}
 
 			if err := repo.Save(); err != nil {
 				this.JSONOut(http.StatusBadRequest, "Repository save error.", nil)
@@ -148,22 +149,14 @@ func (this *RepoWebAPIV1Controller) PostRepository() {
 	}
 }
 
-func (this *RepoWebAPIV1Controller) GetRepository() {
-	repo := new(models.Repository)
-
-	if exist, _, err := repo.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repository")); err != nil {
-		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
-		return
-	} else if exist == false {
-		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+func (this *RepoWebAPIV1Controller) PutRepository() {
+	var user models.User
+	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+	if exist != true {
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
 	}
 
-	this.JSONOut(http.StatusOK, "", repo)
-	return
-}
-
-func (this *RepoWebAPIV1Controller) PutRepository() {
 	repo := new(models.Repository)
 
 	if exist, _, err := repo.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repository")); err != nil {
@@ -186,18 +179,255 @@ func (this *RepoWebAPIV1Controller) PutRepository() {
 		return
 	}
 
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	repo.Log(models.ACTION_ADD_REPO, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, repo.Id, memo)
+	user.Log(models.ACTION_ADD_REPO, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
+
 	this.JSONOut(http.StatusOK, "Repository update successfully!", nil)
 	return
 }
 
+func (this *RepoWebAPIV1Controller) GetRepository() {
+	repo := new(models.Repository)
+
+	if exist, _, err := repo.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repository")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	this.JSONOut(http.StatusOK, "", repo)
+	return
+}
+
 func (this *RepoWebAPIV1Controller) GetCollaborators() {
+	repo := new(models.Repository)
+	user := new(models.User)
+
+	if exist, _, err := repo.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repository")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Repository Invalid", nil)
+		return
+	}
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":namespace")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == true {
+		this.JSONOut(http.StatusOK, "", repo.Collaborators)
+		return
+	}
+
+	org := new(models.Organization)
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":namespace")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusOK, "Namespace Invalid", nil)
+		return
+	} else {
+		this.JSONOut(http.StatusOK, "", repo.Permissions)
+		return
+	}
 
 }
 
 func (this *RepoWebAPIV1Controller) PostCollaborator() {
+	repo := new(models.Repository)
+	user := new(models.User)
 
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":collaborator")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Collaborator Invalid", nil)
+	}
+
+	if exist, _, err := repo.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repository")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Repository Invalid", nil)
+		return
+	}
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":namespace")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == true {
+		for _, v := range repo.Collaborators {
+			if v == this.Ctx.Input.Param(":collaborator") {
+				this.JSONOut(http.StatusBadRequest, "User already in collaborators", nil)
+				return
+			}
+		}
+
+		repo.Collaborators = append(repo.Collaborators, this.Ctx.Input.Param(":collaborator"))
+		repo.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+		if err := repo.Save(); err != nil {
+			this.JSONOut(http.StatusBadRequest, "Repository save error.", nil)
+			return
+		}
+
+		user.Repositories = append(user.Repositories, repo.Id)
+		user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+		if err := user.Save(); err != nil {
+			this.JSONOut(http.StatusBadRequest, "User save error.", nil)
+			return
+		}
+
+		this.JSONOut(http.StatusOK, "Add collaborator successfully.", nil)
+		return
+	}
+
+	team := new(models.Team)
+	org := new(models.Organization)
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":namespace")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization Invalid", nil)
+		return
+	}
+
+	if exist, _, err := team.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":collaborator")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Team Invalid", nil)
+		return
+	}
+
+	for _, v := range repo.Permissions {
+		if v == this.Ctx.Input.Param(":collaborator") {
+			this.JSONOut(http.StatusBadRequest, "User already in collaborators", nil)
+			return
+		}
+	}
+
+	repo.Permissions = append(repo.Permissions, this.Ctx.Input.Param(":collaborator"))
+	repo.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+	if err := repo.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Repository save error.", nil)
+		return
+	}
+
+	org.Repositories = append(org.Repositories, repo.Id)
+	org.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+	if err := org.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Repository save error.", nil)
+	}
+
+	this.JSONOut(http.StatusOK, "Add collaborator successfully.", nil)
+	return
 }
 
 func (this *RepoWebAPIV1Controller) PutCollaborator() {
+	repo := new(models.Repository)
+	user := new(models.User)
 
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":collaborator")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Collaborator Invalid", nil)
+	}
+
+	if exist, _, err := repo.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":repository")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Repository Invalid", nil)
+		return
+	}
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":namespace")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == true {
+		for i, v := range repo.Collaborators {
+			if v == this.Ctx.Input.Param(":collaborator") {
+				repo.Collaborators = append(repo.Collaborators[:i], repo.Collaborators[i+1:]...)
+				repo.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+				if err := repo.Save(); err != nil {
+					this.JSONOut(http.StatusBadRequest, "Repository save error.", nil)
+					return
+				}
+
+				for k, t := range user.Repositories {
+					if t == repo.Id {
+						user.Repositories = append(user.Repositories[:k], user.Repositories[k+1:]...)
+						user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+						if err := user.Save(); err != nil {
+							this.JSONOut(http.StatusBadRequest, "User save error.", nil)
+							return
+						}
+					}
+				}
+
+				this.JSONOut(http.StatusOK, "Remove collaborator successfully.", nil)
+				return
+			}
+		}
+
+		this.JSONOut(http.StatusBadRequest, "Remove collaborator failure.", nil)
+	}
+
+	team := new(models.Team)
+	org := new(models.Organization)
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":namespace")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization Invalid", nil)
+		return
+	}
+
+	if exist, _, err := team.Has(this.Ctx.Input.Param(":namespace"), this.Ctx.Input.Param(":collaborator")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Team Invalid", nil)
+		return
+	}
+
+	for i, v := range repo.Permissions {
+		if v == this.Ctx.Input.Param(":collaborator") {
+			repo.Permissions = append(repo.Collaborators[:i], repo.Collaborators[i+1:]...)
+			repo.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+			if err := repo.Save(); err != nil {
+				this.JSONOut(http.StatusBadRequest, "Repository save error.", nil)
+				return
+			}
+
+			for k, t := range org.Repositories {
+				if t == repo.Id {
+					org.Repositories = append(org.Repositories[:k], org.Repositories[:k+1]...)
+					repo.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+					if err := org.Save(); err != nil {
+						this.JSONOut(http.StatusBadRequest, "Repository save error.", nil)
+					}
+				}
+			}
+
+			this.JSONOut(http.StatusOK, "Add collaborator successfully.", nil)
+			return
+		}
+	}
+
+	this.JSONOut(http.StatusBadRequest, "Remove collaborator failure.", nil)
 }

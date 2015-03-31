@@ -145,8 +145,11 @@ func (this *UserWebAPIV1Controller) GetUser() {
 }
 
 func (this *UserWebAPIV1Controller) GetNamespaces() {
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
+	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
+		return
+	} else if user.Username != this.Ctx.Input.Param(":username") {
+		this.JSONOut(http.StatusBadRequest, "Invalid user session", nil)
 		return
 	} else {
 		namespaces := make([]string, 0)
@@ -160,6 +163,16 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 }
 
 func (this *UserWebAPIV1Controller) PostGravatar() {
+	var user models.User
+
+	if u, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
+		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
+		return
+	} else if u.Username != this.Ctx.Input.Param(":username") {
+		this.JSONOut(http.StatusBadRequest, "Invalid user session", nil)
+		return
+	}
+
 	file, fileHeader, err := this.Ctx.Request.FormFile("file")
 	if err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
@@ -232,13 +245,24 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 	}
 
 	os.Remove(fmt.Sprintf("%s%s%s", beego.AppConfig.String("gravatar"), "/", fileHeader.Filename))
-	this.JSONOut(http.StatusOK, "", map[string]string{"message": "Please click button to finish uploading gravatar", "url": fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix)})
+
+	url := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix)
+
+	user.Gravatar = url
+	if err := user.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "User save failure", nil)
+		return
+	}
+
+	this.Ctx.Input.CruSession.Set("user", user)
+
+	this.JSONOut(http.StatusOK, "", map[string]string{"message": "Please click button to finish uploading gravatar", "url": url})
 	return
 }
 
 func (this *UserWebAPIV1Controller) PutProfile() {
-	var u map[string]interface{}
-	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
+	var p map[string]interface{}
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &p); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
@@ -247,21 +271,24 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 	if exist != true {
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
+	} else if user.Username != this.Ctx.Input.Param(":username") {
+		this.JSONOut(http.StatusBadRequest, "Invalid user session", nil)
+		return
 	}
 
-	if strings.Contains(fmt.Sprint(u["gravatar"]), "resize") {
-		suffix := strings.Split(fmt.Sprint(u["gravatar"]), ".")[1]
+	if strings.Contains(fmt.Sprint(p["gravatar"]), "resize") {
+		suffix := strings.Split(fmt.Sprint(p["gravatar"]), ".")[1]
 		gravatar := fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", user.Username, "_gravatar.", suffix)
 		if _, err := os.Stat(gravatar); err == nil {
 			os.Remove(gravatar)
 		}
 
-		os.Rename(fmt.Sprint(u["gravatar"]), gravatar)
-		u["gravatar"] = gravatar
+		os.Rename(fmt.Sprint(p["gravatar"]), gravatar)
+		p["gravatar"] = gravatar
 	}
 
-	user.Email, user.Fullname, user.Mobile = u["email"].(string), u["fullname"].(string), u["mobile"].(string)
-	user.Gravatar, user.Company, user.URL = u["gravatar"].(string), u["company"].(string), u["url"].(string)
+	user.Email, user.Fullname, user.Mobile = p["email"].(string), p["fullname"].(string), p["mobile"].(string)
+	user.Gravatar, user.Company, user.URL = p["gravatar"].(string), p["company"].(string), p["url"].(string)
 
 	if err := user.Save(); err != nil {
 		this.JSONOut(http.StatusBadRequest, "User save failure", nil)
@@ -278,8 +305,8 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 }
 
 func (this *UserWebAPIV1Controller) PutPassword() {
-	var u map[string]interface{}
-	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &u); err != nil {
+	var p map[string]interface{}
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &p); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
@@ -288,12 +315,15 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 	if exist == false {
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
-	} else if u["oldPassword"].(string) != user.Password {
+	} else if user.Username != this.Ctx.Input.Param(":username") {
+		this.JSONOut(http.StatusBadRequest, "Invalid user session", nil)
+		return
+	} else if p["oldPassword"].(string) != user.Password {
 		this.JSONOut(http.StatusBadRequest, "account and password not match", nil)
 		return
 	}
 
-	user.Password = u["newPassword"].(string)
+	user.Password = p["newPassword"].(string)
 	if err := user.Save(); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
