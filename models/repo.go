@@ -101,6 +101,7 @@ func (r *Repository) Put(namespace, repository, json, agent string, version int6
 	} else if has == false {
 		r.Id = string(utils.GeneralKey(fmt.Sprintf("%s:%s", namespace, repository)))
 		r.Created = time.Now().UnixNano() / int64(time.Millisecond)
+		r.Collaborators, r.Permissions = []string{}, []string{}
 	}
 
 	r.Namespace, r.Repository, r.JSON, r.Agent, r.Version = namespace, repository, json, agent, version
