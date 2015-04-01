@@ -25,11 +25,9 @@ func (this *PingAPIV1Controller) Prepare() {
 }
 
 func (this *PingAPIV1Controller) GetPing() {
-	result := map[string]bool{"result": true}
-	this.Data["json"] = &result
+	this.Data["json"] = map[string]bool{"result": true}
 
 	this.Ctx.Output.Context.Output.SetStatus(http.StatusOK)
-
 	this.ServeJson()
 	return
 }

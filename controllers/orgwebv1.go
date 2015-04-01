@@ -16,16 +16,21 @@ type OrganizationWebV1Controller struct {
 }
 
 func (this *OrganizationWebV1Controller) URLMapping() {
-	this.Mapping("PostOrganization", this.PostOrganization)
-	this.Mapping("PutOrganization", this.PutOrganization)
-	this.Mapping("GetOrganizations", this.GetOrganizations)
-	this.Mapping("GetOrganizationDetail", this.GetOrganizationDetail)
+	this.Mapping("GetOrgs", this.GetOrgs)
+	this.Mapping("GetJoins", this.GetJoins)
+	this.Mapping("PostOrg", this.PostOrg)
+//	this.Mapping("PutOrganization", this.PutOrganization)
+//	this.Mapping("GetOrganizationRepositories", this.GetRepositories)
+	//	this.Mapping("GetTeams", this.GetTeams)
+	//	this.Mapping("PostTeam", this.PostTeam)
+	//	this.Mapping("PutTeam", this.PutTeam)
+	//	this.Mapping("GetTeam", this.GetTeam)
+	//	this.Mapping("PutTeamAddMember", this.PutTeamAction)
 }
 
 func (this *OrganizationWebV1Controller) JSONOut(code int, message string, data interface{}) {
 	if data == nil {
-		result := map[string]string{"message": message}
-		this.Data["json"] = result
+		this.Data["json"] = map[string]string{"message": message}
 	} else {
 		this.Data["json"] = data
 	}
@@ -37,26 +42,72 @@ func (this *OrganizationWebV1Controller) JSONOut(code int, message string, data 
 func (this *OrganizationWebV1Controller) Prepare() {
 	this.EnableXSRF = false
 
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist {
-		user.GetById(user.Id)
-		this.Ctx.Input.CruSession.Set("user", user)
-	}
-
-	beego.Debug("[Header] ")
-	beego.Debug(this.Ctx.Request.Header)
-
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 }
 
-func (this *OrganizationWebV1Controller) PostOrganization() {
-	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
+func (this *OrganizationWebV1Controller) GetOrgs() {
+	user := new(models.User)
+	orgs := make([]models.Organization, 0)
 
-	if exist != true {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
 		return
 	}
 
-	var org models.Organization
+	for _, name := range user.Organizations {
+		org := new(models.Organization)
+		if err := org.GetByName(name); err != nil {
+			this.JSONOut(http.StatusBadRequest, "Get organizations error", nil)
+			return
+		}
+
+		orgs = append(orgs, *org)
+	}
+
+	this.JSONOut(http.StatusOK, "", orgs)
+	return
+}
+
+func (this *OrganizationWebV1Controller) GetJoins() {
+	user := new(models.User)
+	orgs := make([]models.Organization, 0)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	for _, name := range user.JoinOrganizations {
+		org := new(models.Organization)
+		if err := org.GetByName(name); err != nil {
+			this.JSONOut(http.StatusBadRequest, "Get organizations error", nil)
+			return
+		}
+
+		orgs = append(orgs, *org)
+	}
+
+	this.JSONOut(http.StatusOK, "", orgs)
+	return
+}
+
+func (this *OrganizationWebV1Controller) PostOrg() {
+	user := new(models.User)
+	org := new(models.Organization)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
@@ -138,29 +189,7 @@ func (this *OrganizationWebV1Controller) PutOrganization() {
 	}
 }
 
-func (this *OrganizationWebV1Controller) GetOrganizations() {
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
-		return
-	} else {
-		orgs := make([]models.Organization, 0)
-
-		for _, name := range user.Organizations {
-			org := new(models.Organization)
-			if err := org.GetByName(name); err != nil {
-				this.JSONOut(http.StatusBadRequest, "Get organizations error", nil)
-				return
-			}
-
-			orgs = append(orgs, *org)
-		}
-
-		this.JSONOut(http.StatusOK, "", orgs)
-		return
-	}
-}
-
-func (this *OrganizationWebV1Controller) GetOrganizationDetail() {
+func (this *OrganizationWebV1Controller) GetTeamsGetOrganizationDetail() {
 	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return
@@ -177,7 +206,7 @@ func (this *OrganizationWebV1Controller) GetOrganizationDetail() {
 	}
 }
 
-func (this *OrganizationWebV1Controller) GetOrganizationRepo() {
+func (this *OrganizationWebV1Controller) GetRepositories() {
 	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
 		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
 		return

@@ -19,18 +19,12 @@ type RepoWebAPIV1Controller struct {
 func (this *RepoWebAPIV1Controller) Prepare() {
 	this.EnableXSRF = false
 
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist {
-		user.GetById(user.Id)
-		this.Ctx.Input.CruSession.Set("user", user)
-	}
-
 	this.Ctx.Output.Context.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
 }
 
 func (this *RepoWebAPIV1Controller) JSONOut(code int, message string, data interface{}) {
 	if data == nil {
-		result := map[string]string{"message": message}
-		this.Data["json"] = result
+		this.Data["json"] = map[string]string{"message": message}
 	} else {
 		this.Data["json"] = data
 	}

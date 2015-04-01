@@ -21,8 +21,7 @@ func (this *UserAPIV1Controller) URLMapping() {
 
 func (this *UserAPIV1Controller) JSONOut(code int, message string, data interface{}) {
 	if data == nil {
-		result := map[string]string{"message": message}
-		this.Data["json"] = result
+		this.Data["json"] = map[string]string{"message": message}
 	} else {
 		this.Data["json"] = data
 	}
