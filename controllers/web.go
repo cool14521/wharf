@@ -27,9 +27,6 @@ func (this *WebController) URLMapping() {
 
 func (this *WebController) Prepare() {
 	this.EnableXSRF = false
-
-	beego.Debug("[Header] ")
-	beego.Debug(this.Ctx.Request.Header)
 }
 
 func (this *WebController) GetIndex() {

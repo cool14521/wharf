@@ -48,16 +48,17 @@ func init() {
 		beego.NSRouter("/repository/:namespace/:repository/collaborators/:collaborator", &controllers.RepoWebAPIV1Controller{}, "put:PutCollaborator"),
 
 		//organization routers
-		beego.NSRouter("/organizations", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizations"),
-		beego.NSRouter("/organization", &controllers.OrganizationWebV1Controller{}, "post:PostOrganization"),
-		beego.NSRouter("/organization/:org", &controllers.OrganizationWebV1Controller{}, "put:PutOrganization"),
-		beego.NSRouter("/organization/:org", &controllers.OrganizationWebV1Controller{}, "get:GetOrganization"),
-		beego.NSRouter("/organization/:org/repo", &controllers.OrganizationWebV1Controller{}, "get:GetOrganizationRepo"),
+		beego.NSRouter("/organization/:username/orgs", &controllers.OrganizationWebV1Controller{}, "get:GetOrgs"),
+		beego.NSRouter("/organization/:username/joins", &controllers.OrganizationWebV1Controller{}, "get:GetJoins"),
+		beego.NSRouter("/organization/:org", &controllers.OrganizationWebV1Controller{}, "post:PostOrg"),
+		beego.NSRouter("/organization/:org", &controllers.OrganizationWebV1Controller{}, "put:PutOrg"),
+		beego.NSRouter("/organization/:org", &controllers.OrganizationWebV1Controller{}, "get:GetOrg"),
+		beego.NSRouter("/organization/:org/repos", &controllers.OrganizationWebV1Controller{}, "get:GetRepos"),
 		beego.NSRouter("/organization/:org/teams", &controllers.TeamWebV1Controller{}, "get:GetTeams"),
 		beego.NSRouter("/organization/:org/team", &controllers.TeamWebV1Controller{}, "post:PostTeam"),
 		beego.NSRouter("/organization/:org/team/:team", &controllers.TeamWebV1Controller{}, "put:PutTeam"),
 		beego.NSRouter("/organization/:org/team/:team", &controllers.TeamWebV1Controller{}, "get:GetTeam"),
-		beego.NSRouter("/organization/:org/team/:team/:username/:action", &controllers.TeamWebV1Controller{}, "put:PutTeamAddMember"),
+		beego.NSRouter("/organization/:org/team/:team/:username/:action", &controllers.TeamWebV1Controller{}, "put:PutTeamAction"),
 	)
 
 	//Docker Registry API V1 remain
