@@ -3,8 +3,8 @@ package routers
 import (
 	"github.com/astaxie/beego"
 
-	"github.com/dockercn/wharf/controllers"
-	"github.com/dockercn/wharf/filters"
+	"github.com/containerops/wharf/controllers"
+	"github.com/containerops/wharf/filters"
 )
 
 func init() {

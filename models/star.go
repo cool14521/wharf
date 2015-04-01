@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/dockercn/wharf/utils"
+	"github.com/containerops/wharf/utils"
 )
 
 type Star struct {

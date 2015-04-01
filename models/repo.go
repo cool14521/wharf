@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dockercn/wharf/utils"
+	"github.com/containerops/wharf/utils"
 )
 
 type Repository struct {

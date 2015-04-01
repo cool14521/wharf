@@ -9,9 +9,9 @@ import (
 
 	"github.com/astaxie/beego/context"
 
-	"github.com/dockercn/wharf/models"
-	"github.com/dockercn/wharf/modules"
-	"github.com/dockercn/wharf/utils"
+	"github.com/containerops/wharf/models"
+	"github.com/containerops/wharf/modules"
+	"github.com/containerops/wharf/utils"
 )
 
 const (

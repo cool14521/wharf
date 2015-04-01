@@ -15,8 +15,8 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/nfnt/resize"
 
-	"github.com/dockercn/wharf/models"
-	"github.com/dockercn/wharf/utils"
+	"github.com/containerops/wharf/models"
+	"github.com/containerops/wharf/utils"
 )
 
 type UserWebAPIV1Controller struct {

@@ -9,8 +9,8 @@ import (
 	_ "github.com/astaxie/beego/session/ledis"
 	"github.com/codegangsta/cli"
 
-	"github.com/dockercn/wharf/models"
-	_ "github.com/dockercn/wharf/routers"
+	"github.com/containerops/wharf/models"
+	_ "github.com/containerops/wharf/routers"
 )
 
 var CmdWeb = cli.Command{
