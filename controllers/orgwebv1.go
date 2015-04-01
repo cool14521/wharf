@@ -7,8 +7,8 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"github.com/dockercn/wharf/models"
-	"github.com/dockercn/wharf/utils"
+	"github.com/containerops/wharf/models"
+	"github.com/containerops/wharf/utils"
 )
 
 type OrganizationWebV1Controller struct {
@@ -19,8 +19,8 @@ func (this *OrganizationWebV1Controller) URLMapping() {
 	this.Mapping("GetOrgs", this.GetOrgs)
 	this.Mapping("GetJoins", this.GetJoins)
 	this.Mapping("PostOrg", this.PostOrg)
-//	this.Mapping("PutOrganization", this.PutOrganization)
-//	this.Mapping("GetOrganizationRepositories", this.GetRepositories)
+	//	this.Mapping("PutOrganization", this.PutOrganization)
+	//	this.Mapping("GetOrganizationRepositories", this.GetRepositories)
 	//	this.Mapping("GetTeams", this.GetTeams)
 	//	this.Mapping("PostTeam", this.PostTeam)
 	//	this.Mapping("PutTeam", this.PutTeam)

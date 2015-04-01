@@ -7,7 +7,7 @@ import (
 
 	"github.com/satori/go.uuid"
 
-	"github.com/dockercn/wharf/utils"
+	"github.com/containerops/wharf/utils"
 )
 
 type Image struct {

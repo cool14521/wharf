@@ -8,7 +8,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/codegangsta/cli"
 
-	"github.com/dockercn/wharf/cmd"
+	"github.com/containerops/wharf/cmd"
 )
 
 func init() {

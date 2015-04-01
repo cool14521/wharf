@@ -7,8 +7,8 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"github.com/dockercn/wharf/models"
-	"github.com/dockercn/wharf/modules"
+	"github.com/containerops/wharf/models"
+	"github.com/containerops/wharf/modules"
 )
 
 type ManifestsAPIV2Controller struct {

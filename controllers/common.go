@@ -7,7 +7,7 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"github.com/dockercn/wharf/models"
+	"github.com/containerops/wharf/models"
 )
 
 func manifestsConvertV1(data []byte) error {
