@@ -52,7 +52,7 @@ func (this *UserWebAPIV1Controller) Prepare() {
 }
 
 func (this *UserWebAPIV1Controller) Signin() {
-	var user models.User
+	user := new(models.User)
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
@@ -74,8 +74,8 @@ func (this *UserWebAPIV1Controller) Signin() {
 }
 
 func (this *UserWebAPIV1Controller) Signup() {
-	var user models.User
-	var org models.Organization
+	user := new(models.User)
+	org := new(models.Organization)
 
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &user); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
@@ -139,11 +139,13 @@ func (this *UserWebAPIV1Controller) GetUser() {
 }
 
 func (this *UserWebAPIV1Controller) GetNamespaces() {
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
+	user := new(models.User)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
-	} else if user.Username != this.Ctx.Input.Param(":username") {
-		this.JSONOut(http.StatusBadRequest, "Invalid user session", nil)
+	} else if exist == false && err == nil {
+		this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 		return
 	} else {
 		namespaces := make([]string, 0)
@@ -157,13 +159,13 @@ func (this *UserWebAPIV1Controller) GetNamespaces() {
 }
 
 func (this *UserWebAPIV1Controller) PostGravatar() {
-	var user models.User
+	user := new(models.User)
 
-	if u, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist == false {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
-	} else if u.Username != this.Ctx.Input.Param(":username") {
-		this.JSONOut(http.StatusBadRequest, "Invalid user session", nil)
+	} else if exist == false && err == nil {
+		this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 		return
 	}
 
@@ -218,8 +220,6 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 
 	imageFile.Close()
 
-	// resize to width 1000 using Lanczos resampling
-	// and preserve aspect ratio
 	m := resize.Resize(100, 100, img, resize.Lanczos3)
 
 	out, err := os.Create(fmt.Sprintf("%s%s%s%s%s", beego.AppConfig.String("gravatar"), "/", prefix, "_resize.", suffix))
@@ -255,18 +255,19 @@ func (this *UserWebAPIV1Controller) PostGravatar() {
 }
 
 func (this *UserWebAPIV1Controller) PutProfile() {
+	user := new(models.User)
 	var p map[string]interface{}
-	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &p); err != nil {
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false && err == nil {
+		this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 		return
 	}
 
-	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if exist != true {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
-		return
-	} else if user.Username != this.Ctx.Input.Param(":username") {
-		this.JSONOut(http.StatusBadRequest, "Invalid user session", nil)
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &p); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -283,6 +284,7 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 
 	user.Email, user.Fullname, user.Mobile = p["email"].(string), p["fullname"].(string), p["mobile"].(string)
 	user.Gravatar, user.Company, user.URL = p["gravatar"].(string), p["company"].(string), p["url"].(string)
+	user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
 
 	if err := user.Save(); err != nil {
 		this.JSONOut(http.StatusBadRequest, "User save failure", nil)
@@ -299,18 +301,18 @@ func (this *UserWebAPIV1Controller) PutProfile() {
 }
 
 func (this *UserWebAPIV1Controller) PutPassword() {
+	user := new(models.User)
 	var p map[string]interface{}
+
 	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &p); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-
-	user, exist := this.Ctx.Input.CruSession.Get("user").(models.User)
-	if exist == false {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
-	} else if user.Username != this.Ctx.Input.Param(":username") {
-		this.JSONOut(http.StatusBadRequest, "Invalid user session", nil)
+	} else if exist == false && err == nil {
+		this.JSONOut(http.StatusBadRequest, "Search user error", nil)
 		return
 	} else if p["oldPassword"].(string) != user.Password {
 		this.JSONOut(http.StatusBadRequest, "account and password not match", nil)
@@ -318,6 +320,8 @@ func (this *UserWebAPIV1Controller) PutPassword() {
 	}
 
 	user.Password = p["newPassword"].(string)
+	user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
 	if err := user.Save(); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
