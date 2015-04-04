@@ -17,6 +17,7 @@ func init() {
 	beego.Router("/admin/auth", &controllers.WebController{}, "get:GetAdminAuth")
 	beego.Router("/admin", &controllers.WebController{}, "get:GetAdmin")
 
+	beego.Router("/c/:namespace/:compose", &controllers.WebController{}, "get:GetCompose")
 	beego.Router("/r/:namespace/:repository", &controllers.WebController{}, "get:GetRepository")
 	beego.Router("/o/:org", &controllers.WebController{}, "get:GetOrganization")
 	beego.Router("/u/:username", &controllers.WebController{}, "get:GetUser")
