@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -16,16 +18,7 @@ type OrganizationWebV1Controller struct {
 }
 
 func (this *OrganizationWebV1Controller) URLMapping() {
-	this.Mapping("GetOrgs", this.GetOrgs)
-	this.Mapping("GetJoins", this.GetJoins)
-	this.Mapping("PostOrg", this.PostOrg)
-	//	this.Mapping("PutOrganization", this.PutOrganization)
-	//	this.Mapping("GetOrganizationRepositories", this.GetRepositories)
-	//	this.Mapping("GetTeams", this.GetTeams)
-	//	this.Mapping("PostTeam", this.PostTeam)
-	//	this.Mapping("PutTeam", this.PutTeam)
-	//	this.Mapping("GetTeam", this.GetTeam)
-	//	this.Mapping("PutTeamAddMember", this.PutTeamAction)
+
 }
 
 func (this *OrganizationWebV1Controller) JSONOut(code int, message string, data interface{}) {
@@ -71,7 +64,7 @@ func (this *OrganizationWebV1Controller) GetOrgs() {
 	return
 }
 
-func (this *OrganizationWebV1Controller) GetJoins() {
+func (this *OrganizationWebV1Controller) GetJoinOrgs() {
 	user := new(models.User)
 	orgs := make([]models.Organization, 0)
 
@@ -97,6 +90,64 @@ func (this *OrganizationWebV1Controller) GetJoins() {
 	return
 }
 
+func (this *OrganizationWebV1Controller) GetTeams() {
+	user := new(models.User)
+	teams := make([]models.Team, 0)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	for _, name := range user.Teams {
+		team := new(models.Team)
+		if exist, _, err := team.Has(strings.Split(name, "-")[0], strings.Split(name, "-")[1]); err != nil {
+			this.JSONOut(http.StatusBadRequest, "Get Team error", nil)
+			return
+		} else if exist == false {
+			this.JSONOut(http.StatusBadRequest, "Team invalid", nil)
+			return
+		}
+
+		teams = append(teams, *team)
+	}
+
+	this.JSONOut(http.StatusOK, "", teams)
+	return
+}
+
+func (this *OrganizationWebV1Controller) GetJoinTeams() {
+	user := new(models.User)
+	teams := make([]models.Team, 0)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	for _, name := range user.JoinTeams {
+		team := new(models.Team)
+		if exist, _, err := team.Has(strings.Split(name, "-")[0], strings.Split(name, "-")[1]); err != nil {
+			this.JSONOut(http.StatusBadRequest, "Get organizations error", nil)
+			return
+		} else if exist == false {
+			this.JSONOut(http.StatusBadRequest, "Team invalid", nil)
+			return
+		}
+
+		teams = append(teams, *team)
+	}
+
+	this.JSONOut(http.StatusOK, "", teams)
+	return
+}
+
 func (this *OrganizationWebV1Controller) PostOrg() {
 	user := new(models.User)
 	org := new(models.Organization)
@@ -109,12 +160,7 @@ func (this *OrganizationWebV1Controller) PostOrg() {
 		return
 	}
 
-	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
-		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
-		return
-	}
-
-	if exist, _, err := user.Has(org.Name); err != nil {
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":org")); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else if exist == true {
@@ -122,11 +168,16 @@ func (this *OrganizationWebV1Controller) PostOrg() {
 		return
 	}
 
-	if exist, _, err := org.Has(org.Name); err != nil {
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
 		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	} else if exist == true {
 		this.JSONOut(http.StatusBadRequest, "Namespace is occupation already by another organization", nil)
+		return
+	}
+
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -141,7 +192,6 @@ func (this *OrganizationWebV1Controller) PostOrg() {
 	}
 
 	user.Organizations = append(user.Organizations, org.Name)
-	user.JoinOrganizations = append(user.JoinOrganizations, org.Name)
 	user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
 
 	if err := user.Save(); err != nil {
@@ -153,82 +203,458 @@ func (this *OrganizationWebV1Controller) PostOrg() {
 	user.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.Id, memo)
 	org.Log(models.ACTION_ADD_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
 
-	//Reload user data in session.
-	user.Get(user.Username, user.Password)
-	this.Ctx.Input.CruSession.Set("user", user)
-
 	this.JSONOut(http.StatusOK, "Create organization successfully.", nil)
 	return
 }
 
-func (this *OrganizationWebV1Controller) PutOrganization() {
-	if user, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
-		return
-	} else {
-		var org models.Organization
-
-		if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
-			this.JSONOut(http.StatusBadRequest, err.Error(), nil)
-			return
-		}
-
-		org.Updated = time.Now().UnixNano() / int64(time.Millisecond)
-
-		if err := org.Save(); err != nil {
-			this.JSONOut(http.StatusBadRequest, "Organization save error", nil)
-			return
-		}
-
-		memo, _ := json.Marshal(this.Ctx.Input.Header)
-		user.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.Id, memo)
-		org.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
-
-		this.JSONOut(http.StatusOK, "Update organization successfully", nil)
-		return
-	}
-}
-
-func (this *OrganizationWebV1Controller) GetTeamsGetOrganizationDetail() {
-	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
-		return
-	} else {
-		organization := new(models.Organization)
-
-		if _, _, err := organization.Has(this.Ctx.Input.Param(":org")); err != nil {
-			this.JSONOut(http.StatusBadRequest, "Get organizations error", nil)
-			return
-		}
-
-		this.JSONOut(http.StatusOK, "", organization)
-		return
-	}
-}
-
-func (this *OrganizationWebV1Controller) GetRepositories() {
-	if _, exist := this.Ctx.Input.CruSession.Get("user").(models.User); exist != true {
-		this.JSONOut(http.StatusBadRequest, "", map[string]string{"message": "Session load failure", "url": "/auth"})
-		return
-	}
-
+func (this *OrganizationWebV1Controller) PutOrg() {
+	user := new(models.User)
 	org := new(models.Organization)
 
-	if err := org.GetByName(this.Ctx.Input.Param(":org")); err != nil {
-		this.JSONOut(http.StatusBadRequest, "Get organizations error", nil)
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
 		return
 	}
 
-	repositories := make([]models.Repository, 0)
-
-	for _, repositoryId := range org.Repositories {
-		repository := new(models.Repository)
-		if err := repository.Get(repositoryId); err != nil {
-			continue
-		}
-		repositories = append(repositories, *repository)
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
 	}
 
-	this.JSONOut(http.StatusOK, "", repositories)
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &org); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	org.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+	if err := org.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Organization save error", nil)
+		return
+	}
+
+	memo, _ := json.Marshal(this.Ctx.Input.Header)
+	user.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, org.Id, memo)
+	org.Log(models.ACTION_UPDATE_ORG, models.LEVELINFORMATIONAL, models.TYPE_WEBV1, user.Id, memo)
+
+	this.JSONOut(http.StatusOK, "Update organization successfully", nil)
+	return
+}
+
+func (this *OrganizationWebV1Controller) GetOrg() {
+	org := new(models.Organization)
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
+	}
+
+	this.JSONOut(http.StatusOK, "", org)
+	return
+}
+
+func (this *OrganizationWebV1Controller) GetPublicRepos() {
+	org := new(models.Organization)
+	repos := make([]models.Repository, 0)
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
+	}
+
+	for _, v := range org.Repositories {
+		repo := new(models.Repository)
+
+		if err := repo.Get(v); err != nil {
+			this.JSONOut(http.StatusBadRequest, "Repository invalid", nil)
+			return
+		}
+
+		if repo.Privated == false {
+			repos = append(repos, *repo)
+		}
+	}
+
+	this.JSONOut(http.StatusOK, "", repos)
+	return
+}
+
+func (this *OrganizationWebV1Controller) GetPrivateRepos() {
+	org := new(models.Organization)
+	repos := make([]models.Repository, 0)
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
+	}
+
+	for _, v := range org.Repositories {
+		repo := new(models.Repository)
+
+		if err := repo.Get(v); err != nil {
+			this.JSONOut(http.StatusBadRequest, "Repository invalid", nil)
+			return
+		}
+
+		if repo.Privated == true {
+			repos = append(repos, *repo)
+		}
+	}
+
+	this.JSONOut(http.StatusOK, "", repos)
+	return
+}
+
+func (this *OrganizationWebV1Controller) GetOrgTeams() {
+	org := new(models.Organization)
+	teams := make([]models.Team, 0)
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
+	}
+
+	for _, v := range org.Teams {
+		team := new(models.Team)
+
+		if exist, _, err := team.Has(strings.Split(v, "-")[0], strings.Split(v, "-")[1]); err != nil {
+			this.JSONOut(http.StatusBadRequest, "Team invalid", nil)
+			return
+		} else if exist == false {
+			this.JSONOut(http.StatusBadRequest, "Team invalid", nil)
+			return
+		}
+
+		teams = append(teams, *team)
+	}
+
+	this.JSONOut(http.StatusOK, "", teams)
+	return
+}
+
+func (this *OrganizationWebV1Controller) PostTeam() {
+	user := new(models.User)
+	org := new(models.Organization)
+	team := new(models.Team)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
+	}
+
+	if exist, _, err := team.Has(this.Ctx.Input.Param(":org"), this.Ctx.Input.Param(":team")); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Search team error", nil)
+		return
+	} else if exist == true {
+		this.JSONOut(http.StatusBadRequest, "Team already exist", nil)
+		return
+	}
+
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &team); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	team.Id = fmt.Sprintf("%s-%s", this.Ctx.Input.Param(":org"), this.Ctx.Input.Param(":team"))
+	team.Username = this.Ctx.Input.Param(":username")
+	team.Users, team.Repositories = []string{this.Ctx.Input.Param(":username")}, []string{}
+	team.Created = time.Now().UnixNano() / int64(time.Millisecond)
+	team.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+	if err := team.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Team save error", nil)
+		return
+	}
+
+	org.Teams = append(org.Teams, team.Id)
+	org.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+	if err := org.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Organization save error", nil)
+		return
+	}
+
+	user.Teams = append(user.Teams, team.Id)
+	user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+	if err := user.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "User save error", nil)
+		return
+	}
+
+	this.JSONOut(http.StatusOK, "Team create successfully", nil)
+	return
+}
+
+func (this *OrganizationWebV1Controller) PutTeam() {
+	user := new(models.User)
+	org := new(models.Organization)
+	team := new(models.Team)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
+	}
+
+	if exist, _, err := team.Has(this.Ctx.Input.Param(":org"), this.Ctx.Input.Param(":team")); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Search team error", nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Team not exist", nil)
+		return
+	}
+
+	if err := json.Unmarshal(this.Ctx.Input.CopyBody(), &team); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	team.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+	if err := team.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Team save error", nil)
+		return
+	}
+
+	this.JSONOut(http.StatusOK, "Team update successfully", nil)
+	return
+}
+
+func (this *OrganizationWebV1Controller) GetTeam() {
+	user := new(models.User)
+	org := new(models.Organization)
+	team := new(models.Team)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
+	}
+
+	if exist, _, err := team.Has(this.Ctx.Input.Param(":org"), this.Ctx.Input.Param(":team")); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Search team error", nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Team not exist", nil)
+		return
+	}
+
+	this.JSONOut(http.StatusOK, "", team)
+	return
+}
+
+func (this *OrganizationWebV1Controller) PostMember() {
+	user := new(models.User)
+	org := new(models.Organization)
+	team := new(models.Team)
+	member := new(models.User)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
+	}
+
+	if exist, _, err := team.Has(this.Ctx.Input.Param(":org"), this.Ctx.Input.Param(":team")); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Search team error", nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Team not exist", nil)
+		return
+	}
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":member")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	team.Users = append(team.Users, member.Username)
+	team.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+	if err := team.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Team save error", nil)
+		return
+	}
+
+	has := false
+	for _, k := range member.JoinOrganizations {
+		if k == org.Name {
+			has = true
+		}
+	}
+
+	if has == false {
+		member.JoinOrganizations = append(member.JoinOrganizations, org.Name)
+	}
+
+	member.JoinTeams = append(member.JoinTeams, team.Id)
+	member.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+	if err := member.Save(); err != nil {
+		this.JSONOut(http.StatusBadRequest, "User save error", nil)
+		return
+	}
+
+	this.JSONOut(http.StatusOK, "User added to the team", nil)
+	return
+}
+
+func (this *OrganizationWebV1Controller) PutMember() {
+	user := new(models.User)
+	org := new(models.Organization)
+	team := new(models.Team)
+	member := new(models.User)
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":username")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	if exist, _, err := org.Has(this.Ctx.Input.Param(":org")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Organization not exist", nil)
+		return
+	}
+
+	if exist, _, err := team.Has(this.Ctx.Input.Param(":org"), this.Ctx.Input.Param(":team")); err != nil {
+		this.JSONOut(http.StatusBadRequest, "Search team error", nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "Team not exist", nil)
+		return
+	}
+
+	if exist, _, err := user.Has(this.Ctx.Input.Param(":member")); err != nil {
+		this.JSONOut(http.StatusBadRequest, err.Error(), nil)
+		return
+	} else if exist == false {
+		this.JSONOut(http.StatusBadRequest, "User not exist", nil)
+		return
+	}
+
+	for i, v := range team.Users {
+		if v == member.Username {
+			team.Users = append(team.Users[:i], team.Users[i+1:]...)
+			team.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+			if err := team.Save(); err != nil {
+				this.JSONOut(http.StatusBadRequest, "Team save error", nil)
+				return
+			}
+		}
+	}
+
+	for i, v := range user.JoinTeams {
+		if v == team.Id {
+			user.JoinTeams = append(user.JoinTeams[:i], user.JoinTeams[i+1:]...)
+			user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+			if err := user.Save(); err != nil {
+				this.JSONOut(http.StatusBadRequest, "User save error", nil)
+				return
+			}
+		}
+	}
+
+	for _, v := range org.Teams {
+		t := new(models.Team)
+
+		if exist, _, err := team.Has(strings.Split(v, "-")[0], strings.Split(v, "-")[1]); err != nil {
+			this.JSONOut(http.StatusBadRequest, "Search team error", nil)
+			return
+		} else if exist == false {
+			this.JSONOut(http.StatusBadRequest, "Team not exist", nil)
+			return
+		}
+
+		for _, u := range t.Users {
+			if u == member.Username {
+				this.JSONOut(http.StatusOK, "User remove successfully.", nil)
+				return
+			}
+		}
+	}
+
+	for i, v := range user.JoinOrganizations {
+		if v == org.Name {
+			user.JoinOrganizations = append(user.JoinOrganizations[:i], user.JoinOrganizations[i+1:]...)
+			user.Updated = time.Now().UnixNano() / int64(time.Millisecond)
+
+			if err := user.Save(); err != nil {
+				this.JSONOut(http.StatusBadRequest, "User save error", nil)
+				return
+			}
+		}
+	}
+
+	this.JSONOut(http.StatusOK, "User remove successfully.", nil)
 	return
 }
