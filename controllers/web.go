@@ -23,6 +23,7 @@ func (this *WebController) URLMapping() {
 	this.Mapping("GetAdmin", this.GetAdmin)
 	this.Mapping("GetAdminAuth", this.GetAdminAuth)
 	this.Mapping("GetSignout", this.GetSignout)
+	this.Mapping("GetCompose", this.GetCompose)
 }
 
 func (this *WebController) Prepare() {
@@ -155,4 +156,8 @@ func (this *WebController) GetSignout() {
 		this.Ctx.Input.CruSession.Delete("user")
 		this.Ctx.Redirect(http.StatusMovedPermanently, "/auth")
 	}
+}
+
+func (this *WebController) GetCompose() {
+
 }

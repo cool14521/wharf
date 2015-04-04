@@ -16,6 +16,8 @@ type Team struct {
 	Write        bool     `json:"write"`        //
 	Users        []string `json:"users"`        //
 	Repositories []string `json:"repositories"` //
+	Created      int64    `json:"created"`      //
+	Updated      int64    `json:"updated"`      //
 	Memo         []string `json:"memo"`         //
 }
 
