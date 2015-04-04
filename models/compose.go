@@ -11,7 +11,6 @@ type Compose struct {
 	Id            string   `json:"id"`            //
 	Compose       string   `json:"compose"`       //
 	Namespace     string   `json:"namespace"`     //
-	NamespaceType bool     `json:"namespacetype"` //
 	Organization  string   `json:"organization"`  //
 	Tags          []string `json:"tags"`          //
 	Starts        []string `json:"starts"`        //
