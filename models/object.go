@@ -1,12 +1,14 @@
 package models
 
 type Object interface {
-	//Basic CRUD Method
 	Create() error
 	Read() error
 	Update() error
 	Delete() error
-	//Basic Object Method
+}
+
+type Model interface {
+	Object
 	Has(name string) (bool, string, error)
 	GetById(id string) error
 	GetByName(name string) error
