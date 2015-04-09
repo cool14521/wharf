@@ -8,17 +8,17 @@ type Object struct {
 }
 
 func (o *Object) Create() error {
-
+	return nil
 }
 
 func (o *Object) Read() (Object, error) {
-
+	return nil, nil
 }
 
 func (o *Object) Update() error {
-
+	return nil
 }
 
 func (o *Object) Delete() error {
-
+	return nil
 }
