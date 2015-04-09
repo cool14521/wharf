@@ -24,5 +24,5 @@ func (a *Admin) Log(action, actionLevel, actionType int64, actionId string, cont
 }
 
 func (a *Admin) CreateAdmin(username, password, email string) error {
-
+	return nil
 }
