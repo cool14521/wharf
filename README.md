@@ -17,6 +17,7 @@ Our team is still working really hard for your happiness with the complete versi
 Clone code into directory `$GOPATH/src/github.com/containerops` and then exec commands:
 
 ```bash
+go get github.com/tools/godep
 godep go build
 ```
 
