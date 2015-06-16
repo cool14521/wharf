@@ -11,6 +11,9 @@ import (
 
 	"github.com/Unknwon/macaron"
 
+	crew "github.com/containerops/crew/web"
+	dockyard "github.com/containerops/dockyard/web"
+	generator "github.com/containerops/generator/web"
 	"github.com/containerops/wharf/setting"
 	"github.com/containerops/wharf/web"
 	"github.com/containerops/wrench/db"
@@ -43,8 +46,10 @@ func runWeb(c *cli.Context) {
 		fmt.Printf("Connect Database Error %s", err.Error())
 	}
 
-	//Set Macaron Web Middleware And Routers
 	web.SetWharfMacaron(m)
+	dockyard.SetDockyardMacaron(m)
+	crew.SetCrewMacaron(m)
+	generator.SetGeneratorMacaron(m)
 
 	switch setting.ListenMode {
 	case "http":
