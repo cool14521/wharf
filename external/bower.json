@@ -22,7 +22,7 @@
     "ng-websocket": "~0.2.1",
     "codemirror": "5.3.0",
     "angular-ui-codemirror": "~0.3.0",
-    "highlight": "~8.6.0",
+    "highlight": "~7.0.1",
     "flat-ui": "~2.2.2"
   }
 }
