@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/Unknwon/macaron"
 	_ "github.com/macaron-contrib/session/redis"
-	"html/template"
+	// "html/template"
 )
 
 func SetMiddlewares(m *macaron.Macaron) {
@@ -13,19 +13,12 @@ func SetMiddlewares(m *macaron.Macaron) {
 
 	m.Map(Log)
 	m.Use(logger())
-	//change the deafault template folder
+	//modify  default template setting
 	m.Use(macaron.Renderer(macaron.RenderOptions{
-		Directory:  "views",
-		Extensions: []string{".tmpl", ".html"},
-		Funcs: []template.FuncMap{map[string]interface{}{
-			"AppName": func() string {
-				return "Macaron"
-			},
-			"AppVer": func() string {
-				return "1.0.0"
-			},
-		}},
-		Delims:          macaron.Delims{"{{", "}}"},
+		Directory:       "views",
+		Extensions:      []string{".tmpl", ".html"},
+		Funcs:           []template.FuncMap{},
+		Delims:          macaron.Delims{"<<<", ">>>"},
 		Charset:         "UTF-8",
 		IndentJSON:      true,
 		IndentXML:       true,

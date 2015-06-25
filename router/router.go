@@ -2,12 +2,11 @@ package router
 
 import (
 	"github.com/Unknwon/macaron"
+	"github.com/containerops/wharf/handler"
 )
 
 func SetRouters(m *macaron.Macaron) {
 
-	m.Get("/", func(ctx *macaron.Context) {
-		ctx.HTML(200, "index")
-	})
+	m.Get("/", handler.IndexHandler)
 
 }
