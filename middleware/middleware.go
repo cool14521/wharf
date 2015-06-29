@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/Unknwon/macaron"
 	_ "github.com/macaron-contrib/session/redis"
-	// "html/template"
+	"html/template"
 )
 
 func SetMiddlewares(m *macaron.Macaron) {
