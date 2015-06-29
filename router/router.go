@@ -8,6 +8,6 @@ import (
 func SetRouters(m *macaron.Macaron) {
 
 	m.Get("/", handler.IndexHandler)
-	m.Get("/auth", handler.InitAuthHandler)
+	m.Get("/auth", handler.AuthHandler)
 
 }

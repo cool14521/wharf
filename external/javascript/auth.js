@@ -33,7 +33,7 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
                 templateUrl: 'views/auth/signin.html',
                 controller: 'SigninCtrl'
             })
-            .when('/auth/signup', {
+            .when('/signup', {
                 templateUrl: 'views/auth/signup.html',
                 controller: 'SignupCtrl'
             });

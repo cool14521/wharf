@@ -4,6 +4,6 @@ import (
 	"github.com/Unknwon/macaron"
 )
 
-func InitAuthHandler(ctx *macaron.Context) {
+func AuthHandler(ctx *macaron.Context) {
 	ctx.HTML(200, "auth")
 }
