@@ -16,12 +16,6 @@ angular.module('auth', ['ngRoute', 'ngMessages', 'ngCookies', 'angular-growl'])
                 //TODO
         }
     }])
-    .controller('SignupCtrl', ['$scope', '$cookies', '$http', 'growl', '$location', '$timeout', function($scope, $cookies, $http, growl, $location, $timeout) {
-      
-        $scope.submit = function() {
-                //TODO
-        }
-    }])
     //routes
     .config(function($routeProvider, $locationProvider) {
         $routeProvider
