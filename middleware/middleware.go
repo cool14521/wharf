@@ -1,9 +1,12 @@
 package middleware
 
 import (
+	"html/template"
+
 	"github.com/Unknwon/macaron"
 	_ "github.com/macaron-contrib/session/redis"
-	"html/template"
+
+	"github.com/containerops/wrench/setting"
 )
 
 func SetMiddlewares(m *macaron.Macaron) {
@@ -12,7 +15,7 @@ func SetMiddlewares(m *macaron.Macaron) {
 	}))
 
 	m.Map(Log)
-	m.Use(logger())
+	m.Use(logger(setting.RunMode))
 	//modify  default template setting
 	m.Use(macaron.Renderer(macaron.RenderOptions{
 		Directory:       "views",
@@ -26,7 +29,4 @@ func SetMiddlewares(m *macaron.Macaron) {
 		HTMLContentType: "text/html",
 	}))
 	m.Use(macaron.Recovery())
-	//set static resources folder
-	m.Use(macaron.Static("external"))
-
 }

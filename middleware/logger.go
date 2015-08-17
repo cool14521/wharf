@@ -4,31 +4,29 @@ import (
 	"fmt"
 
 	"github.com/Unknwon/macaron"
-
 	"github.com/astaxie/beego/logs"
-
-	"github.com/containerops/wharf/setting"
 )
 
 var Log *logs.BeeLogger
 
-func init() {
+func InitLog(runmode, path string) {
 	Log = logs.NewLogger(10000)
 
-	if setting.RunMode == "dev" {
+	if runmode == "dev" {
 		Log.SetLogger("console", "")
 	}
 
-	Log.SetLogger("file", fmt.Sprintf("{\"filename\":\"%s\"}", setting.LogPath))
+	Log.SetLogger("file", fmt.Sprintf("{\"filename\":\"%s\"}", path))
 
 }
 
-func logger() macaron.Handler {
+func logger(runmode string) macaron.Handler {
 	return func(ctx *macaron.Context) {
-		if setting.RunMode == "dev" {
+		if runmode == "dev" {
 			Log.Trace("")
 			Log.Trace("----------------------------------------------------------------------------------")
 		}
+
 		Log.Trace("[%s] [%s]", ctx.Req.Method, ctx.Req.RequestURI)
 		Log.Trace("[Header] %v", ctx.Req.Header)
 	}

@@ -14,9 +14,10 @@ import (
 	crew "github.com/containerops/crew/web"
 	dockyard "github.com/containerops/dockyard/web"
 	generator "github.com/containerops/generator/web"
-	"github.com/containerops/wharf/setting"
+
 	"github.com/containerops/wharf/web"
 	"github.com/containerops/wrench/db"
+	"github.com/containerops/wrench/setting"
 	"github.com/containerops/wrench/utils"
 )
 
@@ -67,7 +68,7 @@ func runWeb(c *cli.Context) {
 		break
 	case "unix":
 		listenaddr := fmt.Sprintf("%s", c.String("address"))
-		if utils.Exist(listenaddr) {
+		if utils.IsFileExist(listenaddr) {
 			os.Remove(listenaddr)
 		}
 
