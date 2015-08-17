@@ -7,7 +7,7 @@ import (
 	"github.com/codegangsta/cli"
 
 	"github.com/containerops/wharf/cmd"
-	"github.com/containerops/wharf/setting"
+	"github.com/containerops/wrench/setting"
 )
 
 func init() {
@@ -15,6 +15,8 @@ func init() {
 }
 
 func main() {
+	setting.SetConfig("conf/containerops.conf")
+
 	app := cli.NewApp()
 
 	app.Name = setting.AppName
