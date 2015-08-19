@@ -21,11 +21,7 @@ _testmain.go
 
 *.exe
 
-.idea/*
 wharf
-.vendor/*
-nohup.out
-conf/bucket.conf
-var/*
-data/gravatar/*
-wharf.iml
+conf/runtime.conf
+data/*
+log/*
