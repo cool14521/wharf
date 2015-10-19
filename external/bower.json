@@ -1,6 +1,6 @@
 {
   "name": "wharf",
-  "version": "0.3.1",
+  "version": "0.4.1",
   "dependencies": {
     "jquery": "~2.1.4",
     "angular": "1.4.x",
@@ -12,17 +12,16 @@
     "angular-messages": "1.4.x",
     "angular-touch": "1.4.x",
     "angular-aria": "1.4.x",
+    "angular-material": "~0.11.4",
     "font-awesome": "~4.3.0",
     "underscore": "~1.8.3",
     "bootstrap": "~3.3.5",
     "angular-bootstrap": "~0.13.0",
     "angular-growl-v2": "~0.7.5",
-    "jquery-ui-boostrap":"",
     "ng-file-upload": "~5.0.7",
     "ng-websocket": "~0.2.1",
     "codemirror": "5.3.0",
     "angular-ui-codemirror": "~0.3.0",
-    "highlight": "~7.0.1",
-    "flat-ui": "~2.2.2"
+    "highlight": "~7.0.1"
   }
 }

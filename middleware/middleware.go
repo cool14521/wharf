@@ -10,13 +10,15 @@ import (
 )
 
 func SetMiddlewares(m *macaron.Macaron) {
+	//Static root folder
 	m.Use(macaron.Static("external", macaron.StaticOptions{
 		Expires: func() string { return "max-age=0" },
 	}))
-
+	//Log
+	InitLog(setting.RunMode, setting.LogPath)
 	m.Map(Log)
 	m.Use(logger(setting.RunMode))
-	//modify  default template setting
+	//Modify default template setting
 	m.Use(macaron.Renderer(macaron.RenderOptions{
 		Directory:       "views",
 		Extensions:      []string{".tmpl", ".html"},
@@ -25,8 +27,9 @@ func SetMiddlewares(m *macaron.Macaron) {
 		Charset:         "UTF-8",
 		IndentJSON:      true,
 		IndentXML:       true,
-		PrefixXML:       []byte("macaron"),
+		PrefixXML:       []byte(""),
 		HTMLContentType: "text/html",
 	}))
+	//Recovery
 	m.Use(macaron.Recovery())
 }

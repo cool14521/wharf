@@ -2,17 +2,12 @@ package main
 
 import (
 	"os"
-	"runtime"
 
 	"github.com/codegangsta/cli"
 
 	"github.com/containerops/wharf/cmd"
 	"github.com/containerops/wrench/setting"
 )
-
-func init() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-}
 
 func main() {
 	setting.SetConfig("conf/containerops.conf")
