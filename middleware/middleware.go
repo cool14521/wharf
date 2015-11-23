@@ -3,8 +3,8 @@ package middleware
 import (
 	"html/template"
 
-	"github.com/Unknwon/macaron"
 	_ "github.com/macaron-contrib/session/redis"
+	"gopkg.in/macaron.v1"
 
 	"github.com/containerops/wrench/setting"
 )

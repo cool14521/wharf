@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/codegangsta/cli"
@@ -10,7 +11,10 @@ import (
 )
 
 func main() {
-	setting.SetConfig("conf/containerops.conf")
+	if err := setting.SetConfig("conf/containerops.conf"); err != nil {
+		fmt.Printf("Read config error: %v", err.Error())
+		return
+	}
 
 	app := cli.NewApp()
 

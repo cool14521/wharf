@@ -9,11 +9,11 @@ import (
 
 	"github.com/codegangsta/cli"
 
-	"github.com/Unknwon/macaron"
+	"gopkg.in/macaron.v1"
 
-	crew "github.com/containerops/crew/web"
-	dockyard "github.com/containerops/dockyard/web"
-	generator "github.com/containerops/generator/web"
+	// crew "github.com/containerops/crew/web"
+	// dockyard "github.com/containerops/dockyard/web"
+	// generator "github.com/containerops/generator/web"
 
 	"github.com/containerops/wharf/web"
 	"github.com/containerops/wrench/db"
@@ -48,9 +48,9 @@ func runWeb(c *cli.Context) {
 	}
 
 	web.SetWharfMacaron(m)
-	dockyard.SetDockyardMacaron(m)
-	crew.SetCrewMacaron(m)
-	generator.SetGeneratorMacaron(m)
+	// dockyard.SetDockyardMacaron(m)
+	// crew.SetCrewMacaron(m)
+	// generator.SetGeneratorMacaron(m)
 
 	switch setting.ListenMode {
 	case "http":

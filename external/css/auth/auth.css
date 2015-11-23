@@ -1,15 +1,11 @@
-
-
-#login-container{
-       position: absolute;
-      top: 50%;
-      -webkit-transform: translateY(-50%);
-      -moz-transform:  translateY(-50%);
-      -ms-transform:  translateY(-50%);
-      -o-transform:  translateY(-50%);
-      transform:  translateY(-50%);
-}
-.ng-active {
-  color: red;
+.md-toolbar-tools h1 {
+  font-size: inherit;
+  font-weight: inherit;
+  margin: inherit;
 }
 
+md-sidenav.md-locked-open {
+  width: 150px !important;
+  min-width: 150px !important;
+  max-width: 150px !important;
+}
